@@ -17,8 +17,8 @@ const player = ref<NMPlayer>();
 onMounted(() => {
 
   window.playerManager.setMessageInterceptor(
-      window.cast.framework.messages.MessageType.LOAD,
-      async (event: framework.events.Event & {
+      "LOAD",
+      (event: framework.events.Event & {
         media: {
           customData: {
             accessToken: string;
@@ -28,11 +28,9 @@ onMounted(() => {
         };
       }) => {
 
-        document.body.innerHTML = `<div style="whitespace:pre" >${JSON.stringify(event.media.customData, null, 2)}</div>`;
+        player.value?.dispose();
 
         await initializeSocket(event.media.customData.basePath, event.media.customData.accessToken);
-
-        player.value?.dispose();
 
         const config: PlayerConfig = {
           muted: false,
@@ -44,8 +42,13 @@ onMounted(() => {
           doubleClickDelay: 500,
           playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
           renderAhead: 100,
-          ...event.media.customData
+          ...event.media.customData,
         };
+        document.body.innerHTML = `
+          <div style="whitespace:pre" >
+            ${JSON.stringify(config, null, 2)}
+          </div>
+        `;
 
         player.value = nmplayer('player1')
             .setup(config) as unknown as NMPlayer;

@@ -17,5 +17,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'docs',
+  },
+  server: {
+    open: true,
+    port: 5501,
+    allowedHosts: [
+        'vscode.nomercy.tv'
+    ],
   }
 })
