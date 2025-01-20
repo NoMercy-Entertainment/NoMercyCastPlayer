@@ -6,7 +6,7 @@ import nmplayer from "@nomercy-entertainment/nomercy-video-player/src";
 import type {NMPlayer, PlayerConfig, PlaylistItem} from "@nomercy-entertainment/nomercy-video-player/src/types";
 
 import {KeyHandlerPlugin} from "@nomercy-entertainment/nomercy-video-player/dist/plugins/keyHandlerPlugin";
-import {DesktopUIPlugin} from "@/lib/VideoPlayer/plugins/UIPlugin/desktopUIPlugin";
+import {TVUIPlugin} from "@/lib/VideoPlayer/plugins/UIPlugin/tvUIPlugin";
 import {OctopusPlugin} from "@nomercy-entertainment/nomercy-video-player/dist/plugins/octopusPlugin";
 import {AutoSkipPlugin} from "@/lib/VideoPlayer/plugins/autoSkipPlugin";
 import {SyncPlugin} from "@/lib/VideoPlayer/plugins/syncPlugin";
@@ -58,9 +58,9 @@ onMounted(() => {
               player.value.registerPlugin("keyHandler", keyHandlerPlugin);
               player.value.usePlugin("keyHandler");
 
-              const desktopUIPlugin = new DesktopUIPlugin();
-              player.value?.registerPlugin('desktopUI', desktopUIPlugin);
-              player.value?.usePlugin('desktopUI');
+              const tvUIPlugin = new TVUIPlugin();
+              player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
+              player.value?.usePlugin('tvUIPlugin');
 
               const octopusPlugin = new OctopusPlugin();
               player.value?.registerPlugin('octopus', octopusPlugin);
