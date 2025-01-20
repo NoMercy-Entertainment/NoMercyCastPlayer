@@ -45,7 +45,7 @@ onMounted(() => {
                         renderAhead: 100,
                         forceTvMode: true,
                         disableTouchControls: false,
-                        disableMediaControls: true,
+                        disableMediaControls: false,
                         ...event.media.customData,
                     };
 
@@ -74,6 +74,14 @@ onMounted(() => {
 
                     player.value.on("ready", () => {
                         player.value?.play();
+                    });
+
+                    player.value.on("controls", (showing) => {
+                        if (showing) {
+                            setTimeout(() => {
+                                document.querySelector<HTMLButtonElement>(".nomercyplayer .playback")?.focus();
+                            }, 300);
+                        }
                     });
 
                 });
