@@ -1,7 +1,6 @@
-import {NMPlayer, PlaylistItem} from '@/lib/VideoPlayer';
 import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
-
-import {useSocket} from '@/store/socket';
+import type {NMPlayer, PlaylistItem} from "@nomercy-entertainment/nomercy-video-player/src/types";
+import {useSocket} from "@/store/socket";
 
 export class SyncPlugin extends Plugin {
 	player: NMPlayer = <NMPlayer>{};

@@ -10,6 +10,7 @@ import {OctopusPlugin} from "@nomercy-entertainment/nomercy-video-player/dist/pl
 import {AutoSkipPlugin} from "@/lib/VideoPlayer/plugins/autoSkipPlugin";
 import {SyncPlugin} from "@/lib/VideoPlayer/plugins/syncPlugin";
 import {LoadEvent} from "chromecast-caf-receiver/cast.framework.events";
+import initializeSocket from "@/lib/socketClient/initializeSocket";
 
 const player = ref<NMPlayer>();
 
@@ -37,7 +38,17 @@ onMounted(() => {
 
   playerManager.setMessageInterceptor(
       window.cast.framework.messages.MessageType.LOAD,
-      (event: LoadEvent) => {
+      async (event: LoadEvent & {
+        media: {
+          customData: {
+            accessToken: string;
+            basePath: string;
+            playlist: Array<PlaylistItem>;
+          };
+        };
+      }) => {
+        
+        await initializeSocket(event.media!.customData.basePath, event.media!.customData.accessToken);
 
         player.value?.dispose();
 
@@ -51,11 +62,7 @@ onMounted(() => {
           doubleClickDelay: 500,
           playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
           renderAhead: 100,
-          ...event.media!.customData as {
-            accessToken: string;
-            basePath: string;
-            playlist: Array<PlaylistItem>;
-          }
+          ...event.media!.customData
         };
 
         player.value = nmplayer('player1')
