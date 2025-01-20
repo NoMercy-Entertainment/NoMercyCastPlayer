@@ -9,7 +9,7 @@ import {DesktopUIPlugin} from "@/lib/VideoPlayer/plugins/UIPlugin/desktopUIPlugi
 import {OctopusPlugin} from "@nomercy-entertainment/nomercy-video-player/dist/plugins/octopusPlugin";
 import {AutoSkipPlugin} from "@/lib/VideoPlayer/plugins/autoSkipPlugin";
 import {SyncPlugin} from "@/lib/VideoPlayer/plugins/syncPlugin";
-import {LoadEvent} from "chromecast-caf-receiver/cast.framework.events";
+import type {framework} from "chromecast-caf-receiver/index";
 import initializeSocket from "@/lib/socketClient/initializeSocket";
 
 const player = ref<NMPlayer>();
@@ -38,7 +38,7 @@ onMounted(() => {
 
   playerManager.setMessageInterceptor(
       window.cast.framework.messages.MessageType.LOAD,
-      async (event: LoadEvent & {
+      async (event: framework.events.Event & {
         media: {
           customData: {
             accessToken: string;
@@ -47,7 +47,7 @@ onMounted(() => {
           };
         };
       }) => {
-        
+
         await initializeSocket(event.media!.customData.basePath, event.media!.customData.accessToken);
 
         player.value?.dispose();

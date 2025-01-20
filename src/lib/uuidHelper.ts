@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable */
 
-import UAParser from 'ua-parser-js';
+import {UAParser} from 'ua-parser-js';
 
 export interface UUID {
 	agent: string;
