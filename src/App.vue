@@ -16,81 +16,81 @@ const player = ref<NMPlayer>();
 
 onMounted(() => {
 
-  window.playerManager.setMessageInterceptor(
-      "LOAD",
-      (event: framework.events.Event & {
-        media: {
-          customData: {
-            accessToken: string;
-            basePath: string;
-            playlist: Array<PlaylistItem>;
-          };
-        };
-      }) => {
+    window.playerManager.setMessageInterceptor(
+        "LOAD",
+        (event: framework.events.Event & {
+            media: {
+                customData: {
+                    accessToken: string;
+                    basePath: string;
+                    playlist: Array<PlaylistItem>;
+                };
+            };
+        }) => {
 
-        player.value?.dispose();
+            player.value?.dispose();
 
-        initializeSocket(event.media.customData.basePath, event.media.customData.accessToken)
-            .then(() => {
+            initializeSocket(event.media.customData.basePath, event.media.customData.accessToken)
+                .then(() => {
 
-              const config: PlayerConfig = {
-                muted: false,
-                controls: false,
-                preload: "auto",
-                debug: false,
-                autoPlay: true,
-                controlsTimeout: 3000,
-                doubleClickDelay: 500,
-                playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-                renderAhead: 100,
-                ...event.media.customData,
-              };
-              // document.body.innerHTML = `
-              //   <div style="whitespace:pre" >
-              //     ${JSON.stringify(config, null, 2)}
-              //   </div>
-              // `;
+                    const config: PlayerConfig = {
+                        muted: false,
+                        controls: false,
+                        preload: "auto",
+                        debug: false,
+                        autoPlay: true,
+                        controlsTimeout: 3000,
+                        doubleClickDelay: 500,
+                        playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+                        renderAhead: 100,
+                        forceTvMode: true,
+                        disableTouchControls: false,
+                        disableMediaControls: true,
+                        ...event.media.customData,
+                    };
 
-              player.value = nmplayer('player1')
-                  .setup(config) as unknown as NMPlayer;
+                    player.value = nmplayer('player1')
+                        .setup(config) as unknown as NMPlayer;
 
-              const keyHandlerPlugin = new KeyHandlerPlugin();
-              player.value.registerPlugin("keyHandler", keyHandlerPlugin);
-              player.value.usePlugin("keyHandler");
+                    const tvUIPlugin = new TVUIPlugin();
+                    player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
+                    player.value?.usePlugin('tvUIPlugin');
 
-              const tvUIPlugin = new TVUIPlugin();
-              player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
-              player.value?.usePlugin('tvUIPlugin');
+                    const octopusPlugin = new OctopusPlugin();
+                    player.value?.registerPlugin('octopus', octopusPlugin);
+                    player.value?.usePlugin('octopus');
 
-              const octopusPlugin = new OctopusPlugin();
-              player.value?.registerPlugin('octopus', octopusPlugin);
-              player.value?.usePlugin('octopus');
+                    const autoSkipPlugin = new AutoSkipPlugin();
+                    player.value?.registerPlugin('autoSkip', autoSkipPlugin);
+                    player.value?.usePlugin('autoSkip');
 
-              const autoSkipPlugin = new AutoSkipPlugin();
-              player.value?.registerPlugin('autoSkip', autoSkipPlugin);
-              player.value?.usePlugin('autoSkip');
+                    const keyHandlerPlugin = new KeyHandlerPlugin();
+                    player.value.registerPlugin("keyHandler", keyHandlerPlugin);
+                    player.value.usePlugin("keyHandler");
 
-              const syncPlugin = new SyncPlugin();
-              player.value?.registerPlugin('sync', syncPlugin);
-              player.value?.usePlugin('sync');
+                    const syncPlugin = new SyncPlugin();
+                    player.value?.registerPlugin('sync', syncPlugin);
+                    player.value?.usePlugin('sync');
 
-              player.value.on("ready", () => {
-                player.value?.play();
-              });
+                    player.value.on("ready", () => {
+                        player.value?.play();
+                    });
 
-            });
-      }
-  );
+                });
+        }
+    );
 });
 
 onUnmounted(() => {
-  player.value?.dispose();
+    player.value?.dispose();
 });
 
 </script>
 
 <template>
-  <div id="player1" class="group nomercyplayer rounded-md !overflow-unset"></div>
+    <div class="absolute inset-0 flex h-full w-full overflow-clip bg-black z-1199">
+        <div id="player1" class="group nomercyplayer"></div>
+    </div>
 </template>
 
 <style scoped>
