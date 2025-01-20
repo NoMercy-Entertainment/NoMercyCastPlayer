@@ -16,27 +16,7 @@ const player = ref<NMPlayer>();
 
 onMounted(() => {
 
-  const context = window.cast.framework.CastReceiverContext.getInstance();
-  const playerManager = context.getPlayerManager();
-
-  /*
-   * Set the player configuration.
-   */
-  const playbackConfig = new window.cast.framework.PlaybackConfig();
-  playbackConfig.autoResumeDuration = 5;
-
-  /*
-   * Configure the CastReceiverOptions.
-   */
-  const castReceiverOptions = new window.cast.framework.CastReceiverOptions();
-  castReceiverOptions.playbackConfig = playbackConfig;
-  castReceiverOptions.skipPlayersLoad = true;
-  castReceiverOptions.disableIdleTimeout = true;
-  castReceiverOptions.supportedCommands = window.cast.framework.messages.Command.ALL_BASIC_MEDIA;
-
-  context.start(castReceiverOptions);
-
-  playerManager.setMessageInterceptor(
+  window.playerManager.setMessageInterceptor(
       window.cast.framework.messages.MessageType.LOAD,
       async (event: framework.events.Event & {
         media: {
@@ -48,7 +28,9 @@ onMounted(() => {
         };
       }) => {
 
-        await initializeSocket(event.media!.customData.basePath, event.media!.customData.accessToken);
+        document.body.innerHTML = `<div style="whitespace:pre" >${JSON.stringify(event.media.customData, null, 2)}</div>`;
+
+        await initializeSocket(event.media.customData.basePath, event.media.customData.accessToken);
 
         player.value?.dispose();
 
@@ -62,7 +44,7 @@ onMounted(() => {
           doubleClickDelay: 500,
           playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
           renderAhead: 100,
-          ...event.media!.customData
+          ...event.media.customData
         };
 
         player.value = nmplayer('player1')
@@ -89,7 +71,7 @@ onMounted(() => {
         player.value?.usePlugin('sync');
 
         player.value.on("ready", () => {
-          player.value!.play();
+          player.value?.play();
         });
       }
   );

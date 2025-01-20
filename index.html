@@ -10,22 +10,43 @@
       <title>NoMercy Cast Player</title>
 
       <!-- Open Graph Metadata -->
-      <meta property="og:title" content="NoMercy Library Examples" />
+      <meta property="og:title" content="NoMercy Cast Player" />
       <meta property="og:type" content="website" />
       <meta property="og:url" content="https://examples.nomercy.tv" />
 
-      <meta property="og:description" content="Examples for the NoMercy Entertainment Repositories" />
-      <meta property="og:site_name" content="NoMercy Library Examples" />
+      <meta property="og:site_name" content="NoMercy Cast Player" />
       <meta property="og:locale" content="en_US" />
 
       <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
       <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
 
-      <script src="https://cdn.jsdelivr.net/npm/ua-parser-js/src/ua-parser.min.js"></script>
+      <script>
+          const context = cast.framework.CastReceiverContext.getInstance();
+          const playerManager = context.getPlayerManager();
+
+          /*
+           * Set the player configuration.
+           */
+          const playbackConfig = new cast.framework.PlaybackConfig();
+          playbackConfig.autoResumeDuration = 5;
+
+          /*
+           * Configure the CastReceiverOptions.
+           */
+          const castReceiverOptions = new cast.framework.CastReceiverOptions();
+          castReceiverOptions.playbackConfig = playbackConfig;
+          castReceiverOptions.skipPlayersLoad = true;
+          castReceiverOptions.disableIdleTimeout = true;
+          castReceiverOptions.supportedCommands = cast.framework.messages.Command.ALL_BASIC_MEDIA;
+
+          context.start(castReceiverOptions);
+
+          window.playerManager = playerManager;
+      </script>
 
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
