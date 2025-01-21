@@ -14,7 +14,7 @@ export const useSocket = () => {
 };
 
 const castSi = ref<SocketClient>(<SocketClient>{});
-export const castSocketInstance = computed(() => si.value);
+export const castSocketInstance = computed(() => castSi.value);
 export const setCastSocketInstance = (value: SocketClient) => {
 	castSi.value = value;
 }
