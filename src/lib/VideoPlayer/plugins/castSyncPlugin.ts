@@ -20,53 +20,56 @@ export class CastSyncPlugin extends Plugin {
 	}
 
 	use() {
-		this.player.on('time', this.time.bind(this));
-		this.player.on('play', this.play.bind(this));
-		this.player.on('pause', this.pause.bind(this));
-		this.player.on('stop', this.stop.bind(this));
-		this.player.on('seek', this.seek.bind(this));
-		this.player.on('ended', this.ended.bind(this));
-		this.player.on('item', this.item.bind(this));
-		this.player.on('volume', this.volume.bind(this));
-		this.player.on('muted', this.muted.bind(this));
-		this.player.on('playlist', this.playlist.bind(this));
-		this.player.on('audioTracks', this.audioTracks.bind(this));
-		this.player.on('currentAudioTrack', this.currentAudioTrack.bind(this));
-		this.player.on('subtitles', this.subtitles.bind(this));
-		this.player.on('currentSubtitleTrack', this.currentSubtitleTrack.bind(this));
+		this.player.on('time', this.time);
+		this.player.on('play', this.play);
+		this.player.on('pause', this.pause);
+		this.player.on('stop', this.stop);
+		this.player.on('seek', this.seek);
+		this.player.on('ended', this.ended);
+		this.player.on('item', this.item);
+		this.player.on('volume', this.volume);
+		this.player.on('muted', this.muted);
+		this.player.on('playlist', this.playlist);
+		this.player.on('audioTracks', this.audioTracks);
+		this.player.on('currentAudioTrack', this.currentAudioTrack);
+		this.player.on('subtitles', this.subtitles);
+		this.player.on('currentSubtitleTrack', this.currentSubtitleTrack);
+		this.player.on('lastTimeTrigger', this.getPlayerState);
 
 		const socket = useCastSocket();
-		socket?.on('GetPlayerState', this.getPlayerState.bind(this));
+		socket?.on('GetPlayerState', this.getPlayerState);
 	}
 
 	dispose() {
 		// @ts-ignore
-		this.player.off('time', this.time.bind(this));
-		this.player.off('play', this.play.bind(this));
-		this.player.off('pause', this.pause.bind(this));
-		this.player.off('stop', this.stop.bind(this));
+		this.player.off('time', this.time);
+		this.player.off('play', this.play);
+		this.player.off('pause', this.pause);
+		this.player.off('stop', this.stop);
 		// @ts-ignore
-		this.player.off('seek', this.seek.bind(this));
-		this.player.off('ended', this.ended.bind(this));
+		this.player.off('seek', this.seek);
+		this.player.off('ended', this.ended);
 		// @ts-ignore
-		this.player.off('item', this.item.bind(this));
+		this.player.off('item', this.item);
 		// @ts-ignore
-		this.player.off('volume', this.volume.bind(this));
+		this.player.off('volume', this.volume);
 		// @ts-ignore
-		this.player.off('muted', this.muted.bind(this));
+		this.player.off('muted', this.muted);
 		// @ts-ignore
-		this.player.off('playlist', this.playlist.bind(this));
+		this.player.off('playlist', this.playlist);
 		// @ts-ignore
-		this.player.off('audioTracks', this.audioTracks.bind(this));
+		this.player.off('audioTracks', this.audioTracks);
 		// @ts-ignore
-		this.player.off('currentAudioTrack', this.currentAudioTrack.bind(this));
+		this.player.off('currentAudioTrack', this.currentAudioTrack);
 		// @ts-ignore
-		this.player.off('subtitles', this.subtitles.bind(this));
+		this.player.off('subtitles', this.subtitles);
 		// @ts-ignore
-		this.player.off('currentSubtitleTrack', this.currentSubtitleTrack.bind(this));
+		this.player.off('currentSubtitleTrack', this.currentSubtitleTrack);
+		// @ts-ignore
+		this.player.off('lastTimeTrigger', this.getPlayerState);
 
 		const socket = useCastSocket();
-		socket?.off('GetPlayerState', this.getPlayerState.bind(this));
+		socket?.off('GetPlayerState', this.getPlayerState);
 	}
 
 
