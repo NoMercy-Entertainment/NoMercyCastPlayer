@@ -1,7 +1,9 @@
-import {groupBy} from '@/lib/stringArray';
-import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
-import {NMPlayer, VTTData} from '@nomercy-entertainment/nomercy-video-player/src/types';
 import {toRaw} from "vue";
+
+import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
+import {NMPlayer} from '@nomercy-entertainment/nomercy-video-player/src/types';
+
+import {groupBy} from '@/lib/stringArray';
 
 export class AutoSkipPlugin extends Plugin {
 	player: NMPlayer = <NMPlayer>{};
@@ -33,7 +35,6 @@ export class AutoSkipPlugin extends Plugin {
 		/^Avant$/ui,
 		/^Yokoku$/ui,
 	];
-
 
 	initialize(player: NMPlayer) {
 		this.player = player;
@@ -84,7 +85,7 @@ export class AutoSkipPlugin extends Plugin {
 		const playlistItem = this.player.playlistItem();
 		if (playlistItem.episode == 1) return true;
 
-		const playlist = this.player.getPlaylist().map((item: any) => toRaw(item as any));
+		const playlist = this.player.getPlaylist().map((item) => toRaw(item as any));
 
 		const seasons = groupBy(playlist, 'season');
 		const season = seasons[playlistItem.season as number];
@@ -108,11 +109,11 @@ export class AutoSkipPlugin extends Plugin {
 		return this.chapterSkipPatterns.some(pattern => pattern.test(chapterTitle));
 	}
 
-	getCurrentChapter(currentTime: number): VTTData['cues'][number] | undefined {
-		return this.player.chapters.cues.find((chapter: VTTCue) => currentTime >= chapter.startTime && currentTime <= chapter.endTime);
+	getCurrentChapter(currentTime: number) {
+		return this.player.chapters.cues.find((chapter) => currentTime >= chapter.startTime && currentTime <= chapter.endTime);
 	}
 
-	getNextChapter(currentEndTime: number): VTTData['cues'][number] | undefined {
-		return this.player.chapters.cues.find((chapter: VTTCue) => chapter.startTime >= currentEndTime);
+	getNextChapter(currentEndTime: number) {
+		return this.player.chapters.cues.find((chapter) => chapter.startTime >= currentEndTime);
 	}
 }
