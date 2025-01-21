@@ -1,7 +1,8 @@
 import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
-import type {NMPlayer, PlaylistItem, TimeData} from "@nomercy-entertainment/nomercy-video-player/src/types";
+import type {NMPlayer, PlaylistItem, TimeData, Track} from "@nomercy-entertainment/nomercy-video-player/src/types";
 import {useCastSocket} from "@/store/socket";
 import {initializeCastSocket} from "@/lib/socketClient/initializeSocket";
+import {MediaPlaylist} from "hls.js";
 
 export class CastSyncPlugin extends Plugin {
 	player: NMPlayer = <NMPlayer<{
@@ -29,6 +30,10 @@ export class CastSyncPlugin extends Plugin {
 		this.player.on('volume', this.volume.bind(this));
 		this.player.on('muted', this.muted.bind(this));
 		this.player.on('playlist', this.playlist.bind(this));
+		this.player.on('audioTracks', this.audioTracks.bind(this));
+		this.player.on('currentAudioTrack', this.currentAudioTrack.bind(this));
+		this.player.on('subtitles', this.subtitles.bind(this));
+		this.player.on('currentSubtitleTrack', this.currentSubtitleTrack.bind(this));
 
 		const socket = useCastSocket();
 		socket?.on('GetPlayerState', this.getPlayerState.bind(this));
@@ -51,6 +56,14 @@ export class CastSyncPlugin extends Plugin {
 		this.player.off('muted', this.muted.bind(this));
 		// @ts-ignore
 		this.player.off('playlist', this.playlist.bind(this));
+		// @ts-ignore
+		this.player.off('audioTracks', this.audioTracks.bind(this));
+		// @ts-ignore
+		this.player.off('currentAudioTrack', this.currentAudioTrack.bind(this));
+		// @ts-ignore
+		this.player.off('subtitles', this.subtitles.bind(this));
+		// @ts-ignore
+		this.player.off('currentSubtitleTrack', this.currentSubtitleTrack.bind(this));
 
 		const socket = useCastSocket();
 		socket?.off('GetPlayerState', this.getPlayerState.bind(this));
@@ -105,6 +118,26 @@ export class CastSyncPlugin extends Plugin {
 	playlist(value: PlaylistItem[]) {
 		const socket = useCastSocket();
 		socket?.invoke?.('Playlist', 'receiver', value);
+	}
+
+	audioTracks(value: MediaPlaylist[]) {
+		const socket = useCastSocket();
+		socket?.invoke?.('AudioTracks', 'receiver', value);
+	}
+
+	currentAudioTrack(value: number) {
+		const socket = useCastSocket();
+		socket?.invoke?.('CurrentAudioTrack', 'receiver', value);
+	}
+
+	subtitles(value: Track[]) {
+		const socket = useCastSocket();
+		socket?.invoke?.('Subtitles', 'receiver', value);
+	}
+
+	currentSubtitleTrack(value: Track) {
+		const socket = useCastSocket();
+		socket?.invoke?.('CurrentSubtitleTrack', 'receiver', value);
 	}
 
 	getPlayerState() {
