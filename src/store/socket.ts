@@ -12,3 +12,13 @@ export const setSocketInstance = (value: SocketClient) => {
 export const useSocket = () => {
 	return toRaw(si.value.connection) as HubConnection
 };
+
+const castSi = ref<SocketClient>(<SocketClient>{});
+export const castSocketInstance = computed(() => si.value);
+export const setCastSocketInstance = (value: SocketClient) => {
+	castSi.value = value;
+}
+
+export const useCastSocket = () => {
+	return toRaw(castSi.value.connection) as HubConnection
+};

@@ -1,13 +1,21 @@
 import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
 import type {NMPlayer, PlaylistItem} from "@nomercy-entertainment/nomercy-video-player/src/types";
 import {useSocket} from "@/store/socket";
+import {initializeSocket} from "@/lib/socketClient/initializeSocket";
 
 export class SyncPlugin extends Plugin {
-	player: NMPlayer = <NMPlayer>{};
+	player: NMPlayer = <NMPlayer<{
+		basePath: string,
+		accessToken: string,
+	}>>{};
 
-	initialize(player: NMPlayer) {
+	async initialize(player: NMPlayer<{
+		basePath: string,
+		accessToken: string,
+	}>) {
 		this.player = player;
-		// Initialize the plugin with the player
+
+		await initializeSocket(player.options.basePath, player.options.accessToken);
 	}
 
 	use() {

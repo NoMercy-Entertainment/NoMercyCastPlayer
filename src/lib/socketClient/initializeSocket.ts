@@ -1,9 +1,9 @@
 import {watch} from 'vue';
 
 import SocketClient from './SocketClient';
-import {setSocketInstance, socketInstance} from '@/store/socket';
+import {setSocketInstance, socketInstance, castSocketInstance, setCastSocketInstance} from '@/store/socket';
 
-const initializeSocket = async (url: string, accessToken: string): Promise<void> => {
+export const initializeSocket = async (url: string, accessToken: string): Promise<void> => {
 	socketInstance.value?.dispose?.();
 
 	const socket = new SocketClient(url, accessToken);
@@ -11,5 +11,10 @@ const initializeSocket = async (url: string, accessToken: string): Promise<void>
 	setSocketInstance(socket);
 }
 
-export default initializeSocket;
+export const initializeCastSocket = async (url: string, accessToken: string): Promise<void> => {
+	castSocketInstance.value?.dispose?.();
 
+	const socket = new SocketClient(url, accessToken);
+	await socket.setup();
+	setCastSocketInstance(socket);
+}

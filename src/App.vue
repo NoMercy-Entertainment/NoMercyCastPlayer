@@ -11,6 +11,7 @@ import {OctopusPlugin} from "@nomercy-entertainment/nomercy-video-player/dist/pl
 import {AutoSkipPlugin} from "@/lib/VideoPlayer/plugins/autoSkipPlugin";
 import {SyncPlugin} from "@/lib/VideoPlayer/plugins/syncPlugin";
 import initializeSocket from "@/lib/socketClient/initializeSocket";
+import {CastSyncPlugin} from "@/lib/VideoPlayer/plugins/castSyncPlugin";
 
 const player = ref<NMPlayer>();
 
@@ -30,61 +31,61 @@ onMounted(() => {
 
             player.value?.dispose();
 
-            initializeSocket(event.media.customData.basePath, event.media.customData.accessToken)
-                .then(() => {
+            const config: PlayerConfig = {
+                muted: false,
+                controls: false,
+                preload: "auto",
+                debug: false,
+                autoPlay: true,
+                controlsTimeout: 3000,
+                doubleClickDelay: 500,
+                playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+                renderAhead: 100,
+                forceTvMode: true,
+                disableTouchControls: false,
+                disableMediaControls: false,
+                ...event.media.customData,
+            };
 
-                    const config: PlayerConfig = {
-                        muted: false,
-                        controls: false,
-                        preload: "auto",
-                        debug: false,
-                        autoPlay: true,
-                        controlsTimeout: 3000,
-                        doubleClickDelay: 500,
-                        playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-                        renderAhead: 100,
-                        forceTvMode: true,
-                        disableTouchControls: false,
-                        disableMediaControls: false,
-                        ...event.media.customData,
-                    };
+            player.value = nmplayer('player1')
+                .setup(config) as unknown as NMPlayer;
 
-                    player.value = nmplayer('player1')
-                        .setup(config) as unknown as NMPlayer;
+            const tvUIPlugin = new TVUIPlugin();
+            player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
+            player.value?.usePlugin('tvUIPlugin');
 
-                    const tvUIPlugin = new TVUIPlugin();
-                    player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
-                    player.value?.usePlugin('tvUIPlugin');
+            const octopusPlugin = new OctopusPlugin();
+            player.value?.registerPlugin('octopus', octopusPlugin);
+            player.value?.usePlugin('octopus');
 
-                    const octopusPlugin = new OctopusPlugin();
-                    player.value?.registerPlugin('octopus', octopusPlugin);
-                    player.value?.usePlugin('octopus');
+            const autoSkipPlugin = new AutoSkipPlugin();
+            player.value?.registerPlugin('autoSkip', autoSkipPlugin);
+            player.value?.usePlugin('autoSkip');
 
-                    const autoSkipPlugin = new AutoSkipPlugin();
-                    player.value?.registerPlugin('autoSkip', autoSkipPlugin);
-                    player.value?.usePlugin('autoSkip');
+            const keyHandlerPlugin = new KeyHandlerPlugin();
+            player.value.registerPlugin("keyHandler", keyHandlerPlugin);
+            player.value.usePlugin("keyHandler");
 
-                    const keyHandlerPlugin = new KeyHandlerPlugin();
-                    player.value.registerPlugin("keyHandler", keyHandlerPlugin);
-                    player.value.usePlugin("keyHandler");
+            const syncPlugin = new SyncPlugin();
+            player.value?.registerPlugin('sync', syncPlugin);
+            player.value?.usePlugin('sync');
 
-                    const syncPlugin = new SyncPlugin();
-                    player.value?.registerPlugin('sync', syncPlugin);
-                    player.value?.usePlugin('sync');
+            const castSyncPlugin = new CastSyncPlugin();
+            player.value?.registerPlugin('castSync', castSyncPlugin);
+            player.value?.usePlugin('castSync');
 
-                    player.value.on("ready", () => {
-                        player.value?.play();
-                    });
+            player.value.on("ready", () => {
+                player.value?.play();
+            });
 
-                    player.value.on("controls", (showing) => {
-                        if (showing) {
-                            setTimeout(() => {
-                                document.querySelector<HTMLButtonElement>(".nomercyplayer .playback")?.focus();
-                            }, 300);
-                        }
-                    });
+            player.value.on("controls", (showing) => {
+                if (showing) {
+                    setTimeout(() => {
+                        document.querySelector<HTMLButtonElement>(".nomercyplayer .playback")?.focus();
+                    }, 300);
+                }
+            });
 
-                });
         }
     );
 });
