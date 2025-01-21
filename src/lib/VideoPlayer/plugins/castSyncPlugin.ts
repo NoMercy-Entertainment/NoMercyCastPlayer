@@ -23,6 +23,8 @@ export class CastSyncPlugin extends Plugin {
 				socket?.on('SetAudioTrack', this.setAudioTrack.bind(this));
 				socket?.on('SetSubtitleTrack', this.setSubtitleTrack.bind(this));
 				socket?.on('SetPlaylistItem', this.setPlaylistItem.bind(this));
+				socket?.on('SetVolume', this.setVolume.bind(this));
+				socket?.on('Seek', this.setSeek.bind(this));
 			});
 	}
 
@@ -77,6 +79,8 @@ export class CastSyncPlugin extends Plugin {
 		socket?.off('SetAudioTrack', this.setAudioTrack.bind(this));
 		socket?.off('SetSubtitleTrack', this.setSubtitleTrack.bind(this));
 		socket?.off('SetPlaylistItem', this.setPlaylistItem.bind(this));
+		socket?.off('SetVolume', this.setVolume.bind(this));
+		socket?.off('Seek', this.setSeek.bind(this));
 
 	}
 
@@ -172,11 +176,19 @@ export class CastSyncPlugin extends Plugin {
 	}
 
 	setSubtitleTrack(value: {subtitleTrack: number}) {
-		this.player.setCurrentCaptions(value.subtitleTrack);
+		this.player.setCurrentCaption(value.subtitleTrack);
 	}
 
 	setPlaylistItem(value: {item: number}) {
 		this.player.playlistItem(value.item);
+	}
+
+	setSeek(value: {time: number}) {
+		this.player.seek(value.time);
+	}
+
+	setVolume(value: {volume: number}) {
+		this.player.setVolume(value.volume);
 	}
 
 }
