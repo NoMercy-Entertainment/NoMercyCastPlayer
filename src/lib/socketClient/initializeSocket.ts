@@ -14,7 +14,7 @@ export const initializeSocket = async (url: string, accessToken: string): Promis
 export const initializeCastSocket = async (url: string, accessToken: string): Promise<void> => {
 	castSocketInstance.value?.dispose?.();
 
-	const socket = new SocketClient(url, accessToken);
+	const socket = new SocketClient(url, accessToken, 'castHub');
 	await socket.setup();
 	setCastSocketInstance(socket);
 }
