@@ -1,19 +1,20 @@
-import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
-import type {NMPlayer, PlaylistItem, TimeData, Track} from "@nomercy-entertainment/nomercy-video-player/src/types";
-import {useCastSocket} from "@/store/socket";
-import {initializeCastSocket} from "@/lib/socketClient/initializeSocket";
 import {MediaPlaylist} from "hls.js";
 
-export class CastSyncPlugin extends Plugin {
-	player: NMPlayer = <NMPlayer<{
-		basePath: string,
-		accessToken: string,
-	}>>{};
+import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
+import type {NMPlayer, PlaylistItem, TimeData, Track} from "@nomercy-entertainment/nomercy-video-player/src/types";
 
-	async initialize(player: NMPlayer<{
-		basePath: string,
-		accessToken: string,
-	}>) {
+import {useCastSocket} from "@/store/socket";
+import {initializeCastSocket} from "@/lib/socketClient/initializeSocket";
+
+export interface CastSyncPluginArgs {
+	basePath: string,
+	accessToken: string,
+}
+
+export class CastSyncPlugin extends Plugin {
+	player: NMPlayer<CastSyncPluginArgs> = <NMPlayer<CastSyncPluginArgs>>{};
+
+	async initialize(player: NMPlayer<CastSyncPluginArgs>) {
 		this.player = player;
 
 		await initializeCastSocket(player.options.basePath, player.options.accessToken)
@@ -24,11 +25,11 @@ export class CastSyncPlugin extends Plugin {
 				socket?.on('SetSubtitleTrack', this.setSubtitleTrack.bind(this));
 				socket?.on('SetPlaylistItem', this.setPlaylistItem.bind(this));
 				socket?.on('SetVolume', this.setVolume.bind(this));
-				socket?.on('Play', this.setPlay.bind(this));
-				socket?.on('Pause', this.setPause.bind(this));
-				socket?.on('Seek', this.setSeek.bind(this));
-				socket?.on('Next', this.setNext.bind(this));
-				socket?.on('Previous', this.setPrevious.bind(this));
+				socket?.on('SetPlay', this.setPlay.bind(this));
+				socket?.on('SetPause', this.setPause.bind(this));
+				socket?.on('SetSeek', this.setSeek.bind(this));
+				socket?.on('SetNext', this.setNext.bind(this));
+				socket?.on('SetPrevious', this.setPrevious.bind(this));
 			});
 	}
 
@@ -84,12 +85,12 @@ export class CastSyncPlugin extends Plugin {
 		socket?.off('SetSubtitleTrack', this.setSubtitleTrack.bind(this));
 		socket?.off('SetPlaylistItem', this.setPlaylistItem.bind(this));
 		socket?.off('SetVolume', this.setVolume.bind(this));
-		socket?.off('Seek', this.setSeek.bind(this));
-		socket?.off('Play', this.setPlay.bind(this));
-		socket?.off('Pause', this.setPause.bind(this));
-		socket?.off('Seek', this.setSeek.bind(this));
-		socket?.off('Next', this.setNext.bind(this));
-		socket?.off('Previous', this.setPrevious.bind(this));
+		socket?.off('SetSeek', this.setSeek.bind(this));
+		socket?.off('SetPlay', this.setPlay.bind(this));
+		socket?.off('SetPause', this.setPause.bind(this));
+		socket?.off('SetSeek', this.setSeek.bind(this));
+		socket?.off('SetNext', this.setNext.bind(this));
+		socket?.off('SetPrevious', this.setPrevious.bind(this));
 
 	}
 
@@ -171,7 +172,7 @@ export class CastSyncPlugin extends Plugin {
 			volume: this.player.getVolume(),
 			muted: this.player.getMute(),
 			playlist: this.player.getPlaylist(),
-			item: this.player.currentPlaylistItem,
+			item: this.player.getPlaylistItem(),
 			isPlaying: this.player.isPlaying,
 			subtitles: this.player.getCaptionsList(),
 			currentSubtitleTrack: this.player.getCurrentCaptions(),

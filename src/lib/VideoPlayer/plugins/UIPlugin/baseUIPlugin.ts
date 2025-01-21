@@ -8,7 +8,6 @@ import { buttons, type  Icon } from './buttons';
 import {TimeData} from "@nomercy-entertainment/nomercy-video-player/src/types";
 
 export class BaseUIPlugin extends Plugin {
-	player: NMPlayer = <NMPlayer>{};
 	overlay: HTMLDivElement = <HTMLDivElement>{};
 	buttons: Icon = <Icon>{};
 

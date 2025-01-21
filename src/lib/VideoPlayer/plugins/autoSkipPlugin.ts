@@ -5,8 +5,11 @@ import {NMPlayer} from '@nomercy-entertainment/nomercy-video-player/src/types';
 
 import {groupBy} from '@/lib/stringArray';
 
+export interface AutoSkipPluginArgs {
+}
+
 export class AutoSkipPlugin extends Plugin {
-	player: NMPlayer = <NMPlayer>{};
+	player: NMPlayer<AutoSkipPluginArgs> = <NMPlayer<AutoSkipPluginArgs>>{};
 
 	chapterSkipPatterns: RegExp[] = [
 		/^OP$/ui,
@@ -36,7 +39,7 @@ export class AutoSkipPlugin extends Plugin {
 		/^Yokoku$/ui,
 	];
 
-	initialize(player: NMPlayer) {
+	initialize(player: NMPlayer<AutoSkipPluginArgs>) {
 		this.player = player;
 
 		if (this.player.options.chapterSkipPatterns) {
