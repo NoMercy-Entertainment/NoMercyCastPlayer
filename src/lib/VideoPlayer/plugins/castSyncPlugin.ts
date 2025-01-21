@@ -37,7 +37,10 @@ export class CastSyncPlugin extends Plugin {
 		this.player.on('lastTimeTrigger', this.getPlayerState.bind(this))
 
 		const socket = useCastSocket();
-		socket?.on('GetPlayerState', this.getPlayerState.bind(this))
+		socket?.on('GetPlayerState', this.getPlayerState.bind(this));
+		socket?.on('SetAudioTrack', this.setAudioTrack.bind(this));
+		socket?.on('SetSubtitleTrack', this.setSubtitleTrack.bind(this));
+		socket?.on('SetPlaylistItem', this.setPlaylistItem.bind(this));
 	}
 
 	dispose() {
@@ -69,7 +72,11 @@ export class CastSyncPlugin extends Plugin {
 		this.player.off('lastTimeTrigger', this.getPlayerState.bind(this))
 
 		const socket = useCastSocket();
-		socket?.off('GetPlayerState', this.getPlayerState.bind(this))
+		socket?.off('GetPlayerState', this.getPlayerState.bind(this));
+		socket?.off('SetAudioTrack', this.setAudioTrack.bind(this));
+		socket?.off('SetSubtitleTrack', this.setSubtitleTrack.bind(this));
+		socket?.off('SetPlaylistItem', this.setPlaylistItem.bind(this));
+
 	}
 
 
@@ -150,13 +157,25 @@ export class CastSyncPlugin extends Plugin {
 			volume: this.player.getVolume(),
 			muted: this.player.getMute(),
 			playlist: this.player.getPlaylist(),
-			item: this.player.getPlaylistItem(),
+			item: this.player.currentPlaylistItem,
 			isPlaying: this.player.isPlaying,
 			subtitles: this.player.getCaptionsList(),
 			currentSubtitleTrack: this.player.getCurrentCaptions(),
 			audioTracks: this.player.getAudioTracks(),
 			currentAudioTrack: this.player.getCurrentAudioTrack(),
 		});
+	}
+
+	setAudioTrack(value: number) {
+		this.player.setCurrentAudioTrack(value);
+	}
+
+	setSubtitleTrack(value: number) {
+		this.player.setCurrentCaptions(value);
+	}
+
+	setPlaylistItem(value: number) {
+		this.player.playlistItem(value);
 	}
 
 }
