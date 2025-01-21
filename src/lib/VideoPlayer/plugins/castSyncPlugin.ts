@@ -166,16 +166,16 @@ export class CastSyncPlugin extends Plugin {
 		});
 	}
 
-	setAudioTrack(value: number) {
-		this.player.setCurrentAudioTrack(value);
+	setAudioTrack(value: {audioTrack: number}) {
+		this.player.setCurrentAudioTrack(value.audioTrack);
 	}
 
-	setSubtitleTrack(value: number) {
-		this.player.setCurrentCaptions(value);
+	setSubtitleTrack(value: {subtitleTrack: number}) {
+		this.player.setCurrentCaptions(value.subtitleTrack);
 	}
 
-	setPlaylistItem(value: number) {
-		this.player.playlistItem(value);
+	setPlaylistItem(value: {item: number}) {
+		this.player.playlistItem(value.item);
 	}
 
 }
