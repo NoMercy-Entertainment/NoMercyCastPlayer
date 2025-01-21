@@ -16,7 +16,14 @@ export class CastSyncPlugin extends Plugin {
 	}>) {
 		this.player = player;
 
-		await initializeCastSocket(player.options.basePath, player.options.accessToken);
+		await initializeCastSocket(player.options.basePath, player.options.accessToken)
+			.then(() => {
+				const socket = useCastSocket();
+				socket?.on('GetPlayerState', this.getPlayerState.bind(this));
+				socket?.on('SetAudioTrack', this.setAudioTrack.bind(this));
+				socket?.on('SetSubtitleTrack', this.setSubtitleTrack.bind(this));
+				socket?.on('SetPlaylistItem', this.setPlaylistItem.bind(this));
+			});
 	}
 
 	use() {
@@ -34,13 +41,7 @@ export class CastSyncPlugin extends Plugin {
 		this.player.on('currentAudioTrack', this.currentAudioTrack.bind(this))
 		this.player.on('subtitles', this.subtitles.bind(this))
 		this.player.on('currentSubtitleTrack', this.currentSubtitleTrack.bind(this))
-		this.player.on('lastTimeTrigger', this.getPlayerState.bind(this))
-
-		const socket = useCastSocket();
-		socket?.on('GetPlayerState', this.getPlayerState.bind(this));
-		socket?.on('SetAudioTrack', this.setAudioTrack.bind(this));
-		socket?.on('SetSubtitleTrack', this.setSubtitleTrack.bind(this));
-		socket?.on('SetPlaylistItem', this.setPlaylistItem.bind(this));
+		this.player.on('lastTimeTrigger', this.getPlayerState.bind(this));
 	}
 
 	dispose() {
