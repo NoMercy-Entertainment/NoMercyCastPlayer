@@ -1,5 +1,5 @@
 import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
-import type {NMPlayer} from "@nomercy-entertainment/nomercy-video-player/src/types";
+import type {NMPlayer, TimeData} from "@nomercy-entertainment/nomercy-video-player/src/types";
 import {useCastSocket} from "@/store/socket";
 import {initializeCastSocket} from "@/lib/socketClient/initializeSocket";
 
@@ -32,6 +32,7 @@ export class CastSyncPlugin extends Plugin {
 	}
 
 	dispose() {
+		// @ts-ignore
 		this.player.off('time', this.time.bind(this));
 		this.player.off('play', this.play.bind(this));
 		this.player.off('pause', this.pause.bind(this));
@@ -62,9 +63,9 @@ export class CastSyncPlugin extends Plugin {
 		socket?.invoke?.('Stop', 'receiver');
 	}
 
-	time(){
+	time(data: TimeData){
 		const socket = useCastSocket();
-		socket?.invoke?.('Time', 'receiver', this.player.getTimeData());
+		socket?.invoke?.('Time', 'receiver', data);
 	}
 
 	seek(value: number) {
