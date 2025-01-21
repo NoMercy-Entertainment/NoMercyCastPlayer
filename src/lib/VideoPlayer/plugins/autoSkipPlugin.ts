@@ -1,6 +1,6 @@
 import {groupBy} from '@/lib/stringArray';
 import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
-import {NMPlayer, VTTData} from '@/lib/VideoPlayer';
+import {NMPlayer, VTTData} from '@nomercy-entertainment/nomercy-video-player/src/types';
 import {toRaw} from "vue";
 
 export class AutoSkipPlugin extends Plugin {

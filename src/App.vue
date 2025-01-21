@@ -10,7 +10,6 @@ import {TVUIPlugin} from "@/lib/VideoPlayer/plugins/UIPlugin/tvUIPlugin";
 import {OctopusPlugin} from "@nomercy-entertainment/nomercy-video-player/dist/plugins/octopusPlugin";
 import {AutoSkipPlugin} from "@/lib/VideoPlayer/plugins/autoSkipPlugin";
 import {SyncPlugin} from "@/lib/VideoPlayer/plugins/syncPlugin";
-import initializeSocket from "@/lib/socketClient/initializeSocket";
 import {CastSyncPlugin} from "@/lib/VideoPlayer/plugins/castSyncPlugin";
 
 const player = ref<NMPlayer>();
