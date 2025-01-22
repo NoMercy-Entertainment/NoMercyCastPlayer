@@ -112,37 +112,37 @@ onUnmounted(() => {
     <div id="player1" class="group nomercyplayer"></div>
   </div>
 
-  <div v-if="!show" class="w-[1920px] h-[1080px] flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#232323] to-[#161616] px-[200px] py-[95px]">
+  <div v-if="!show" class="w-full h-full flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#232323] to-[#161616] px-[100px] py-[45px]">
 
     <img class="w-full h-auto absolute inset-0 aspect-video"
          :src="splash"
          alt="NoMercy Entertainment Logo"/>
 
-    <div class="relative flex flex-col justify-start items-start w-[1251px] gap-8">
+    <div class="relative flex flex-col justify-start items-start w-[625px] gap-8">
 
-      <p class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[80px] font-black text-left text-[#ededed] leading-none">
+      <p class="self-stretch flex-grow-0 flex-shrink-0 w-[625px] text-[40px] font-black text-left text-[#ededed] leading-none">
         Ready to cast
       </p>
 
-      <p class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[40px] text-left text-[#ededed]">
-        <span class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[40px] text-left text-[#ededed]">
+      <p class="self-stretch flex-grow-0 flex-shrink-0 w-[625px] text-[20px] text-left text-[#ededed]">
+        <span class="self-stretch flex-grow-0 flex-shrink-0 w-[625px] text-[20px] text-left text-[#ededed]">
           To start casting audio or video tap the
         </span>
         <br/>
-        <span class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[40px] font-bold text-left text-[#ededed]">
+        <span class="self-stretch flex-grow-0 flex-shrink-0 w-[625px] text-[20px] font-bold text-left text-[#ededed]">
           Chromecast
         </span>
-        <span class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[40px] text-left text-[#ededed]">
+        <span class="self-stretch flex-grow-0 flex-shrink-0 w-[625px] text-[20px] text-left text-[#ededed]">
         button in the MediaPlayer or App
         </span>
       </p>
     </div>
 
-    <img class="relative w-[416px] h-[464px]"
+    <img class="relative w-[208px] h-[232px]"
          :src="mobile"
          alt="NoMercy Entertainment Logo"/>
 
-      <img class="flex-grow-0 flex-shrink-0 w-min h-20 relative"
+      <img class="flex-grow-0 flex-shrink-0 w-min h-10 relative"
            :src="logo"
            alt="NoMercy Entertainment Logo"/>
   </div>
