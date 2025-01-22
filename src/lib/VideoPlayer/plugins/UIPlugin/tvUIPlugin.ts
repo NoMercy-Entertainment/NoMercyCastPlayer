@@ -113,7 +113,6 @@ export class TVUIPlugin extends BaseUIPlugin {
 				'h-available',
 				'z-0',
 			])
-			.addClasses(['group-[&.nomercyplayer.paused.pre-screen]:hidden'])
 			.appendTo(parent);
 
 		const topBar = this.createTopBar(tvOverlay);
