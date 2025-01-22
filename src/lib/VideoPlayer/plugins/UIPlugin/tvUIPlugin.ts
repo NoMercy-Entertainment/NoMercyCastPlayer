@@ -192,8 +192,8 @@ export class TVUIPlugin extends BaseUIPlugin {
 		});
 
 		let didSlide: boolean = false;
-		[this.player.getVideoElement(), tvOverlay, document.activeElement].forEach((button) => {
-			(button as unknown as HTMLButtonElement)?.addEventListener('keydown', (e: KeyboardEvent) => {
+		[document.body].forEach((button) => {
+			(button as unknown as HTMLButtonElement)?.addEventListener('keyup', (e: KeyboardEvent) => {
 				if (e.key == 'ArrowLeft') {
 					// eslint-disable-next-line max-len
 					if ([this.nextUp.firstChild, this.nextUp.lastChild].includes(e.target as HTMLButtonElement)) {
@@ -209,11 +209,11 @@ export class TVUIPlugin extends BaseUIPlugin {
 						this.shouldSlide = false;
 					}
 					else {
-						const newScrubbTime = this.currentScrubTime - 10;
+						const newScrubTime = this.currentScrubTime - 10;
 						didSlide = true;
 						this.player.emit('currentScrubTime', {
 							...this.player.getTimeData(),
-							currentTime: newScrubbTime,
+							currentTime: newScrubTime,
 						});
 					}
 
@@ -223,7 +223,6 @@ export class TVUIPlugin extends BaseUIPlugin {
 					if ([this.nextUp.firstChild, this.nextUp.lastChild].includes(e.target as HTMLButtonElement)) {
 						return;
 					}
-
 					e.preventDefault();
 					this.player.pause();
 
@@ -244,9 +243,9 @@ export class TVUIPlugin extends BaseUIPlugin {
 				}
 				else if (e.key == 'Enter') {
 					if (Math.abs(this.currentScrubTime - this.player.getCurrentTime()) > 5 && didSlide) {
-						console.log('seeking to', this.currentScrubTime);
 						this.player.seek(this.currentScrubTime);
 						didSlide = false;
+						this.playbackButton.focus();
 					} else {
 						this.player.togglePlayback();
 					}

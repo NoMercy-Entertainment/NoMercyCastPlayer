@@ -861,10 +861,6 @@ export class BaseUIPlugin extends Plugin {
 		switch (type) {
 			case 'current':
 
-				this.player.on('active', () => {
-					time.innerText = humanTime(this.player.getCurrentTime());
-				});
-
 				this.player.on('time', (data) => {
 					if (this.player.container.classList.contains('active')) {
 						time.innerText = humanTime(data.currentTime);
