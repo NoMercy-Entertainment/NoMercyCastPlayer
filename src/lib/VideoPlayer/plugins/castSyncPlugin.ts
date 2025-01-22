@@ -94,7 +94,6 @@ export class CastSyncPlugin extends Plugin {
 
     }
 
-
     play() {
         const socket = useCastSocket();
         socket?.invoke?.('Play');
@@ -181,24 +180,24 @@ export class CastSyncPlugin extends Plugin {
         });
     }
 
-    setAudioTrack(value: { audioTrack: number }) {
-        this.player.setCurrentAudioTrack(value.audioTrack);
+    setAudioTrack(audioTrack: number ) {
+        this.player.setCurrentAudioTrack(audioTrack);
     }
 
-    setSubtitleTrack(value: { subtitleTrack: number }) {
-        this.player.setCurrentCaption(value.subtitleTrack);
+    setSubtitleTrack(subtitleTrack: number) {
+        this.player.setCurrentCaption(subtitleTrack);
     }
 
-    setPlaylistItem(value: { item: number }) {
-        this.player.playlistItem(value.item);
+    setPlaylistItem(item: number) {
+        this.player.playlistItem(item);
     }
 
-    setSeek(value: { time: number }) {
-        this.player.seek(value.time);
+    setSeek(time: number) {
+        this.player.seek(time);
     }
 
-    setVolume(value: { volume: number }) {
-        this.player.setVolume(value.volume);
+    setVolume(volume: number) {
+        this.player.setVolume(volume);
     }
 
     setPlay() {
