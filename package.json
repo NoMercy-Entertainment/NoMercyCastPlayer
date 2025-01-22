@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@microsoft/signalr": "^8.0.7",
-    "@nomercy-entertainment/nomercy-video-player": "^0.2.0",
+    "@nomercy-entertainment/nomercy-video-player": "^0.2.3",
     "@vueuse/core": "^12.4.0",
     "hls.js": "^1.5.19",
     "tailwind-children": "^0.5.0",
