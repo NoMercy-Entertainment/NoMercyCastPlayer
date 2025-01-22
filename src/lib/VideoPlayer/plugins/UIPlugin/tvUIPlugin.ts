@@ -5,9 +5,9 @@ import {
 	limitSentenceByCharacters,
 	lineBreakShowTitle,
 } from  '@nomercy-entertainment/nomercy-video-player/src/helpers';
-import type {PlaylistItem} from "@nomercy-entertainment/nomercy-video-player/src/types";
 
 import type { Icon } from './buttons';
+import type { PlaylistItem } from '@nomercy-entertainment/nomercy-video-player/src/types';
 
 export class TVUIPlugin extends BaseUIPlugin {
 
@@ -123,16 +123,6 @@ export class TVUIPlugin extends BaseUIPlugin {
 			'z-0',
 		]);
 
-		const backButton = this.createBackButton(topBar, true);
-		if (backButton) {
-			this.player.addClasses(backButton, ['children:stroke-2']);
-		}
-		const restartButton = this.createRestartButton(topBar, true);
-		this.player.addClasses(restartButton, ['children:stroke-2']);
-
-		const nextButton = this.createNextButton(topBar, true);
-		this.player.addClasses(nextButton, ['children:stroke-2']);
-
 		this.createDivider(topBar);
 		this.createTvCurrentItem(topBar);
 
@@ -177,37 +167,14 @@ export class TVUIPlugin extends BaseUIPlugin {
 			}
 		});
 
-
-		let activeButton = backButton ?? restartButton ?? nextButton;
-
-		[backButton, restartButton, nextButton].forEach((button) => {
-			button?.addEventListener('keydown', (e) => {
-				if (e.key == 'ArrowDown') {
-					if (this.nextUp.style.display == 'none') {
-						this.playbackButton?.focus();
-					} else {
-						this.nextUp.lastChild?.focus();
-					}
-				} else if (e.key == 'ArrowLeft') {
-					activeButton = ((e.target as HTMLButtonElement).previousElementSibling as HTMLButtonElement);
-					activeButton?.focus();
-				} else if (e.key == 'ArrowRight') {
-					e.preventDefault();
-					activeButton = ((e.target as HTMLButtonElement).nextElementSibling as HTMLButtonElement);
-					activeButton?.focus();
-				}
-			});
-		});
-
 		[this.nextUp.firstChild, this.nextUp.lastChild].forEach((button) => {
-			button?.addEventListener('keydown', (e: KeyboardEvent) => {
-				if (e.key == 'ArrowUp') {
-					(activeButton || restartButton)?.focus();
-				} else if (e.key == 'ArrowDown') {
+			button?.addEventListener('keydown', (e: KeyboardEvent) => {if (e.key == 'ArrowDown') {
 					this.playbackButton.focus();
-				} else if (e.key == 'ArrowLeft') {
+				}
+				else if (e.key == 'ArrowLeft') {
 					this.nextUp.firstChild?.focus();
-				} else if (e.key == 'ArrowRight') {
+				}
+				else if (e.key == 'ArrowRight') {
 					this.nextUp.lastChild?.focus();
 				}
 			});
@@ -217,9 +184,7 @@ export class TVUIPlugin extends BaseUIPlugin {
 			button?.addEventListener('keydown', (e) => {
 				if (e.key == 'ArrowUp') {
 					e.preventDefault();
-					if (this.nextUp.style.display == 'none') {
-						activeButton?.focus();
-					} else {
+					if (this.nextUp.style.display !== 'none') {
 						this.nextUp.lastChild?.focus();
 					}
 				}
@@ -227,11 +192,11 @@ export class TVUIPlugin extends BaseUIPlugin {
 		});
 
 		let didSlide: boolean = false;
-		[this.player.getVideoElement(), tvOverlay].forEach((button) => {
+		[this.player.getVideoElement(), tvOverlay, document.activeElement].forEach((button) => {
 			(button as unknown as HTMLButtonElement)?.addEventListener('keydown', (e: KeyboardEvent) => {
 				if (e.key == 'ArrowLeft') {
 					// eslint-disable-next-line max-len
-					if ([backButton, restartButton, nextButton, this.nextUp.firstChild, this.nextUp.lastChild].includes(e.target as HTMLButtonElement)) {
+					if ([this.nextUp.firstChild, this.nextUp.lastChild].includes(e.target as HTMLButtonElement)) {
 						return;
 					}
 					e.preventDefault();
@@ -241,7 +206,8 @@ export class TVUIPlugin extends BaseUIPlugin {
 					if (this.shouldSlide) {
 						this.currentScrubTime = this.getClosestSeekableInterval();
 						this.shouldSlide = false;
-					} else {
+					}
+					else {
 						const newScrubbTime = this.currentScrubTime - 10;
 						didSlide = true;
 						this.player.emit('currentScrubTime', {
@@ -250,9 +216,10 @@ export class TVUIPlugin extends BaseUIPlugin {
 						});
 					}
 
-				} else if (e.key == 'ArrowRight') {
+				}
+				else if (e.key == 'ArrowRight') {
 					// eslint-disable-next-line max-len
-					if ([backButton, restartButton, nextButton, this.nextUp.firstChild, this.nextUp.lastChild].includes(e.target as HTMLButtonElement)) {
+					if ([this.nextUp.firstChild, this.nextUp.lastChild].includes(e.target as HTMLButtonElement)) {
 						return;
 					}
 					e.preventDefault();
@@ -262,7 +229,8 @@ export class TVUIPlugin extends BaseUIPlugin {
 					if (this.shouldSlide) {
 						this.currentScrubTime = this.getClosestSeekableInterval();
 						this.shouldSlide = false;
-					} else {
+					}
+					else {
 						const newScrubTime = this.currentScrubTime + 10;
 						didSlide = true;
 						this.player.emit('currentScrubTime', {
@@ -270,11 +238,13 @@ export class TVUIPlugin extends BaseUIPlugin {
 							currentTime: newScrubTime,
 						});
 					}
-				} else if (e.key == 'Enter') {
+				}
+				else if (e.key == 'Enter') {
 					if (Math.abs(this.currentScrubTime - this.player.getCurrentTime()) > 5 && didSlide) {
 						console.log('seeking to', this.currentScrubTime);
 						this.player.seek(this.currentScrubTime);
 						didSlide = false;
+						this.playbackButton.focus();
 					}
 				}
 			});
@@ -1559,5 +1529,4 @@ export class TVUIPlugin extends BaseUIPlugin {
 		return tvButton;
 
 	}
-
 }
