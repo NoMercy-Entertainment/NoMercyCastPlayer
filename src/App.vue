@@ -118,7 +118,7 @@ onUnmounted(() => {
          :src="splash"
          alt="NoMercy Entertainment Logo"/>
 
-    <div class="relative flex flex-col justify-start items-start w-[625px] gap-8">
+    <div class="relative flex flex-col justify-start items-start w-[625px] gap-4">
 
       <p class="self-stretch flex-grow-0 flex-shrink-0 w-[625px] text-[40px] font-black text-left text-[#ededed] leading-none">
         Ready to cast
