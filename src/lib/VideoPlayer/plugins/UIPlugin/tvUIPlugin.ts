@@ -180,7 +180,7 @@ export class TVUIPlugin extends BaseUIPlugin {
 
 		let didSlide: boolean = false;
 		[document.body].forEach((button) => {
-			(button as unknown as HTMLButtonElement)?.addEventListener('keyup', (e: KeyboardEvent) => {
+			(button as unknown as HTMLButtonElement)?.addEventListener('keydown', (e: KeyboardEvent) => {
 				if (e.key == 'ArrowLeft') {
 					// eslint-disable-next-line max-len
 					if ([this.nextUp.firstChild, this.nextUp.lastChild].includes(e.target as HTMLButtonElement)) {
