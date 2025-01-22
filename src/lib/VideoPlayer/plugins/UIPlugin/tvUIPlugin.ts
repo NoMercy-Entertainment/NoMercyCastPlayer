@@ -200,6 +200,7 @@ export class TVUIPlugin extends BaseUIPlugin {
 						return;
 					}
 					e.preventDefault();
+					this.player.pause();
 
 					this.player.emit('show-seek-container', true);
 
@@ -222,7 +223,9 @@ export class TVUIPlugin extends BaseUIPlugin {
 					if ([this.nextUp.firstChild, this.nextUp.lastChild].includes(e.target as HTMLButtonElement)) {
 						return;
 					}
+
 					e.preventDefault();
+					this.player.pause();
 
 					this.player.emit('show-seek-container', true);
 
@@ -244,7 +247,8 @@ export class TVUIPlugin extends BaseUIPlugin {
 						console.log('seeking to', this.currentScrubTime);
 						this.player.seek(this.currentScrubTime);
 						didSlide = false;
-						this.playbackButton.focus();
+					} else {
+						this.player.togglePlayback();
 					}
 				}
 			});
