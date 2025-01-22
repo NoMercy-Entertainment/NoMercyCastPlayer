@@ -217,3 +217,5 @@ export class CastSyncPlugin extends Plugin {
     }
 
 }
+
+export default CastSyncPlugin;

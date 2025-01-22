@@ -120,3 +120,5 @@ export class AutoSkipPlugin extends Plugin {
 		return this.player.chapters.cues.find((chapter) => chapter.startTime >= currentEndTime);
 	}
 }
+
+export default AutoSkipPlugin;

@@ -83,3 +83,5 @@ export class SyncPlugin extends Plugin {
         };
     }
 }
+
+export default SyncPlugin;
