@@ -111,20 +111,23 @@ onUnmounted(() => {
   >
     <div id="player1" class="group nomercyplayer"></div>
   </div>
-  <div v-if="!show" class="w-[1920px] h-[1080px] relative overflow-hidden bg-gradient-to-b from-[#232323] to-[#161616]">
+
+  <div v-if="!show" class="w-[1920px] h-[1080px] flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#232323] to-[#161616] px-[200px] py-[95px]">
 
     <img class="w-full h-auto absolute inset-0 aspect-video"
          :src="splash"
          alt="NoMercy Entertainment Logo"/>
 
-    <div class="flex flex-col justify-start items-start w-[1251px] absolute left-[200px] top-[95px] gap-8">
-      <p class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[80px] font-black text-left text-[#ededed]">
+    <div class="relative flex flex-col justify-start items-start w-[1251px] gap-8">
+
+      <p class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[80px] font-black text-left text-[#ededed] leading-none">
         Ready to cast
       </p>
+
       <p class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[40px] text-left text-[#ededed]">
-      <span class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[40px] text-left text-[#ededed]">
-        To start casting audio or video tap the
-      </span>
+        <span class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[40px] text-left text-[#ededed]">
+          To start casting audio or video tap the
+        </span>
         <br/>
         <span class="self-stretch flex-grow-0 flex-shrink-0 w-[1251px] text-[40px] font-bold text-left text-[#ededed]">
           Chromecast
@@ -135,15 +138,13 @@ onUnmounted(() => {
       </p>
     </div>
 
-    <img class="w-[416px] h-[464px] absolute left-[200px] top-[385px]"
+    <img class="relative w-[416px] h-[464px]"
          :src="mobile"
          alt="NoMercy Entertainment Logo"/>
 
-    <div class="flex justify-center items-center absolute left-[200px] bottom-[95px] gap-3.5 px-3">
-      <img class="flex-grow-0 flex-shrink-0 w-full h-20 relative"
+      <img class="flex-grow-0 flex-shrink-0 w-min h-20 relative"
            :src="logo"
            alt="NoMercy Entertainment Logo"/>
-    </div>
   </div>
 </template>
 
