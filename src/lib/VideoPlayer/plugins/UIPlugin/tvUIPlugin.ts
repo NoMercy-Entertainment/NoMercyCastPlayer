@@ -155,21 +155,9 @@ export class TVUIPlugin extends BaseUIPlugin {
 		this.createTvProgressBar(bottomRow);
 		this.createTime(bottomRow, 'remaining', ['mr-14']);
 
-		// this.player.on('active', (value) => {
-		// 	if (value && this.currentMenu !== 'seek' && !this.controlsVisible) {
-		// 		playbackButton.focus();
-		// 	}
-		// });
-
-		this.player.on('playing', () => {
-			if (this.currentMenu !== 'seek' && !this.controlsVisible) {
-				this.playbackButton.focus();
-			}
-		});
-
 		[this.nextUp.firstChild, this.nextUp.lastChild].forEach((button) => {
 			button?.addEventListener('keydown', (e: KeyboardEvent) => {if (e.key == 'ArrowDown') {
-					this.playbackButton.focus();
+				    //
 				}
 				else if (e.key == 'ArrowLeft') {
 					this.nextUp.firstChild?.focus();
@@ -245,15 +233,12 @@ export class TVUIPlugin extends BaseUIPlugin {
 					if (Math.abs(this.currentScrubTime - this.player.getCurrentTime()) > 5 && didSlide) {
 						this.player.seek(this.currentScrubTime);
 						didSlide = false;
-						this.playbackButton.focus();
 					} else {
 						this.player.togglePlayback();
 					}
 				}
 			});
 		});
-
-		this.playbackButton.focus();
 
 		return bottomBar;
 	}

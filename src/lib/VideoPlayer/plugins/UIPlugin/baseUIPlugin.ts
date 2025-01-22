@@ -707,9 +707,6 @@ export class BaseUIPlugin extends Plugin {
 			pausedButton.style.display = 'none';
 			playButton.style.display = 'flex';
 		});
-		this.player.on('item', () => {
-			// this.playbackButton.focus();
-		});
 	}
 
 	createSeekBackButton(parent: HTMLDivElement, hovered = false) {
