@@ -233,6 +233,7 @@ export class TVUIPlugin extends BaseUIPlugin {
 				else if (e.key == 'Enter') {
 					if (Math.abs(this.currentScrubTime - this.player.getCurrentTime()) > 5 && didSlide) {
 						this.player.seek(this.currentScrubTime);
+						this.player.play().then();
 						didSlide = false;
 					} else {
 						this.player.togglePlayback();
