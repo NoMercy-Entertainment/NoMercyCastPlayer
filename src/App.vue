@@ -19,79 +19,134 @@ import CastSyncPlugin from "@/lib/VideoPlayer/plugins/castSyncPlugin";
 const player = ref<NMPlayer>();
 const show = ref(false);
 
+interface CustomData {
+  accessToken: string;
+  basePath: string;
+  playlist: Array<PlaylistItem>;
+  deepLink: string;
+  intent: string;
+}
+
+  function setupPlayer(customData: CustomData) {
+
+  show.value = true;
+
+  player.value?.dispose();
+
+  const config: PlayerConfig = {
+    muted: false,
+    controls: false,
+    preload: "auto",
+    debug: false,
+    autoPlay: true,
+    controlsTimeout: 3000,
+    doubleClickDelay: 500,
+    playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+    renderAhead: 100,
+    forceTvMode: true,
+    disableTouchControls: false,
+    disableMediaControls: false,
+    ...customData,
+  };
+
+  player.value = nmplayer('player1')
+      .setup(config) as unknown as NMPlayer;
+
+  const tvUIPlugin = new TVUIPlugin();
+  player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
+  player.value?.usePlugin('tvUIPlugin');
+
+  const octopusPlugin = new OctopusPlugin();
+  player.value?.registerPlugin('octopus', octopusPlugin);
+  player.value?.usePlugin('octopus');
+
+  const autoSkipPlugin = new AutoSkipPlugin();
+  player.value?.registerPlugin('autoSkip', autoSkipPlugin);
+  player.value?.usePlugin('autoSkip');
+
+  const keyHandlerPlugin = new KeyHandlerPlugin();
+  player.value.registerPlugin("keyHandler", keyHandlerPlugin);
+  player.value.usePlugin("keyHandler");
+
+  const syncPlugin = new SyncPlugin();
+  player.value?.registerPlugin('sync', syncPlugin);
+  player.value?.usePlugin('sync');
+
+  const castSyncPlugin = new CastSyncPlugin();
+  player.value?.registerPlugin('castSync', castSyncPlugin);
+  player.value?.usePlugin('castSync');
+
+  player.value.on("ready", () => {
+    player.value?.play();
+  });
+
+  player.value.on("controls", (showing) => {
+    if (showing) {
+      setTimeout(() => {
+        document.querySelector<HTMLButtonElement>(".nomercyplayer .playback")?.focus();
+      }, 300);
+    }
+  });
+
+}
+
 onMounted(() => {
+  const NAMESPACE = 'urn:x-cast:tv.nomercy.app.intent';
+  const ctx = cast.framework.CastReceiverContext.getInstance();
+
+  if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
+    console.warn('playerManager or interceptor not available');
+    return;
+  }
 
   window.playerManager.setMessageInterceptor(
-      "LOAD",
-      (event: framework.events.Event & {
-        media: {
-          customData: {
-            accessToken: string;
-            basePath: string;
-            playlist: Array<PlaylistItem>;
-          };
-        };
-      }) => {
-
-        show.value = true;
-
-        player.value?.dispose();
-
-        const config: PlayerConfig = {
-          muted: false,
-          controls: false,
-          preload: "auto",
-          debug: false,
-          autoPlay: true,
-          controlsTimeout: 3000,
-          doubleClickDelay: 500,
-          playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-          renderAhead: 100,
-          forceTvMode: true,
-          disableTouchControls: false,
-          disableMediaControls: false,
-          ...event.media.customData,
-        };
-
-        player.value = nmplayer('player1')
-            .setup(config) as unknown as NMPlayer;
-
-        const tvUIPlugin = new TVUIPlugin();
-        player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
-        player.value?.usePlugin('tvUIPlugin');
-
-        const octopusPlugin = new OctopusPlugin();
-        player.value?.registerPlugin('octopus', octopusPlugin);
-        player.value?.usePlugin('octopus');
-
-        const autoSkipPlugin = new AutoSkipPlugin();
-        player.value?.registerPlugin('autoSkip', autoSkipPlugin);
-        player.value?.usePlugin('autoSkip');
-
-        const keyHandlerPlugin = new KeyHandlerPlugin();
-        player.value.registerPlugin("keyHandler", keyHandlerPlugin);
-        player.value.usePlugin("keyHandler");
-
-        const syncPlugin = new SyncPlugin();
-        player.value?.registerPlugin('sync', syncPlugin);
-        player.value?.usePlugin('sync');
-
-        const castSyncPlugin = new CastSyncPlugin();
-        player.value?.registerPlugin('castSync', castSyncPlugin);
-        player.value?.usePlugin('castSync');
-
-        player.value.on("ready", () => {
-          player.value?.play();
-        });
-
-        player.value.on("controls", (showing) => {
-          if (showing) {
-            setTimeout(() => {
-              document.querySelector<HTMLButtonElement>(".nomercyplayer .playback")?.focus();
-            }, 300);
+      'LOAD',
+      (event: framework.events.Event & { media?: { customData?: CustomData }; data?: any }) => {
+        try {
+          // Extract payload safely
+          let payload: string | null = null;
+          if (event?.media?.customData) {
+            payload = (event.media.customData.deepLink as string) || (event.media.customData.intent as string) || JSON.stringify(event.media.customData);
+          } else if (typeof event === 'string') {
+            payload = event;
+          } else if (event && typeof event.data === 'string') {
+            payload = event.data;
           }
-        });
 
+          if (!payload || typeof payload !== 'string') {
+            return event; // not our deep-link payload
+          }
+
+          // Normalize deep link like "tv.nomercy.app://open?route=/player&mediaId=abc"
+          const stripped = payload.replace(/^.*?:\/\//, '');
+          // Only encode the path/query portion — do not double-encode the whole intent
+          const intentUrl = `intent://${stripped}#Intent;scheme=tv.nomercy.app;package=tv.nomercy.app;end`;
+
+          // Send an optional broadcast ack
+          try {
+            if (ctx && (ctx as any).sendCustomMessage) {
+              // second param senderId=null to broadcast
+              (ctx as any).sendCustomMessage(NAMESPACE, null, JSON.stringify({type: 'intent_received', payload}));
+            }
+          } catch (e) {
+            /* ignore ack errors */
+          }
+
+          // Attempt to open native app
+          window.location.href = intentUrl;
+
+          // Fallback: load player in receiver if native app doesn't open
+          setTimeout(() => {
+            const customData = event?.media?.customData;
+            if (customData) setupPlayer(customData);
+          }, 1000);
+
+          // prevent CAF from doing its default LOAD handling
+          return null;
+        } catch (err) {
+          console.warn('LOAD interceptor failed', err);
+          return event;
+        }
       }
   );
 });
