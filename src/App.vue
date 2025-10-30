@@ -102,18 +102,23 @@ onMounted(() => {
   window.playerManager.setMessageInterceptor(
       'LOAD',
       (event: framework.events.Event & { media?: { customData?: CustomData }; data?: any }) => {
+        console.log("LOAD interceptor triggered", event);
         try {
           // Extract payload safely
           let payload: string | null = null;
           if (event?.media?.customData) {
+            console.log("Custom data found:", event.media.customData);
             payload = (event.media.customData.deepLink as string) || (event.media.customData.intent as string) || JSON.stringify(event.media.customData);
           } else if (typeof event === 'string') {
+            console.log("Event is a string:", event);
             payload = event;
           } else if (event && typeof event.data === 'string') {
+            console.log("Event data found:", event.data);
             payload = event.data;
           }
 
           if (!payload || typeof payload !== 'string') {
+            console.log('No valid deep-link payload found');
             return event; // not our deep-link payload
           }
 
