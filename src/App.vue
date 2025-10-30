@@ -27,73 +27,71 @@ interface CustomData {
   intent: string;
 }
 
-  function setupPlayer(customData: CustomData) {
+function setupPlayer(customData: CustomData) {
 
-  show.value = true;
+show.value = true;
 
-  player.value?.dispose();
+player.value?.dispose();
 
-  const config: PlayerConfig = {
-    muted: false,
-    controls: false,
-    preload: "auto",
-    debug: false,
-    autoPlay: true,
-    controlsTimeout: 3000,
-    doubleClickDelay: 500,
-    playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-    renderAhead: 100,
-    forceTvMode: true,
-    disableTouchControls: false,
-    disableMediaControls: false,
-    ...customData,
-  };
+const config: PlayerConfig = {
+  muted: false,
+  controls: false,
+  preload: "auto",
+  debug: false,
+  autoPlay: true,
+  controlsTimeout: 3000,
+  doubleClickDelay: 500,
+  playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+  renderAhead: 100,
+  forceTvMode: true,
+  disableTouchControls: false,
+  disableMediaControls: false,
+  ...customData,
+};
 
-  player.value = nmplayer('player1')
-      .setup(config) as unknown as NMPlayer;
+player.value = nmplayer('player1')
+    .setup(config) as unknown as NMPlayer;
 
-  const tvUIPlugin = new TVUIPlugin();
-  player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
-  player.value?.usePlugin('tvUIPlugin');
+const tvUIPlugin = new TVUIPlugin();
+player.value?.registerPlugin('tvUIPlugin', tvUIPlugin);
+player.value?.usePlugin('tvUIPlugin');
 
-  const octopusPlugin = new OctopusPlugin();
-  player.value?.registerPlugin('octopus', octopusPlugin);
-  player.value?.usePlugin('octopus');
+const octopusPlugin = new OctopusPlugin();
+player.value?.registerPlugin('octopus', octopusPlugin);
+player.value?.usePlugin('octopus');
 
-  const autoSkipPlugin = new AutoSkipPlugin();
-  player.value?.registerPlugin('autoSkip', autoSkipPlugin);
-  player.value?.usePlugin('autoSkip');
+const autoSkipPlugin = new AutoSkipPlugin();
+player.value?.registerPlugin('autoSkip', autoSkipPlugin);
+player.value?.usePlugin('autoSkip');
 
-  const keyHandlerPlugin = new KeyHandlerPlugin();
-  player.value.registerPlugin("keyHandler", keyHandlerPlugin);
-  player.value.usePlugin("keyHandler");
+const keyHandlerPlugin = new KeyHandlerPlugin();
+player.value.registerPlugin("keyHandler", keyHandlerPlugin);
+player.value.usePlugin("keyHandler");
 
-  const syncPlugin = new SyncPlugin();
-  player.value?.registerPlugin('sync', syncPlugin);
-  player.value?.usePlugin('sync');
+const syncPlugin = new SyncPlugin();
+player.value?.registerPlugin('sync', syncPlugin);
+player.value?.usePlugin('sync');
 
-  const castSyncPlugin = new CastSyncPlugin();
-  player.value?.registerPlugin('castSync', castSyncPlugin);
-  player.value?.usePlugin('castSync');
+const castSyncPlugin = new CastSyncPlugin();
+player.value?.registerPlugin('castSync', castSyncPlugin);
+player.value?.usePlugin('castSync');
 
-  player.value.on("ready", () => {
-    player.value?.play();
-  });
+player.value.on("ready", () => {
+  player.value?.play();
+});
 
-  player.value.on("controls", (showing) => {
-    if (showing) {
-      setTimeout(() => {
-        document.querySelector<HTMLButtonElement>(".nomercyplayer .playback")?.focus();
-      }, 300);
-    }
-  });
+player.value.on("controls", (showing) => {
+  if (showing) {
+    setTimeout(() => {
+      document.querySelector<HTMLButtonElement>(".nomercyplayer .playback")?.focus();
+    }, 300);
+  }
+});
 
 }
 
-onMounted(() => {
-  const NAMESPACE = 'urn:x-cast:tv.nomercy.app.intent';
-  const ctx = cast.framework.CastReceiverContext.getInstance();
 
+onMounted(() => {
   if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
     console.warn('playerManager or interceptor not available');
     return;
@@ -104,59 +102,78 @@ onMounted(() => {
       (event: framework.events.Event & { media?: { customData?: string }; data?: any }) => {
         console.log("LOAD interceptor triggered", event);
 
-        const newCustomData: CustomData = JSON.parse(event.media?.customData || '{}');
+        const customData: CustomData = JSON.parse(event.media?.customData || '{}');
+
+        if (!customData) {
+          console.log('No custom data, using default player');
+          return event; // Let Cast handle normally
+        }
 
         try {
-          // Extract payload safely
-          let payload: string | null = null;
-          if (event?.media?.customData) {
-            console.log("Custom data found:", newCustomData);
-            payload = (newCustomData.deepLink as string) || (newCustomData.intent as string);
-          } else if (typeof event === 'string') {
-            console.log("Event is a string:", event);
-            payload = event;
-          } else if (event && typeof event.data === 'string') {
-            console.log("Event data found:", event.data);
-            payload = event.data;
-          }
+          const deepLink = customData.deepLink;
 
-          if (!payload || typeof payload !== 'string') {
-            console.log('No valid deep-link payload found');
-            return event; // not our deep-link payload
-          }
+          console.log("Opening native app with deep link:", deepLink);
 
-          // Normalize deep link like "tv.nomercy.app://open?route=/player&mediaId=abc"
-          const stripped = payload.replace(/^.*?:\/\//, '');
-          // Only encode the path/query portion — do not double-encode the whole intent
-          const intentUrl = `intent://${stripped}#Intent;scheme=tv.nomercy.app;package=tv.nomercy.app;end`;
+          // Try to open native Android app
+          window.location.href = deepLink;
 
-          // Send an optional broadcast ack
-          try {
-            if (ctx && (ctx as any).sendCustomMessage) {
-              // second param senderId=null to broadcast
-              (ctx as any).sendCustomMessage(NAMESPACE, null, JSON.stringify({type: 'intent_received', payload}));
-            }
-          } catch (e) {
-            /* ignore ack errors */
-          }
-
-          // Attempt to open native app
-          window.location.href = intentUrl;
-
-          // Fallback: load player in receiver if native app doesn't open
+          // Fallback: If native app doesn't open in 2 seconds, show message
           setTimeout(() => {
-            if (event?.media?.customData) setupPlayer(newCustomData);
-          }, 1000);
+            setupPlayer(customData);
+          }, 2000);
 
-          // prevent CAF from doing its default LOAD handling
+          // Prevent default Cast player from loading
           return null;
         } catch (err) {
-          console.warn('LOAD interceptor failed', err);
+          setupPlayer(customData);
           return event;
         }
       }
   );
 });
+
+// onMounted(() => {
+//   const NAMESPACE = 'urn:x-cast:tv.nomercy.app.intent';
+//   const ctx = cast.framework.CastReceiverContext.getInstance();
+//
+//   if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
+//     console.warn('playerManager or interceptor not available');
+//     return;
+//   }
+//
+//   window.playerManager.setMessageInterceptor(
+//       'LOAD',
+//       (event: framework.events.Event & { media?: { customData?: CustomData }; data?: any }) => {
+//         console.log("LOAD interceptor triggered", event);
+//
+//         const customData = event.media?.customData;
+//
+//         if (!customData?.deepLink && !customData?.intent) {
+//           return event; // Standard video playback
+//         }
+//
+//         const deepLink = customData.deepLink || customData.intent;
+//
+//         // Send message to all connected senders (phone/web apps)
+//         ctx.sendCustomMessage(
+//             NAMESPACE,
+//             undefined, // senderId - undefined means all senders
+//             {
+//               type: 'LAUNCH_NATIVE_APP',
+//               deepLink: deepLink,
+//               videoId: customData.videoId
+//             }
+//         );
+//
+//         // Fallback: play in web receiver if native doesn't respond
+//         setTimeout(() => {
+//           setupPlayer(customData);
+//         }, 2000);
+//
+//         return null; // Prevent default CAF handling initially
+//       }
+//   );
+// });
 
 onUnmounted(() => {
   player.value?.dispose();
