@@ -101,14 +101,17 @@ onMounted(() => {
 
   window.playerManager.setMessageInterceptor(
       'LOAD',
-      (event: framework.events.Event & { media?: { customData?: CustomData }; data?: any }) => {
+      (event: framework.events.Event & { media?: { customData?: string }; data?: any }) => {
         console.log("LOAD interceptor triggered", event);
+
+        const newCustomData: CustomData = JSON.parse(event.media?.customData || '{}');
+
         try {
           // Extract payload safely
           let payload: string | null = null;
           if (event?.media?.customData) {
-            console.log("Custom data found:", event.media.customData);
-            payload = (event.media.customData.deepLink as string) || (event.media.customData.intent as string) || JSON.stringify(event.media.customData);
+            console.log("Custom data found:", newCustomData);
+            payload = (newCustomData.deepLink as string) || (newCustomData.intent as string);
           } else if (typeof event === 'string') {
             console.log("Event is a string:", event);
             payload = event;
@@ -142,8 +145,7 @@ onMounted(() => {
 
           // Fallback: load player in receiver if native app doesn't open
           setTimeout(() => {
-            const customData = event?.media?.customData;
-            if (customData) setupPlayer(customData);
+            if (event?.media?.customData) setupPlayer(newCustomData);
           }, 1000);
 
           // prevent CAF from doing its default LOAD handling
