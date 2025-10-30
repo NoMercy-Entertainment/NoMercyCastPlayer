@@ -21,11 +21,7 @@
       <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
 
       <script>
-          const NAMESPACE = 'urn:x-cast:tv.nomercy.app.intent';
-
           const context = cast.framework.CastReceiverContext.getInstance();
-          const messageBus = context.getMessageBus(NAMESPACE);
-
           const playerManager = context.getPlayerManager();
 
           /*
@@ -43,39 +39,12 @@
           castReceiverOptions.disableIdleTimeout = true;
           castReceiverOptions.supportedCommands = cast.framework.messages.Command.ALL_BASIC_MEDIA;
 
-          // Listen for deep link strings and open the native app via intent://
-          messageBus.onMessage = (event) => {
-              const payload = event.data;
-              if (!payload || typeof payload !== 'string') return;
-
-              try {
-                  // Remove scheme and encode the rest
-                  const stripped = payload.replace(/^.*?:\/\//, '');
-                  const encoded = encodeURIComponent(stripped);
-                  const intentUrl = `intent://${encoded}#Intent;scheme=tv.nomercy.app;package=tv.nomercy.app;end`;
-
-                  // Notify sender we received the message
-                  try { messageBus.send(event.senderId, JSON.stringify({ type: 'intent_received', payload })); } catch (e) {}
-
-                  // Attempt to open native app
-                  window.location.href = intentUrl;
-
-                  // Fallback after 1s: continue running receiver (or handle payload in-receiver)
-                  setTimeout(() => {
-                      // e.g. messageBus.broadcast('native-open-attempted');
-                      // Optionally: handle payload in the receiver if native app didn't open
-                  }, 1000);
-              } catch (e) {
-                  console.warn('Receiver: failed to open intent', e);
-              }
-          };
-
           context.start(castReceiverOptions);
 
           window.playerManager = playerManager;
       </script>
 
-    <script type="module" crossorigin src="/assets/index-BJoecXNv.js"></script>
+    <script type="module" crossorigin src="/assets/index-MLSTbGH5.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BW3lLlnz.css">
   </head>
   <body>
