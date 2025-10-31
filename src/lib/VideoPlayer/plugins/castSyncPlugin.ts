@@ -124,9 +124,9 @@ export class CastSyncPlugin extends Plugin {
         socket?.invoke?.('Ended');
     }
 
-    volume(value: number) {
+    volume(value: {volume: number, muted: boolean}) {
         const socket = useCastSocket();
-        socket?.invoke?.('Volume', value);
+        socket?.invoke?.('Volume', value.volume);
     }
 
     muted(value: boolean) {
