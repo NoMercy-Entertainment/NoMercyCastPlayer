@@ -175,7 +175,7 @@ export class CastSyncPlugin extends Plugin {
             isPlaying: this.player.isPlaying,
             subtitles: this.player.getCaptionsList(),
             currentSubtitleTrack: this.player.getCurrentCaption(),
-            audioTracks: this.player.getAudioTracks(),
+            // audioTracks: this.player.getAudioTracks(),
             currentAudioTrack: this.player.getCurrentAudioTrack(),
         });
     }
