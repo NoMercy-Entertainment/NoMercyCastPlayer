@@ -145,8 +145,8 @@ export class CastSyncPlugin extends Plugin {
     }
 
     audioTracks(value: MediaPlaylist[]) {
-        const socket = useCastSocket();
-        socket?.invoke?.('AudioTracks', value);
+        // const socket = useCastSocket();
+        // socket?.invoke?.('AudioTracks', value);
     }
 
     currentAudioTrack(value: number) {
