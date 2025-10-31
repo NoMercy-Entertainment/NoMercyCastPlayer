@@ -12,8 +12,8 @@ import type {NMPlayer, PlayerConfig, PlaylistItem} from "@nomercy-entertainment/
 import KeyHandlerPlugin from "@nomercy-entertainment/nomercy-video-player/dist/plugins/keyHandlerPlugin";
 import {TVUIPlugin} from "@/lib/VideoPlayer/plugins/UIPlugin/tvUIPlugin";
 import OctopusPlugin from "@nomercy-entertainment/nomercy-video-player/dist/plugins/octopusPlugin";
-import AutoSkipPlugin from "@/lib/VideoPlayer/plugins/autoSkipPlugin";
-import SyncPlugin from "@/lib/VideoPlayer/plugins/syncPlugin";
+import {AutoSkipPlugin} from "@/lib/VideoPlayer/plugins/autoSkipPlugin";
+import {SyncPlugin} from "@/lib/VideoPlayer/plugins/syncPlugin";
 import CastSyncPlugin from "@/lib/VideoPlayer/plugins/castSyncPlugin";
 
 const player = ref<NMPlayer>();
