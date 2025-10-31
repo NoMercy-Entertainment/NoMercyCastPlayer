@@ -23,7 +23,8 @@ interface CustomData {
   accessToken: string;
   basePath: string;
   playlist: Array<PlaylistItem>;
-  deepLink: string;
+  type: string;
+  videoId: string;
   intent: string;
 }
 
@@ -113,7 +114,9 @@ onMounted(() => {
         }
 
         try {
-          const deepLink = customData.deepLink;
+          const videoId = customData.videoId;
+          const type = customData.type || 'movie'; // Get type from customData
+          const deepLink = `tv.nomercy.app://${type}/${videoId}/watch`;
 
           console.log("Opening native app with deep link:", deepLink);
 
