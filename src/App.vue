@@ -120,8 +120,14 @@ onMounted(() => {
 
           console.log("Opening native app with deep link:", deepLink);
 
-          // Try to open native Android app
-          window.location.href = deepLink;
+          ctx.sendCustomMessage(NAMESPACE, undefined, {
+            type: 'LAUNCH_VIDEO',
+            videoId: videoId,
+            videoType: type
+          });
+
+          // // Try to open native Android app
+          // window.location.href = deepLink;
 
           // Fallback: If native app doesn't open in 2 seconds, show message
           setTimeout(() => {
