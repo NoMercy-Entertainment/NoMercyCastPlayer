@@ -92,6 +92,9 @@ player.value.on("controls", (showing) => {
 
 
 onMounted(() => {
+  const NAMESPACE = 'urn:x-cast:tv.nomercy.app.intent';
+  const ctx = cast.framework.CastReceiverContext.getInstance();
+
   if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
     console.warn('playerManager or interceptor not available');
     return;
@@ -99,10 +102,10 @@ onMounted(() => {
 
   window.playerManager.setMessageInterceptor(
       'LOAD',
-      (event: framework.events.Event & { media?: { customData?: string }; data?: any }) => {
+      (event: framework.events.Event & { media?: { customData?: CustomData }; data?: any }) => {
         console.log("LOAD interceptor triggered", event);
 
-        const customData: CustomData = JSON.parse(event.media?.customData || '{}');
+        const customData = event?.media?.customData;
 
         if (!customData) {
           console.log('No custom data, using default player');
@@ -125,6 +128,7 @@ onMounted(() => {
           // Prevent default Cast player from loading
           return null;
         } catch (err) {
+          console.warn('LOAD interceptor failed', err);
           setupPlayer(customData);
           return event;
         }
