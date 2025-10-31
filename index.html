@@ -21,6 +21,7 @@
       <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
 
       <script>
+          const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
           const context = cast.framework.CastReceiverContext.getInstance();
           const playerManager = context.getPlayerManager();
 
@@ -38,6 +39,8 @@
           castReceiverOptions.skipPlayersLoad = true;
           castReceiverOptions.disableIdleTimeout = true;
           castReceiverOptions.supportedCommands = cast.framework.messages.Command.ALL_BASIC_MEDIA;
+          castReceiverOptions.customNamespaces = {};
+          castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
 
           context.start(castReceiverOptions);
 
