@@ -4,11 +4,11 @@ import {
     convertToSeconds,
     limitSentenceByCharacters,
     lineBreakShowTitle,
+    unique,
 } from '@nomercy-entertainment/nomercy-video-player/src/helpers';
 
 import type {PlaylistItem} from '../../index';
 import type {Icon, TimeData} from '@nomercy-entertainment/nomercy-video-player/src/types';
-import {unique} from '@/lib/stringArray.ts';
 
 export class TVUIPlugin extends BaseUIPlugin {
     preScreen: HTMLDialogElement = <HTMLDialogElement>{};
