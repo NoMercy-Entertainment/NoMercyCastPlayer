@@ -1,21 +1,21 @@
+import type { RouteLocationNormalizedLoaded } from 'vue-router';
+import { useRoute } from 'vue-router';
 import Plugin from '@nomercy-entertainment/nomercy-video-player/src/plugin';
-import type {NMPlayer, PlaylistItem} from "@nomercy-entertainment/nomercy-video-player/src/types";
+import type { NMPlayer } from '@nomercy-entertainment/nomercy-video-player/src/types';
 
-import {useSocket} from "@/store/socket";
-import {initializeSocket} from "@/lib/socketClient/initializeSocket";
+import type { NMPlaylistItem } from '@/lib/VideoPlayer';
+import {useCastSocket, useSocket} from "@/store/socket";
 
 export interface SyncPluginArgs {
-    basePath: string;
-    accessToken: string,
+    playlist: NMPlaylistItem[];
 }
 
 export class SyncPlugin extends Plugin {
     player: NMPlayer<SyncPluginArgs> = <NMPlayer<SyncPluginArgs>>{};
+    route: RouteLocationNormalizedLoaded<string | symbol> = <RouteLocationNormalizedLoaded<string | symbol>>{};
 
     async initialize(player: NMPlayer<SyncPluginArgs>) {
         this.player = player;
-
-        await initializeSocket(player.options.basePath, player.options.accessToken);
     }
 
     use() {
@@ -24,6 +24,8 @@ export class SyncPlugin extends Plugin {
         this.player.on('back', this.ended.bind(this));
         this.player.on('ended', this.ended.bind(this));
         this.player.on('finished', this.ended.bind(this));
+
+        this.route = useRoute();
     }
 
     dispose() {
@@ -38,42 +40,50 @@ export class SyncPlugin extends Plugin {
         const data = this.episodeData();
 
         const socket = useSocket();
-        socket?.invoke?.('SetTime', data);
+        socket?.invoke('SetTime', data);
     }
 
     ended() {
-        if (this.player.isLastPlaylistItem()) {
-            const data = this.episodeData();
-
+        const progress = (this.player.getCurrentTime() / this.player.getDuration()) * 100;
+        // and progress is 90% for a tv show and 80% for a movie
+        if (this.player.isLastPlaylistItem() && this.player.playlistItem()?.playlist_type === 'tv' && progress >= 90) {
             const socket = useSocket();
-            socket?.invoke('RemoveWatched', data);
+            socket?.invoke('RemoveWatched', this.episodeData()).then();
         }
-
-        this.dispose();
-        this.player.dispose();
+        else if (this.player.isLastPlaylistItem() && this.player.playlistItem()?.playlist_type === 'movie' && progress >= 80) {
+            const socket = useSocket();
+            socket?.invoke('RemoveWatched', this.episodeData()).then();
+        }
     }
 
     episodeData() {
-        const current = this.player.playlistItem() as PlaylistItem & {
-            tmdb_id: number,
-            special_id: number,
-            video_type: string,
-            video_id: number;
-        };
+        const current = this.player.playlistItem();
 
-        const route = location.hash.split('/');
+        let path = this.route?.path;
+        if (!path) {
+            path = window.location.hash.replace('#', '');
+        }
+        if (!path) {
+            path = location.pathname;
+        }
+
+        const route = path?.split('/');
 
         let specialId: string | undefined;
         let collectionId: number | undefined;
+        let tmdbId: number | undefined
+            = current?.tmdb_id ?? (route.at(-2) as string);
         if (route.at(-3) === 'specials') {
             specialId = route.at(-2) as string;
-        } else if (route.at(-3) === 'collection') {
+        }
+        else if (route.at(-3) === 'collection') {
             collectionId = route.at(-2) as unknown as number;
+            tmdbId = current.id as unknown as number;
         }
 
         return {
             video_id: current?.video_id,
-            tmdb_id: current?.tmdb_id,
+            tmdb_id: tmdbId,
             playlist_type: route.at(-3),
             special_id: specialId,
             collection_id: collectionId,
@@ -83,5 +93,3 @@ export class SyncPlugin extends Plugin {
         };
     }
 }
-
-export default SyncPlugin;

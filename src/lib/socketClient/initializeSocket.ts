@@ -6,7 +6,7 @@ import {setSocketInstance, socketInstance, castSocketInstance, setCastSocketInst
 export const initializeSocket = async (url: string, accessToken: string): Promise<void> => {
 	socketInstance.value?.dispose?.();
 
-	const socket = new SocketClient(url, accessToken);
+	const socket = new SocketClient(url, accessToken, 'videoHub');
 	await socket.setup();
 	setSocketInstance(socket);
 }
