@@ -25,6 +25,7 @@ interface CustomData {
   playlist: Array<PlaylistItem>;
   type: string;
   videoId: string;
+  deepLink: string;
   intent: string;
 }
 
@@ -115,7 +116,11 @@ onMounted(() => {
         try {
           const videoId = customData.videoId;
           const type = customData.type || 'movie'; // Get type from customData
-          const deepLink = `tv.nomercy.app://${type}/${videoId}/watch`;
+          let deepLink = `tv.nomercy.app://${type}/${videoId}/watch`;
+
+          if(!videoId) {
+            deepLink = customData.deepLink
+          }
 
           console.log("Opening native app with deep link:", deepLink);
 
