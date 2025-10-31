@@ -31,6 +31,11 @@
           const playbackConfig = new cast.framework.PlaybackConfig();
           playbackConfig.autoResumeDuration = 5;
 
+          const castOptions = new cast.framework.CastOptions();
+          castOptions.receiverApplicationId = "";
+          castOptions.androidReceiverCompatible = true;
+          context.setOptions(castOptions);
+
           /*
            * Configure the CastReceiverOptions.
            */
