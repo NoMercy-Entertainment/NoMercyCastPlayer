@@ -91,9 +91,8 @@ player.value.on("controls", (showing) => {
 
 }
 
-
 onMounted(() => {
-  const NAMESPACE = 'urn:x-cast:tv.nomercy.app.intent';
+  const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
   const ctx = cast.framework.CastReceiverContext.getInstance();
 
   if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
