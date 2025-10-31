@@ -103,10 +103,17 @@ onMounted(() => {
 
   window.playerManager.setMessageInterceptor(
       'LOAD',
-      (event: framework.events.Event & { media?: { customData?: CustomData }; data?: any }) => {
+      (event: framework.events.Event & { media?: { customData?: CustomData|string }; data?: any }) => {
         console.log("LOAD interceptor triggered", event);
 
-        const customData = event?.media?.customData;
+        let customData = event?.media?.customData;
+        if(customData && typeof customData === 'string') {
+          try {
+            customData = JSON.parse(customData);
+          } catch (e) {
+            console.warn('Failed to parse customData string', e);
+          }
+        }
 
         if (!customData) {
           console.log('No custom data, using default player');
@@ -114,12 +121,12 @@ onMounted(() => {
         }
 
         try {
-          const videoId = customData.videoId;
-          const type = customData.type || 'movie'; // Get type from customData
+          const videoId = (customData as CustomData).videoId;
+          const type = (customData as CustomData).type || 'movie';
           let deepLink = `tv.nomercy.app://${type}/${videoId}/watch`;
 
           if(!videoId) {
-            deepLink = customData.deepLink
+            deepLink = (customData as CustomData).deepLink
           }
 
           console.log("Opening native app with deep link:", deepLink);
@@ -135,7 +142,7 @@ onMounted(() => {
 
           // Fallback: If native app doesn't open in 2 seconds, show message
           setTimeout(() => {
-            setupPlayer(customData);
+            setupPlayer(customData as CustomData);
           }, 2000);
 
           // Prevent default Cast player from loading
