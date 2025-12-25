@@ -30,11 +30,10 @@
            */
           const playbackConfig = new cast.framework.PlaybackConfig();
           playbackConfig.autoResumeDuration = 5;
-
-          // const castOptions = new CastOptions();
-          // castOptions.receiverApplicationId = "925B4C3C";
-          // castOptions.androidReceiverCompatible = true;
-          // context.setOptions(castOptions);
+          const castOptions = new CastOptions();
+          castOptions.receiverApplicationId = "925B4C3C";
+          castOptions.androidReceiverCompatible = true;
+          context.setOptions(castOptions);
 
           /*
            * Configure the CastReceiverOptions.
@@ -46,6 +45,16 @@
           castReceiverOptions.supportedCommands = cast.framework.messages.Command.ALL_BASIC_MEDIA;
           castReceiverOptions.customNamespaces = {};
           castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
+
+          /**
+           * Enable Android TV Receiver (ATV) integration.
+           * This allows the cast request to be intercepted by a native Android app
+           * if it is installed on the receiver device.
+           * 
+           * Make sure you have configured your Android package name in the 
+           * Google Cast Developer Console for this Application ID.
+           */
+          castReceiverOptions.androidReceiverCompatible = true;
 
           context.start(castReceiverOptions);
 
