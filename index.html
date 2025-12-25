@@ -1,96 +1,101 @@
 <!DOCTYPE html>
 <html lang="">
-  <head>
-      <meta charset="UTF-8" />
-      <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+<head>
+    <meta charset="UTF-8"/>
+    <link href="/favicon.ico" rel="icon" type="image/svg+xml"/>
 
-      <meta name="viewport"
-            content="viewport-fit=cover, width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta content="viewport-fit=cover, width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
+          name="viewport"/>
 
-      <title>NoMercy Cast Player</title>
+    <title>NoMercy Cast Player</title>
 
-      <!-- Open Graph Metadata -->
-      <meta property="og:title" content="NoMercy Cast Player" />
-      <meta property="og:type" content="website" />
-      <meta property="og:url" content="https://examples.nomercy.tv" />
+    <!-- Open Graph Metadata -->
+    <meta content="NoMercy Cast Player" property="og:title"/>
+    <meta content="website" property="og:type"/>
+    <meta content="https://examples.nomercy.tv" property="og:url"/>
 
-      <meta property="og:site_name" content="NoMercy Cast Player" />
-      <meta property="og:locale" content="en_US" />
+    <meta content="NoMercy Cast Player" property="og:site_name"/>
+    <meta content="en_US" property="og:locale"/>
 
-      <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
-      <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
+    <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+    <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
 
-      <script>
-          const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
-          const context = cast.framework.CastReceiverContext.getInstance();
-          const playerManager = context.getPlayerManager();
+    <script>
+        const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
+        const context = cast.framework.CastReceiverContext.getInstance();
+        const playerManager = context.getPlayerManager();
 
-          /*
-           * Set the player configuration.
-           */
-          const playbackConfig = new cast.framework.PlaybackConfig();
-          playbackConfig.autoResumeDuration = 5;
-          // const castOptions = new CastOptions();
-          // castOptions.receiverApplicationId = "925B4C3C";
-          // castOptions.androidReceiverCompatible = true;
-          // context.setOptions(castOptions);
+        /*
+         * Set the player configuration.
+         */
+        const playbackConfig = new cast.framework.PlaybackConfig();
+        playbackConfig.autoResumeDuration = 5;
+        playbackConfig.manifestRequestHandler = requestInfo => {
+            requestInfo.withCredentials = true;
+        };
+        // const castOptions = new CastOptions();
+        // castOptions.receiverApplicationId = "925B4C3C";
+        // castOptions.androidReceiverCompatible = true;
+        // context.setOptions(castOptions);
 
-          
-            const controls = cast.framework.ui.Controls.getInstance();
-            controls.clearDefaultSlotAssignments();
 
-            // Assign buttons to control slots.
-            controls.assignButton(
-              cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
-              cast.framework.ui.ControlsButton.QUEUE_PREV
-            );
-            controls.assignButton(
-              cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
-              cast.framework.ui.ControlsButton.CAPTIONS
-            );
-            controls.assignButton(
-              cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
-              cast.framework.ui.ControlsButton.SEEK_FORWARD_15
-            );
-            controls.assignButton(
-              cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
-              cast.framework.ui.ControlsButton.QUEUE_NEXT
-            );
+        const controls = cast.framework.ui.Controls.getInstance();
+        controls.clearDefaultSlotAssignments();
 
-          /*
-           * Configure the CastReceiverOptions.
-           */
-          const castReceiverOptions = new cast.framework.CastReceiverOptions();
-          castReceiverOptions.playbackConfig = playbackConfig;
-          castReceiverOptions.skipPlayersLoad = true;
-          castReceiverOptions.disableIdleTimeout = true;
-          castReceiverOptions.supportedCommands = 
-              cast.framework.messages.Command.ALL_BASIC_MEDIA |
-              cast.framework.messages.Command.QUEUE_PREV |
-              cast.framework.messages.Command.QUEUE_NEXT |
-              cast.framework.messages.Command.STREAM_TRANSFER;
-          castReceiverOptions.customNamespaces = {};
-          castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
+        // Assign buttons to control slots.
+        controls.assignButton(
+            cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
+            cast.framework.ui.ControlsButton.QUEUE_PREV
+        );
+        controls.assignButton(
+            cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
+            cast.framework.ui.ControlsButton.CAPTIONS
+        );
+        controls.assignButton(
+            cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
+            cast.framework.ui.ControlsButton.SEEK_FORWARD_15
+        );
+        controls.assignButton(
+            cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
+            cast.framework.ui.ControlsButton.QUEUE_NEXT
+        );
 
-          /**
-           * Enable Android TV Receiver (ATV) integration.
-           * This allows the cast request to be intercepted by a native Android app
-           * if it is installed on the receiver device.
-           * 
-           * Make sure you have configured your Android package name in the 
-           * Google Cast Developer Console for this Application ID.
-           */
-          castReceiverOptions.androidReceiverCompatible = true;
+        /*
+         * Configure the CastReceiverOptions.
+         */
+        const castReceiverOptions = new cast.framework.CastReceiverOptions();
+        castReceiverOptions.playbackConfig = playbackConfig;
+        castReceiverOptions.skipPlayersLoad = true;
+        castReceiverOptions.disableIdleTimeout = true;
+        castReceiverOptions.supportedCommands =
+            cast.framework.messages.Command.ALL_BASIC_MEDIA |
+            cast.framework.messages.Command.QUEUE_PREV |
+            cast.framework.messages.Command.QUEUE_NEXT |
+            cast.framework.messages.Command.STREAM_TRANSFER;
+        // castReceiverOptions.customNamespaces = {};
+        // castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
 
-          context.start(castReceiverOptions);
+        /**
+         * Enable Android TV Receiver (ATV) integration.
+         * This allows the cast request to be intercepted by a native Android app
+         * if it is installed on the receiver device.
+         *
+         * Make sure you have configured your Android package name in the
+         * Google Cast Developer Console for this Application ID.
+         */
 
-          window.playerManager = playerManager;
-      </script>
+        // castReceiverOptions.receiverApplicationId = "925B4C3C";
+        // castReceiverOptions.androidReceiverCompatible = true;
 
-    <script type="module" crossorigin src="/assets/index-BVO8-WV4.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BRrSLaO4.css">
-  </head>
-  <body>
-    <div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip text-white"></div>
-  </body>
+        context.start(castReceiverOptions);
+
+        window.playerManager = playerManager;
+    </script>
+
+  <script type="module" crossorigin src="/assets/index-Eq6QZDJ9.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BnviBBSj.css">
+</head>
+<body>
+<div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip text-white"></div>
+</body>
 </html>
