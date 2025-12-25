@@ -229,9 +229,6 @@ function setupPlayer(customData: CustomData) {
 // });
 
 onMounted(() => {
-  const ctx = cast.framework.CastReceiverContext.getInstance();
-  const playerManager = ctx.getPlayerManager();
-
   if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
     console.warn('playerManager or interceptor not available');
     return;
@@ -244,17 +241,17 @@ onMounted(() => {
         // Haal het token uit de customData die je vanuit Kotlin meestuurt
         const token = loadRequestData.media.customData.bearerToken;
 
-        // playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
-        //   requestInfo.withCredentials = true;
-        //   requestInfo.headers = requestInfo.headers || {};
-        //   requestInfo.headers['Authorization'] = 'Bearer ' + token;
-        // };
+        window.playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
+          requestInfo.withCredentials = true;
+          requestInfo.headers = requestInfo.headers || {};
+          requestInfo.headers['Authorization'] = 'Bearer ' + token;
+        };
 
-        // playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
-        //   requestInfo.withCredentials = true;
-        //   requestInfo.headers = requestInfo.headers || {};
-        //   requestInfo.headers['Authorization'] = 'Bearer ' + token;
-        // };
+        window.playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
+          requestInfo.withCredentials = true;
+          requestInfo.headers = requestInfo.headers || {};
+          requestInfo.headers['Authorization'] = 'Bearer ' + token;
+        };
 
         return loadRequestData;
     }
