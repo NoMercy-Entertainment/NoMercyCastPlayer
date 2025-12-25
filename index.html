@@ -47,8 +47,6 @@
           castReceiverOptions.customNamespaces = {};
           castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
 
-          context.start(castReceiverOptions);
-
           window.playerManager = playerManager;
       </script>
 
@@ -56,5 +54,10 @@
   <body>
     <div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip text-white"></div>
     <script type="module" src="/src/main.ts"></script>
+    <script type="module" >
+
+      context.start(castReceiverOptions);
+
+    </script>
   </body>
 </html>
