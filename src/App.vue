@@ -5,7 +5,7 @@ import logo from '@/assets/logo-wide.svg';
 import mobile from '@/assets/mobile.svg';
 import splash from '@/assets/splash.png';
 
-const show = ref(true);
+const show = ref(false);
 
 onMounted(() => {
   if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
@@ -13,33 +13,33 @@ onMounted(() => {
     return;
   }
 
-  // window.playerManager.setMessageInterceptor(
-  //     cast.framework.messages.MessageType.LOAD, loadRequestData => {
-  //       show.value = true;
-  //       const token = loadRequestData.media?.customData?.bearerToken;
-  //       let source = loadRequestData.media.contentUrl
-  //           || loadRequestData.media.entity || loadRequestData.media.contentId;
+  window.playerManager.setMessageInterceptor(
+      cast.framework.messages.MessageType.LOAD, loadRequestData => {
+        show.value = true;
+        const token = loadRequestData.media?.customData?.bearerToken;
+        let source = loadRequestData.media.contentUrl
+            || loadRequestData.media.entity || loadRequestData.media.contentId;
 
-  //       if (token) {
-  //         window.playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
-  //           requestInfo.withCredentials = true;
-  //           requestInfo.headers = requestInfo.headers || {};
-  //           requestInfo.headers['Authorization'] = 'Bearer ' + token;
-  //           return requestInfo;
-  //         };
+        if (token) {
+          window.playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
+            requestInfo.withCredentials = true;
+            requestInfo.headers = requestInfo.headers || {};
+            requestInfo.headers['Authorization'] = 'Bearer ' + token;
+            return requestInfo;
+          };
 
-  //         window.playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
-  //           requestInfo.withCredentials = true;
-  //           requestInfo.headers = requestInfo.headers || {};
-  //           requestInfo.headers['Authorization'] = 'Bearer ' + token;
-  //           return requestInfo;
-  //         };
-  //       }
+          window.playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
+            requestInfo.withCredentials = true;
+            requestInfo.headers = requestInfo.headers || {};
+            requestInfo.headers['Authorization'] = 'Bearer ' + token;
+            return requestInfo;
+          };
+        }
 
-  //       loadRequestData.media.contentUrl = source;
-  //       return loadRequestData;
-  //   }
-  // );
+        loadRequestData.media.contentUrl = source;
+        return loadRequestData;
+    }
+  );
 });
 
 </script>
