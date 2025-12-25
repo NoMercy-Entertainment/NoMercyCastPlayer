@@ -20,7 +20,19 @@
     <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
     <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
 
-    <!-- <script>
+</head>
+<body>
+<!-- <div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip text-white"></div>
+<script src="/src/main.ts" type="module"></script> -->
+<cast-media-player></cast-media-player>
+<!-- <script>
+  const context = cast.framework.CastReceiverContext.getInstance();
+  const playerManager = context.getPlayerManager();
+
+  context.start();
+</script> -->
+
+<script>
         const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
         const context = cast.framework.CastReceiverContext.getInstance();
         const playerManager = context.getPlayerManager();
@@ -30,10 +42,6 @@
          */
         const playbackConfig = new cast.framework.PlaybackConfig();
         playbackConfig.autoResumeDuration = 5;
-        // const castOptions = new CastOptions();
-        // castOptions.receiverApplicationId = "925B4C3C";
-        // castOptions.androidReceiverCompatible = true;
-        // context.setOptions(castOptions);
 
 
         const controls = cast.framework.ui.Controls.getInstance();
@@ -80,23 +88,12 @@
          * Make sure you have configured your Android package name in the
          * Google Cast Developer Console for this Application ID.
          */
-        // castReceiverOptions.androidReceiverCompatible = true;
+        castReceiverOptions.androidReceiverCompatible = true;
+        castReceiverOptions.receiverApplicationId = "925B4C3C";
 
         context.start(castReceiverOptions);
 
         window.playerManager = playerManager;
-    </script> -->
-
-</head>
-<body>
-<!-- <div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip text-white"></div>
-<script src="/src/main.ts" type="module"></script> -->
-<cast-media-player></cast-media-player>
-<script>
-  const context = cast.framework.CastReceiverContext.getInstance();
-  const playerManager = context.getPlayerManager();
-
-  context.start();
-</script>
+    </script>
 </body>
 </html>
