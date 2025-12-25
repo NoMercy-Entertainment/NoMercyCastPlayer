@@ -8,12 +8,100 @@ import splash from '@/assets/splash.png';
 const show = ref(false);
 
 onMounted(() => {
-  if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
-    console.warn('playerManager or interceptor not available');
-    return;
-  }
+  const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
+  const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
+  const context = cast.framework.CastReceiverContext.getInstance();
+  const playerManager = context.getPlayerManager();
+  const LOG_TAG = 'MyReceiverApp';
 
-  window.playerManager.setMessageInterceptor(
+  /*
+   * Set the player configuration.
+   */
+  const playbackConfig = new cast.framework.PlaybackConfig();
+  playbackConfig.autoResumeDuration = 5;
+
+  const controls = cast.framework.ui.Controls.getInstance();
+  controls.clearDefaultSlotAssignments();
+
+  // Assign buttons to control slots.
+  controls.assignButton(
+      cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
+      cast.framework.ui.ControlsButton.QUEUE_PREV
+  );
+  controls.assignButton(
+      cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
+      cast.framework.ui.ControlsButton.CAPTIONS
+  );
+  controls.assignButton(
+      cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
+      cast.framework.ui.ControlsButton.SEEK_FORWARD_15
+  );
+  controls.assignButton(
+      cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
+      cast.framework.ui.ControlsButton.QUEUE_NEXT
+  );
+
+  /*
+   * Configure the CastReceiverOptions.
+   */
+  const castReceiverOptions = new cast.framework.CastReceiverOptions();
+  castReceiverOptions.playbackConfig = playbackConfig;
+  // castReceiverOptions.skipPlayersLoad = true;
+  castReceiverOptions.disableIdleTimeout = true;
+  castReceiverOptions.supportedCommands =
+      cast.framework.messages.Command.ALL_BASIC_MEDIA |
+      cast.framework.messages.Command.QUEUE_PREV |
+      cast.framework.messages.Command.QUEUE_NEXT |
+      cast.framework.messages.Command.STREAM_TRANSFER;
+  // castReceiverOptions.customNamespaces = {};
+  // castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
+
+  /**
+   * Enable Android TV Receiver (ATV) integration.
+   * This allows the cast request to be intercepted by a native Android app
+   * if it is installed on the receiver device.
+   *
+   * Make sure you have configured your Android package name in the
+   * Google Cast Developer Console for this Application ID.
+   */
+
+  context.addEventListener(cast.framework.system.EventType.READY, () => {
+    if (!castDebugLogger.debugOverlayElement_) {
+      // Enable debug logger and show a 'DEBUG MODE' overlay at top left corner.
+      castDebugLogger.setEnabled(true);
+      castDebugLogger.showDebugLogs(true);
+    }
+  });
+
+  playerManager.setMessageInterceptor(
+      cast.framework.messages.MessageType.LOAD, loadRequestData => {
+        show.value = true;
+        const token = loadRequestData.media?.customData?.bearerToken;
+        let source = loadRequestData.media.contentUrl
+            || loadRequestData.media.entity || loadRequestData.media.contentId;
+
+        if (token) {
+          playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
+            requestInfo.withCredentials = true;
+            requestInfo.headers = requestInfo.headers || {};
+            requestInfo.headers['Authorization'] = 'Bearer ' + token;
+            return requestInfo;
+          };
+
+          playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
+            requestInfo.withCredentials = true;
+            requestInfo.headers = requestInfo.headers || {};
+            requestInfo.headers['Authorization'] = 'Bearer ' + token;
+            return requestInfo;
+          };
+        }
+
+        loadRequestData.media.contentUrl = source;
+        return loadRequestData;
+      }
+  );
+
+  playerManager.setMessageInterceptor(
       cast.framework.messages.MessageType.LOAD, loadRequestData => {
         show.value = true;
         const token = loadRequestData.media?.customData?.bearerToken;
@@ -38,8 +126,11 @@ onMounted(() => {
 
         loadRequestData.media.contentUrl = source;
         return loadRequestData;
-    }
+      }
   );
+
+  context.start(castReceiverOptions);
+
 });
 
 </script>
