@@ -66,11 +66,8 @@ onMounted(() => {
    */
 
   context.addEventListener(cast.framework.system.EventType.READY, () => {
-    if (!castDebugLogger.debugOverlayElement_) {
-      // Enable debug logger and show a 'DEBUG MODE' overlay at top left corner.
       castDebugLogger.setEnabled(true);
       castDebugLogger.showDebugLogs(true);
-    }
   });
 
   playerManager.setMessageInterceptor(
@@ -80,15 +77,16 @@ onMounted(() => {
         let source = loadRequestData.media.contentUrl
             || loadRequestData.media.entity || loadRequestData.media.contentId;
 
-        if (token) {
-          playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
+        const playbackConfig = playerManager.getPlaybackConfig();
+        if (token && playbackConfig) {
+          playbackConfig.manifestRequestHandler = requestInfo => {
             requestInfo.withCredentials = true;
             requestInfo.headers = requestInfo.headers || {};
             requestInfo.headers['Authorization'] = 'Bearer ' + token;
             return requestInfo;
           };
 
-          playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
+          playbackConfig.segmentRequestHandler = requestInfo => {
             requestInfo.withCredentials = true;
             requestInfo.headers = requestInfo.headers || {};
             requestInfo.headers['Authorization'] = 'Bearer ' + token;
