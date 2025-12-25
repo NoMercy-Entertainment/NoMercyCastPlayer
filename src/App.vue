@@ -17,8 +17,9 @@ onMounted(() => {
       'LOAD',
       loadRequestData => {
         show.value = true;
-        // Haal het token uit de customData die je vanuit Kotlin meestuurt
         const token = loadRequestData.media?.customData?.bearerToken;
+        let source = loadRequestData.media.contentUrl
+            || loadRequestData.media.entity || loadRequestData.media.contentId;
 
         if (token) {
           window.playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
@@ -36,6 +37,7 @@ onMounted(() => {
           };
         }
 
+        loadRequestData.media.contentUrl = source;
         return loadRequestData;
     }
   );
