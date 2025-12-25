@@ -20,7 +20,7 @@
     <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
     <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
 
-    <script>
+    <!-- <script>
         const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
         const context = cast.framework.CastReceiverContext.getInstance();
         const playerManager = context.getPlayerManager();
@@ -28,52 +28,49 @@
         /*
          * Set the player configuration.
          */
-        // const playbackConfig = new cast.framework.PlaybackConfig();
-        // playbackConfig.autoResumeDuration = 5;
-        // playbackConfig.manifestRequestHandler = requestInfo => {
-        //     requestInfo.withCredentials = true;
-        //   };
+        const playbackConfig = new cast.framework.PlaybackConfig();
+        playbackConfig.autoResumeDuration = 5;
         // const castOptions = new CastOptions();
         // castOptions.receiverApplicationId = "925B4C3C";
         // castOptions.androidReceiverCompatible = true;
         // context.setOptions(castOptions);
 
 
-        // const controls = cast.framework.ui.Controls.getInstance();
-        // controls.clearDefaultSlotAssignments();
+        const controls = cast.framework.ui.Controls.getInstance();
+        controls.clearDefaultSlotAssignments();
 
-        // // Assign buttons to control slots.
-        // controls.assignButton(
-        //     cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
-        //     cast.framework.ui.ControlsButton.QUEUE_PREV
-        // );
-        // controls.assignButton(
-        //     cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
-        //     cast.framework.ui.ControlsButton.CAPTIONS
-        // );
-        // controls.assignButton(
-        //     cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
-        //     cast.framework.ui.ControlsButton.SEEK_FORWARD_15
-        // );
-        // controls.assignButton(
-        //     cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
-        //     cast.framework.ui.ControlsButton.QUEUE_NEXT
-        // );
+        // Assign buttons to control slots.
+        controls.assignButton(
+            cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
+            cast.framework.ui.ControlsButton.QUEUE_PREV
+        );
+        controls.assignButton(
+            cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
+            cast.framework.ui.ControlsButton.CAPTIONS
+        );
+        controls.assignButton(
+            cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
+            cast.framework.ui.ControlsButton.SEEK_FORWARD_15
+        );
+        controls.assignButton(
+            cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
+            cast.framework.ui.ControlsButton.QUEUE_NEXT
+        );
 
         /*
          * Configure the CastReceiverOptions.
          */
-        // const castReceiverOptions = new cast.framework.CastReceiverOptions();
-        // castReceiverOptions.playbackConfig = playbackConfig;
-        // castReceiverOptions.skipPlayersLoad = true;
-        // castReceiverOptions.disableIdleTimeout = true;
-        // castReceiverOptions.supportedCommands =
-        //     cast.framework.messages.Command.ALL_BASIC_MEDIA |
-        //     cast.framework.messages.Command.QUEUE_PREV |
-        //     cast.framework.messages.Command.QUEUE_NEXT |
-        //     cast.framework.messages.Command.STREAM_TRANSFER;
-        // castReceiverOptions.customNamespaces = {};
-        // castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
+        const castReceiverOptions = new cast.framework.CastReceiverOptions();
+        castReceiverOptions.playbackConfig = playbackConfig;
+        castReceiverOptions.skipPlayersLoad = true;
+        castReceiverOptions.disableIdleTimeout = true;
+        castReceiverOptions.supportedCommands =
+            cast.framework.messages.Command.ALL_BASIC_MEDIA |
+            cast.framework.messages.Command.QUEUE_PREV |
+            cast.framework.messages.Command.QUEUE_NEXT |
+            cast.framework.messages.Command.STREAM_TRANSFER;
+        castReceiverOptions.customNamespaces = {};
+        castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
 
         /**
          * Enable Android TV Receiver (ATV) integration.
@@ -83,20 +80,23 @@
          * Make sure you have configured your Android package name in the
          * Google Cast Developer Console for this Application ID.
          */
-
-        // castReceiverOptions.receiverApplicationId = "925B4C3C";
         // castReceiverOptions.androidReceiverCompatible = true;
 
-        context.start();
-        // context.start(castReceiverOptions);
+        context.start(castReceiverOptions);
 
         window.playerManager = playerManager;
-    </script>
+    </script> -->
 
-  <script type="module" crossorigin src="/assets/index-Cn4JDLQg.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-BnviBBSj.css">
 </head>
 <body>
-<div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip text-white"></div>
+<!-- <div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip text-white"></div>
+<script src="/src/main.ts" type="module"></script> -->
+<cast-media-player></cast-media-player>
+<script>
+  const context = cast.framework.CastReceiverContext.getInstance();
+  const playerManager = context.getPlayerManager();
+
+  context.start();
+</script>
 </body>
 </html>
