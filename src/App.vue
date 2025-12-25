@@ -244,17 +244,17 @@ onMounted(() => {
         // Haal het token uit de customData die je vanuit Kotlin meestuurt
         const token = loadRequestData.media.customData.bearerToken;
 
-        playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
-          requestInfo.withCredentials = true;
-          requestInfo.headers = requestInfo.headers || {};
-          requestInfo.headers['Authorization'] = 'Bearer ' + token;
-        };
+        // playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
+        //   requestInfo.withCredentials = true;
+        //   requestInfo.headers = requestInfo.headers || {};
+        //   requestInfo.headers['Authorization'] = 'Bearer ' + token;
+        // };
 
-        playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
-          requestInfo.withCredentials = true;
-          requestInfo.headers = requestInfo.headers || {};
-          requestInfo.headers['Authorization'] = 'Bearer ' + token;
-        };
+        // playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
+        //   requestInfo.withCredentials = true;
+        //   requestInfo.headers = requestInfo.headers || {};
+        //   requestInfo.headers['Authorization'] = 'Bearer ' + token;
+        // };
 
         return loadRequestData;
     }
