@@ -92,98 +92,98 @@ function setupPlayer(customData: CustomData) {
 
 }
 
-onMounted(() => {
-  const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
-  const ctx = cast.framework.CastReceiverContext.getInstance();
+// onMounted(() => {
+//   const NAMESPACE = 'urn:x-cast:tv.nomercy.app';
+//   const ctx = cast.framework.CastReceiverContext.getInstance();
 
-  if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
-    console.warn('playerManager or interceptor not available');
-    return;
-  }
+//   if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
+//     console.warn('playerManager or interceptor not available');
+//     return;
+//   }
 
-  window.playerManager.setMessageInterceptor(
-    'LOAD',
-    (event: framework.events.Event & { media?: { customData?: CustomData | string }; data?: any }) => {
-      console.log("LOAD interceptor triggered", event);
+//   window.playerManager.setMessageInterceptor(
+//     'LOAD',
+//     (event: framework.events.Event & { media?: { customData?: CustomData | string }; data?: any }) => {
+//       console.log("LOAD interceptor triggered", event);
 
-      let customData = event?.media?.customData;
-      if (customData && typeof customData === 'string') {
-        try {
-          customData = JSON.parse(customData);
-        } catch (e) {
-          console.warn('Failed to parse customData string', e);
-        }
-      }
+//       let customData = event?.media?.customData;
+//       if (customData && typeof customData === 'string') {
+//         try {
+//           customData = JSON.parse(customData);
+//         } catch (e) {
+//           console.warn('Failed to parse customData string', e);
+//         }
+//       }
 
-      if (!customData) {
-        console.log('No custom data, using default player');
-        return event; // Let Cast handle normally
-      }
+//       if (!customData) {
+//         console.log('No custom data, using default player');
+//         return event; // Let Cast handle normally
+//       }
 
-      try {
-        const videoId = (customData as CustomData).videoId;
-        const type = (customData as CustomData).type || 'movie';
-        let deepLink = `tv.nomercy.app://${type}/${videoId}/watch`;
+//       try {
+//         const videoId = (customData as CustomData).videoId;
+//         const type = (customData as CustomData).type || 'movie';
+//         let deepLink = `tv.nomercy.app://${type}/${videoId}/watch`;
 
-        if (!videoId) {
-          deepLink = (customData as CustomData).deepLink
-        }
+//         if (!videoId) {
+//           deepLink = (customData as CustomData).deepLink
+//         }
 
 
-        console.log("Opening native app with deep link:", deepLink);
+//         console.log("Opening native app with deep link:", deepLink);
 
-        // Notify all connected senders (optional) that we're attempting to open the native app.
-        try {
-          ctx.sendCustomMessage(NAMESPACE, undefined, {
-            type: 'LAUNCH_NATIVE_APP',
-            deepLink,
-            videoId,
-            videoType: type
-          });
-        } catch (err) {
-          console.warn('Failed to send LAUNCH_NATIVE_APP message', err);
-        }
-        // 
-        // Attempt to open the native Android TV app. Try multiple strategies:
-        // 1) Standard deep link (tv.nomercy.app://...)
-        // 2) Android intent: some WebViews / Cast receiver environments respond better to intent URIs
-        // 3) As a last resort, create an iframe (older trick). We try 1 then 2 quickly.
-        try {
-          // Primary deep link
-          window.location.href = deepLink;
+//         // Notify all connected senders (optional) that we're attempting to open the native app.
+//         try {
+//           ctx.sendCustomMessage(NAMESPACE, undefined, {
+//             type: 'LAUNCH_NATIVE_APP',
+//             deepLink,
+//             videoId,
+//             videoType: type
+//           });
+//         } catch (err) {
+//           console.warn('Failed to send LAUNCH_NATIVE_APP message', err);
+//         }
+//         // 
+//         // Attempt to open the native Android TV app. Try multiple strategies:
+//         // 1) Standard deep link (tv.nomercy.app://...)
+//         // 2) Android intent: some WebViews / Cast receiver environments respond better to intent URIs
+//         // 3) As a last resort, create an iframe (older trick). We try 1 then 2 quickly.
+//         try {
+//           // Primary deep link
+//           window.location.href = deepLink;
 
-          // Also attempt an intent: sometimes required to trigger Play Store or package launch on Android.
-          const intentUrl = `intent://${type}/${videoId}/watch#Intent;scheme=tv.nomercy.app;package=tv.nomercy.app;end`;
-          // Try intent shortly after (non-blocking)
-          setTimeout(() => {
-            try { window.location.href = intentUrl; } catch (_) { /* ignore */ }
-          }, 300);
-        } catch (err) {
-          // If direct navigation is blocked, try iframe fallback
-          try {
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = deepLink;
-            document.body.appendChild(iframe);
-            setTimeout(() => document.body.removeChild(iframe), 1000);
-          } catch (_) { /* ignore */ }
-        }
+//           // Also attempt an intent: sometimes required to trigger Play Store or package launch on Android.
+//           const intentUrl = `intent://${type}/${videoId}/watch#Intent;scheme=tv.nomercy.app;package=tv.nomercy.app;end`;
+//           // Try intent shortly after (non-blocking)
+//           setTimeout(() => {
+//             try { window.location.href = intentUrl; } catch (_) { /* ignore */ }
+//           }, 300);
+//         } catch (err) {
+//           // If direct navigation is blocked, try iframe fallback
+//           try {
+//             const iframe = document.createElement('iframe');
+//             iframe.style.display = 'none';
+//             iframe.src = deepLink;
+//             document.body.appendChild(iframe);
+//             setTimeout(() => document.body.removeChild(iframe), 1000);
+//           } catch (_) { /* ignore */ }
+//         }
 
-        // If the native app doesn't open within 2s, fall back to the receiver's player UI.
-        setTimeout(() => {
-          setupPlayer(customData as CustomData);
-        }, 2000);
+//         // If the native app doesn't open within 2s, fall back to the receiver's player UI.
+//         setTimeout(() => {
+//           setupPlayer(customData as CustomData);
+//         }, 2000);
 
-        // Prevent Cast framework from loading its own media player for this LOAD event
-        return null;
-      } catch (err) {
-        console.warn('LOAD interceptor failed', err);
-        setupPlayer(customData);
-        return event;
-      }
-    }
-  );
-});
+//         // Prevent Cast framework from loading its own media player for this LOAD event
+//         return null;
+//       } catch (err) {
+//         console.warn('LOAD interceptor failed', err);
+//         setupPlayer(customData);
+//         return event;
+//       }
+//     }
+//   );
+// });
 
 // onMounted(() => {
 //   const NAMESPACE = 'urn:x-cast:tv.nomercy.app.intent';
@@ -228,19 +228,56 @@ onMounted(() => {
 //   );
 // });
 
-onUnmounted(() => {
-  player.value?.dispose();
+onMounted(() => {
+  const ctx = cast.framework.CastReceiverContext.getInstance();
+  const playerManager = ctx.getPlayerManager();
+
+  if (!window.playerManager || !window.playerManager.setMessageInterceptor) {
+    console.warn('playerManager or interceptor not available');
+    return;
+  }
+
+  window.playerManager.setMessageInterceptor(
+      'LOAD',
+      loadRequestData => {
+        show.value = true;
+        // Haal het token uit de customData die je vanuit Kotlin meestuurt
+        const token = loadRequestData.media.customData.bearerToken;
+
+        playerManager.getPlaybackConfig().manifestRequestHandler = requestInfo => {
+          requestInfo.withCredentials = true;
+          requestInfo.headers = requestInfo.headers || {};
+          requestInfo.headers['Authorization'] = 'Bearer ' + token;
+        };
+
+        playerManager.getPlaybackConfig().segmentRequestHandler = requestInfo => {
+          requestInfo.withCredentials = true;
+          requestInfo.headers = requestInfo.headers || {};
+          requestInfo.headers['Authorization'] = 'Bearer ' + token;
+        };
+
+        return loadRequestData;
+    }
+  );
 });
+
+// onUnmounted(() => {
+//   player.value?.dispose();
+// });
 
 </script>
 
 <template>
-  <div class="absolute inset-0 flex h-full w-full overflow-clip bg-black z-1199" :class="{
+  <!-- <div class="absolute inset-0 flex h-full w-full overflow-clip bg-black z-1199" :class="{
     'opacity-0': !show,
     'opacity-100': show
   }">
     <div id="player1" class="group nomercyplayer"></div>
-  </div>
+  </div> -->
+  <cast-media-player :class="{
+    'opacity-0': !show,
+    'opacity-100': show
+  }"></cast-media-player>
 
   <div v-if="!show"
     class="w-full h-full flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#232323] to-[#161616] px-[100px] py-[45px]">
