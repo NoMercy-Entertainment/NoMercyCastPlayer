@@ -28,50 +28,50 @@
         /*
          * Set the player configuration.
          */
-        const playbackConfig = new cast.framework.PlaybackConfig();
-        playbackConfig.autoResumeDuration = 5;
-        playbackConfig.manifestRequestHandler = requestInfo => {
-            requestInfo.withCredentials = true;
-        };
+        // const playbackConfig = new cast.framework.PlaybackConfig();
+        // playbackConfig.autoResumeDuration = 5;
+        // playbackConfig.manifestRequestHandler = requestInfo => {
+        //     requestInfo.withCredentials = true;
+        //   };
         // const castOptions = new CastOptions();
         // castOptions.receiverApplicationId = "925B4C3C";
         // castOptions.androidReceiverCompatible = true;
         // context.setOptions(castOptions);
 
 
-        const controls = cast.framework.ui.Controls.getInstance();
-        controls.clearDefaultSlotAssignments();
+        // const controls = cast.framework.ui.Controls.getInstance();
+        // controls.clearDefaultSlotAssignments();
 
-        // Assign buttons to control slots.
-        controls.assignButton(
-            cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
-            cast.framework.ui.ControlsButton.QUEUE_PREV
-        );
-        controls.assignButton(
-            cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
-            cast.framework.ui.ControlsButton.CAPTIONS
-        );
-        controls.assignButton(
-            cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
-            cast.framework.ui.ControlsButton.SEEK_FORWARD_15
-        );
-        controls.assignButton(
-            cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
-            cast.framework.ui.ControlsButton.QUEUE_NEXT
-        );
+        // // Assign buttons to control slots.
+        // controls.assignButton(
+        //     cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
+        //     cast.framework.ui.ControlsButton.QUEUE_PREV
+        // );
+        // controls.assignButton(
+        //     cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
+        //     cast.framework.ui.ControlsButton.CAPTIONS
+        // );
+        // controls.assignButton(
+        //     cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
+        //     cast.framework.ui.ControlsButton.SEEK_FORWARD_15
+        // );
+        // controls.assignButton(
+        //     cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
+        //     cast.framework.ui.ControlsButton.QUEUE_NEXT
+        // );
 
         /*
          * Configure the CastReceiverOptions.
          */
-        const castReceiverOptions = new cast.framework.CastReceiverOptions();
-        castReceiverOptions.playbackConfig = playbackConfig;
+        // const castReceiverOptions = new cast.framework.CastReceiverOptions();
+        // castReceiverOptions.playbackConfig = playbackConfig;
         // castReceiverOptions.skipPlayersLoad = true;
-        castReceiverOptions.disableIdleTimeout = true;
-        castReceiverOptions.supportedCommands =
-            cast.framework.messages.Command.ALL_BASIC_MEDIA |
-            cast.framework.messages.Command.QUEUE_PREV |
-            cast.framework.messages.Command.QUEUE_NEXT |
-            cast.framework.messages.Command.STREAM_TRANSFER;
+        // castReceiverOptions.disableIdleTimeout = true;
+        // castReceiverOptions.supportedCommands =
+        //     cast.framework.messages.Command.ALL_BASIC_MEDIA |
+        //     cast.framework.messages.Command.QUEUE_PREV |
+        //     cast.framework.messages.Command.QUEUE_NEXT |
+        //     cast.framework.messages.Command.STREAM_TRANSFER;
         // castReceiverOptions.customNamespaces = {};
         // castReceiverOptions.customNamespaces[NAMESPACE] = cast.framework.system.MessageType.JSON;
 
@@ -87,12 +87,13 @@
         // castReceiverOptions.receiverApplicationId = "925B4C3C";
         // castReceiverOptions.androidReceiverCompatible = true;
 
-        context.start(castReceiverOptions);
+        context.start();
+        // context.start(castReceiverOptions);
 
         window.playerManager = playerManager;
     </script>
 
-  <script type="module" crossorigin src="/assets/index-Eq6QZDJ9.js"></script>
+  <script type="module" crossorigin src="/assets/index-Cn4JDLQg.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-BnviBBSj.css">
 </head>
 <body>
