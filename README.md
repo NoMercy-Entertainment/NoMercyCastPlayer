@@ -1,12 +1,12 @@
-# NoMercyCastPlayer
+# nomercy-cast-player
 
-**NoMercyCastPlayer** is a Chromecast Receiver app built to work with the [NoMercyVideoPlayer](https://github.com/NoMercy-Entertainment/NoMercyVideoPlayer). It serves as a lightweight, event-driven application designed to stream media content seamlessly from your NoMercy MediaServer.
+**nomercy-cast-player** is a Chromecast Receiver app built to work with the [nomercy-video-player](https://github.com/NoMercy-Entertainment/nomercy-video-player). It serves as a lightweight, event-driven application designed to stream media content seamlessly from your NoMercy MediaServer.
 
 ## Cast Application ID
 This project is associated with the Cast Application ID: `925B4C3C`.
 
 ## Features
-- Uses the NoMercyVideoPlayer for video playback.
+- Uses the nomercy-video-player for video playback.
 - Supports custom playlists in multiple formats.
 - Accepts media configuration via `CustomData`.
 - Communicates with the server via a SignalR `/castHub` socket.
@@ -31,7 +31,7 @@ The `playlist` property can accept:
 2. **An array of `PlaylistItem` objects**.
 
 #### Type definitions
-Refer to the [NoMercyVideoPlayer README](https://github.com/NoMercy-Entertainment/NoMercyVideoPlayer?tab=readme-ov-file#playlistitem) for a detailed definition of the `PlaylistItem` format.
+Refer to the [nomercy-video-player README](https://github.com/NoMercy-Entertainment/nomercy-video-player?tab=readme-ov-file#playlistitem) for a detailed definition of the `PlaylistItem` format.
 note: type definitions and api may not be 100% correct and are subject to change.
 
 ## SignalR Communication
