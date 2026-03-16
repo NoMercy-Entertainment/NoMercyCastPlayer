@@ -29,4 +29,7 @@ coverage
 
 *.tsbuildinfo
 
+# Yarn Berry
+.yarn/install-state.gz
+
 docs/
