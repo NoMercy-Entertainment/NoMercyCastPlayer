@@ -33,3 +33,14 @@ coverage
 .yarn/install-state.gz
 
 docs/
+# Environment
+.env
+.env.*
+!.env.example
+
+# Claude Code artifacts
+.claude/settings.local.json
+.claude/superpowers/
+.claude/memories/
+.claude/scheduled_tasks.lock
+.sperpowers/
