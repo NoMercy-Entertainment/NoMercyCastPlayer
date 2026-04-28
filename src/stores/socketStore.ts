@@ -2,7 +2,7 @@ import { ref, shallowRef } from 'vue'
 import { TypedHub } from '@/lib/signalr/hubs'
 import { buildHub, type HubName } from '@/lib/signalr/connection'
 import type { RefreshLibraryPayload } from '@/lib/signalr/events'
-import { invalidateAllLibrary, invalidateFromServer } from '@/queries/client'
+import { invalidateAllLibrary, invalidateFromServer } from '@/lib/queryShim'
 import { authStore } from './authStore'
 
 /**

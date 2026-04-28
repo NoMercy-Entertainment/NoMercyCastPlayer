@@ -47,10 +47,10 @@ export interface ContainerWrapper {
   properties?: Record<string, unknown>
 }
 
-export interface NMGridWrapper extends ContainerWrapper {}
-export interface NMListWrapper extends ContainerWrapper {}
-export interface NMContainerWrapper extends ContainerWrapper {}
-export interface NMCarouselWrapper extends ContainerWrapper {}
+export type NMGridWrapper = ContainerWrapper
+export type NMListWrapper = ContainerWrapper
+export type NMContainerWrapper = ContainerWrapper
+export type NMCarouselWrapper = ContainerWrapper
 
 export interface NMCardWrapper {
   id: string

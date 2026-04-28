@@ -95,7 +95,8 @@ export class TVOverlayPlugin {
       },
       onRestart: () => {
         this.closeAllPanels()
-        this.player.restart?.() ?? this.player.seek(0)
+        if (this.player.restart) this.player.restart()
+        else this.player.seek(0)
         this.player.play()
       },
       onShowEpisodes: () => this.showEpisodeScreen(),
