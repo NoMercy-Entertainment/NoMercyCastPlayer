@@ -1,2 +1,0 @@
-import{S as e,et as t,l as n,m as r,o as i,t as a}from"./_plugin-vue_export-helper-CkjBiJkb.js";var o={class:`fallback-poster`},s={class:`initials`},c=a(r({__name:`FallbackPoster`,props:{title:{}},setup(r){return(a,c)=>(e(),n(`div`,o,[i(`span`,s,t((r.title||`?`).slice(0,2).toUpperCase()),1)]))}}),[[`__scopeId`,`data-v-b78a8444`]]);export{c as t};
-//# sourceMappingURL=FallbackPoster-C24g0NX8.js.map
