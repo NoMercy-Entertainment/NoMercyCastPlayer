@@ -151,14 +151,14 @@ const isPulsing = computed(() => !isConnected.value);
 
 .phone {
 	position: relative;
-	width: 320px;
-	height: 360px;
+	width: 240px;
+	height: 268px;
 	z-index: 1;
 }
 
 .brand {
 	position: relative;
-	height: 64px;
+	height: 48px;
 	width: max-content;
 	z-index: 1;
 }
