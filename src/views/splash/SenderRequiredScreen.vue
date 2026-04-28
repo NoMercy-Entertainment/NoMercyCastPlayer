@@ -101,14 +101,14 @@ import splash from '@/assets/splash.png';
 
 .phone {
 	position: relative;
-	width: 208px;
-	height: 232px;
+	width: 320px;
+	height: 360px;
 	z-index: 1;
 }
 
 .brand {
 	position: relative;
-	height: 40px;
+	height: 64px;
 	width: max-content;
 	z-index: 1;
 }
