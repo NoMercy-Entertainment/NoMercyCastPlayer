@@ -1,0 +1,2 @@
+import{d as o,o as e,c as t,z as a,F as c,g as r,_ as l}from"./index-Cx0oZ1Qr.js";const d=o({__name:"Skeleton",props:{type:{},count:{}},setup(s){return(m,p)=>(e(),t("div",{class:a(["skeleton",`skeleton-${s.type??"card"}`])},[(e(!0),t(c,null,r(s.count??6,n=>(e(),t("div",{key:n,class:"skeleton-item"}))),128))],2))}}),i=l(d,[["__scopeId","data-v-b758693d"]]);export{i as S};
+//# sourceMappingURL=Skeleton-DsRkB8M3.js.map
