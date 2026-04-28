@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+
+@import './tokens.css';
+@import './tv-safe.css';
+
+@theme {
+  --color-bg-base: oklch(0.12 0.01 250);
+  --color-bg-elevated: oklch(0.18 0.015 250);
+  --color-text-primary: oklch(0.96 0 0);
+  --color-text-secondary: oklch(0.7 0 0);
+  --color-accent: oklch(0.7 0.18 35);
+  --radius-card: 12px;
+  --shadow-focus: 0 0 0 4px rgb(255 255 255 / 0.95);
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  overflow: hidden;
+}
+
+.cast-receiver-root {
+  background: var(--color-bg-base);
+}

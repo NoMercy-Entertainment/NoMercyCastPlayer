@@ -1,65 +1,29 @@
-<!-- <!DOCTYPE html>
-<html lang="">
-<head>
-    <meta charset="UTF-8"/>
-    <link href="/favicon.ico" rel="icon" type="image/svg+xml"/>
-
-    <meta content="viewport-fit=cover, width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
-          name="viewport"/>
-
-    <title>NoMercy Cast Player</title>
-
-    <meta content="NoMercy Cast Player" property="og:title"/>
-    <meta content="website" property="og:type"/>
-    <meta content="https://examples.nomercy.tv" property="og:url"/>
-
-    <meta content="NoMercy Cast Player" property="og:site_name"/>
-    <meta content="en_US" property="og:locale"/>
-
-    <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
-    <script src="https://www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
-
-</head>
-<body>
-<div id="app" class="w-screen h-screen flex flex-col inset-0 overflow-clip text-white"></div>
-<script src="/src/main.ts" type="module"></script>
-</body>
-</html> -->
-
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link href="/favicon.ico" rel="icon" type="image/svg+xml" />
 
-<head>
-  <title>NoMercy Cast Player</title>
-  <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
-</head>
+    <meta
+      content="viewport-fit=cover, width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
+      name="viewport"
+    />
 
-<body>
-  <cast-media-player></cast-media-player>
+    <title>NoMercy Cast Receiver</title>
 
-  <script>
-    const context = cast.framework.CastReceiverContext.getInstance();
-    const playerManager = context.getPlayerManager();
+    <meta content="NoMercy Cast Receiver" property="og:title" />
+    <meta content="website" property="og:type" />
+    <meta content="https://cast.nomercy.tv" property="og:url" />
+    <meta content="NoMercy" property="og:site_name" />
+    <meta content="en_US" property="og:locale" />
 
-    // **CRITICAL: Enable Android TV app launching**
-    const options = new cast.framework.CastReceiverOptions();
-    options.customNamespaces = {
-      'urn:x-cast:tv.nomercy.app': cast.framework.system.MessageType.JSON
-    };
+    <link rel="preload" as="image" href="/splash.png" />
 
-    // Tell Cast to prefer Android TV app over web receiver
-    options.androidReceiverCompatible = true;
-
-    // Listen for custom messages from phone
-    context.addCustomMessageListener('urn:x-cast:tv.nomercy.app', (customEvent) => {
-      console.log('Received custom message:', customEvent.data);
-      // Forward to Android TV app if running
-    });
-
-    // Start the receiver with Android TV support
-    context.start(options);
-  </script>
-</body>
-
+    <!-- Cast Application Framework — required globals -->
+    <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+  </head>
+  <body class="cast-receiver-root">
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

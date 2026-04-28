@@ -44,3 +44,4 @@ docs/
 .claude/memories/
 .claude/scheduled_tasks.lock
 .sperpowers/
+.archive-v0/

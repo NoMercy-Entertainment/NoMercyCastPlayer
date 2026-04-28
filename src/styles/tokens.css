@@ -1,0 +1,18 @@
+/* Design tokens shared across receiver components.
+ * Tailwind v4 reads color/radius tokens from @theme block in tailwind.css;
+ * this file owns motion + sizing tokens that don't fit @theme. */
+
+:root {
+  --tv-safe-padding: 5%;
+  --rail-card-width: 240px;
+  --rail-card-height: 360px;
+  --rail-card-gap: 16px;
+  --rail-header-height: 48px;
+  --topnav-height: 64px;
+  --backdrop-blur: 32px;
+  --motion-fast: 150ms ease-out;
+  --motion-page: 200ms ease-out;
+  --focus-ring-color: rgb(255 255 255 / 0.95);
+  --focus-ring-width: 4px;
+  --focus-ring-offset: 4px;
+}
