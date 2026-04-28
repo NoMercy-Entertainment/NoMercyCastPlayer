@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>NoMercy Cast Receiver</title>
+	<script>
+		// Single Page Apps for GitHub Pages — pre-router redirect.
+		// MIT License — https://github.com/rafgraph/spa-github-pages
+		// Converts the requested URL into a single redirect query string and
+		// hops to index.html, where main.ts decodes it back into the real
+		// path before Vue Router takes over.
+		var pathSegmentsToKeep = 0;
+		var l = window.location;
+		l.replace(
+			l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+			l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+			l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+			(l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+			l.hash
+		);
+	</script>
+</head>
+<body></body>
+</html>
