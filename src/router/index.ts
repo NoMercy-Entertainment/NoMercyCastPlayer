@@ -1,24 +1,37 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { authStore } from '@/stores/authStore'
 
 /**
- * Phase 1 router stub — only the splash routes exist. Phase 4 adds
- * AppShell + Home + lazy view registration; Phase 5+ fill out browse
- * surfaces; Phases 8-9 add /now-playing and /watch.
+ * Two-tier routing per spec §10.6 (KeepAlive cache):
+ *   - Splash routes (no shell) — render before auth lands
+ *   - Shell routes — wrapped in AppShell with backdrop + topnav + KeepAlive
  *
- * Lazy `defineAsyncComponent`-style imports are used directly via dynamic
- * `import()` so unused chunks aren't paid for at boot.
+ * Lazy chunks via dynamic import() — unused phases stay out of the initial
+ * bundle. Phases 5-9 add concrete views inside AppShell's children.
  */
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/',
+    path: '/sender-required',
+    name: 'sender-required',
+    component: () => import('@/views/splash/SenderRequiredScreen.vue'),
+  },
+  {
+    path: '/splash',
     name: 'splash',
     component: () => import('@/views/splash/ReadyToCastScreen.vue'),
   },
   {
-    path: '/sender-required',
-    name: 'sender-required',
-    component: () => import('@/views/splash/SenderRequiredScreen.vue'),
+    path: '/',
+    component: () => import('@/layout/AppShell.vue'),
+    children: [
+      {
+        path: '',
+        name: 'home',
+        component: () => import('@/views/home/HomeScreen.vue'),
+      },
+      // Phases 5-9 land their concrete views as additional children.
+    ],
   },
 ]
 
@@ -31,8 +44,6 @@ if (import.meta.env.DEV) {
 }
 
 routes.push({
-  // Phases 4-9 land their concrete views; for now park unknown intents
-  // on the splash so dispatched intents don't crash the router.
   path: '/:pathMatch(.*)*',
   redirect: '/',
 })
@@ -43,6 +54,21 @@ export const router = createRouter({
   scrollBehavior(_to, _from, savedPosition) {
     return savedPosition ?? { top: 0 }
   },
+})
+
+/**
+ * Auth guard per spec §13 Phase 1 + Phase 4 — pre-auth, send to splash.
+ * Receiver waits for LAUNCH customData before rendering protected routes.
+ * Once customData is consumed, the navStore dispatches the initial intent
+ * which routes to home/watch/now-playing as appropriate.
+ */
+router.beforeEach((to) => {
+  if (to.name === 'sender-required' || to.name === 'splash') return true
+  if (import.meta.env.DEV && to.name === 'dev-focus-playground') return true
+  if (!authStore.ready.value) {
+    return { name: 'splash', replace: true }
+  }
+  return true
 })
 
 export default router

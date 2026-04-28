@@ -47,3 +47,13 @@ const STALE_SWEEP_INTERVAL_MS = 30 * 60_000
 window.setInterval(() => {
   scheduleIdle(() => staleSweep(), { timeout: 5_000 })
 }, STALE_SWEEP_INTERVAL_MS)
+
+// Pre-warm common server-component renderers per spec §11.3. Idle-fenced
+// so they don't fight the home query for first-paint bandwidth.
+scheduleIdle(() => {
+  void import('./server-components/NMCarousel.vue')
+  void import('./server-components/NMGrid.vue')
+  void import('./server-components/NMHomeCard.vue')
+  void import('./server-components/NMHero.vue')
+  void import('./server-components/NMCard.vue')
+})
