@@ -1,2 +1,0 @@
-import{Q as s,u,a as t}from"./client-BAMlt8fl.js";import{l as o,q as i}from"./index-Cx0oZ1Qr.js";import{u as n}from"./EmptyState-CIa9YPUA.js";async function c(a){const e=await t({path:`/api/v1/music/${a.replace(/^\//,"")}`,method:"GET"});return Array.isArray(e)?e:e.components??[]}function f(a){const e=o(()=>[...s.musicCards(a.value)]),r=u({queryKey:e,queryFn:()=>c(a.value),...i.standard});return n(e.value,r.data,r.isLoading,r.isFetching),r}export{f as u};
-//# sourceMappingURL=useMusicCardQuery-Dph1esp_.js.map
