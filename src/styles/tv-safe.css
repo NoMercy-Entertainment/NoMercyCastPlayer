@@ -2,25 +2,25 @@
  * Browser-native focus ring; we don't paint our own. */
 
 [data-focusable]:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: var(--focus-ring-offset);
-  border-radius: inherit;
+	outline: var(--focus-ring-width) solid var(--focus-ring-color);
+	outline-offset: var(--focus-ring-offset);
+	border-radius: inherit;
 }
 
 [data-focusable].card:focus-visible {
-  transform: scale(1.05);
-  z-index: 2;
+	transform: scale(1.05);
+	z-index: 2;
 }
 
 [data-focusable].card {
-  transition: transform var(--motion-fast);
-  will-change: transform;
+	transition: transform var(--motion-fast);
+	will-change: transform;
 }
 
 .rail-track > [data-focusable]:focus-visible {
-  scroll-margin-inline: 25vw;
+	scroll-margin-inline: 25vw;
 }
 
 .tv-safe-container {
-  padding-inline: var(--tv-safe-padding);
+	padding-inline: var(--tv-safe-padding);
 }

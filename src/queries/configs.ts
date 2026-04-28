@@ -8,26 +8,26 @@
  */
 
 export const queryConfigs = {
-  realtime: {
-    staleTime: 30_000,
-    gcTime: 60_000,
-  },
-  standard: {
-    staleTime: 5 * 60_000,
-    gcTime: 10 * 60_000,
-  },
-  static: {
-    staleTime: 30 * 60_000,
-    gcTime: 60 * 60_000,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-  },
-  infinite: {
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-  },
-} as const
+	realtime: {
+		staleTime: 30_000,
+		gcTime: 60_000,
+	},
+	standard: {
+		staleTime: 5 * 60_000,
+		gcTime: 10 * 60_000,
+	},
+	static: {
+		staleTime: 30 * 60_000,
+		gcTime: 60 * 60_000,
+		refetchOnMount: false,
+		refetchOnReconnect: false,
+	},
+	infinite: {
+		staleTime: Infinity,
+		gcTime: Infinity,
+		refetchOnMount: false,
+		refetchOnReconnect: false,
+	},
+} as const;
 
-export type QueryConfigKey = keyof typeof queryConfigs
+export type QueryConfigKey = keyof typeof queryConfigs;

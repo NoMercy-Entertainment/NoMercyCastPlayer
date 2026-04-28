@@ -7,16 +7,16 @@
 </script>
 
 <template>
-  <section class="lyrics-stub">
-    <p>Lyrics coming soon.</p>
-  </section>
+	<section class="lyrics-stub">
+		<p>Lyrics coming soon.</p>
+	</section>
 </template>
 
 <style scoped>
 .lyrics-stub {
-  padding: 32px;
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-size: 18px;
+	padding: 32px;
+	text-align: center;
+	color: var(--color-text-secondary);
+	font-size: 18px;
 }
 </style>

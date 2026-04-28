@@ -1,14 +1,17 @@
+import type {
+	HubConnection,
+	IRetryPolicy,
+	RetryContext,
+} from '@microsoft/signalr';
 import {
-  HubConnection,
-  HubConnectionBuilder,
-  HttpTransportType,
-  LogLevel,
-  type IRetryPolicy,
-  type RetryContext,
-} from '@microsoft/signalr'
-import { authStore } from '@/stores/authStore'
+	HttpTransportType,
+	HubConnectionBuilder,
+	LogLevel,
 
-export type HubName = 'videoHub' | 'musicHub' | 'deviceHub'
+} from '@microsoft/signalr';
+import { authStore } from '@/stores/authStore';
+
+export type HubName = 'videoHub' | 'musicHub' | 'deviceHub';
 
 /**
  * Forever-retry policy per spec §9.1. Receiver never gives up — server may
@@ -17,16 +20,21 @@ export type HubName = 'videoHub' | 'musicHub' | 'deviceHub'
  * steady at 30s indefinitely.
  */
 const foreverRetry: IRetryPolicy = {
-  nextRetryDelayInMilliseconds(ctx: RetryContext): number {
-    const elapsed = ctx.elapsedMilliseconds
-    if (elapsed < 1_000) return 0
-    if (elapsed < 5_000) return 1_000
-    if (elapsed < 15_000) return 2_000
-    if (elapsed < 30_000) return 5_000
-    if (elapsed < 60_000) return 10_000
-    return 30_000
-  },
-}
+	nextRetryDelayInMilliseconds(ctx: RetryContext): number {
+		const elapsed = ctx.elapsedMilliseconds;
+		if (elapsed < 1_000)
+			return 0;
+		if (elapsed < 5_000)
+			return 1_000;
+		if (elapsed < 15_000)
+			return 2_000;
+		if (elapsed < 30_000)
+			return 5_000;
+		if (elapsed < 60_000)
+			return 10_000;
+		return 30_000;
+	},
+};
 
 /**
  * Build a hub connection bound to the current cast session.
@@ -36,20 +44,22 @@ const foreverRetry: IRetryPolicy = {
  * — Cast hardware handles WS fine and we skip the negotiation roundtrip
  * latency.
  */
-export function buildHub(name: HubName): HubConnection {
-  const baseUrl = authStore.serverUrl.value
-  if (!baseUrl) {
-    throw new Error(`buildHub("${name}") called before authStore.serverUrl is populated`)
-  }
-  const url = `${baseUrl.replace(/\/$/, '')}/${name}`
+const TRAILING_SLASH = /\/$/;
 
-  return new HubConnectionBuilder()
-    .withUrl(url, {
-      accessTokenFactory: () => authStore.accessToken.value ?? '',
-      transport: HttpTransportType.WebSockets,
-      skipNegotiation: true,
-    })
-    .withAutomaticReconnect(foreverRetry)
-    .configureLogging(LogLevel.Warning)
-    .build()
+export function buildHub(name: HubName): HubConnection {
+	const baseUrl = authStore.serverUrl.value;
+	if (!baseUrl) {
+		throw new Error(`buildHub("${name}") called before authStore.serverUrl is populated`);
+	}
+	const url = `${baseUrl.replace(TRAILING_SLASH, '')}/${name}`;
+
+	return new HubConnectionBuilder()
+		.withUrl(url, {
+			accessTokenFactory: () => authStore.accessToken.value ?? '',
+			transport: HttpTransportType.WebSockets,
+			skipNegotiation: true,
+		})
+		.withAutomaticReconnect(foreverRetry)
+		.configureLogging(LogLevel.Warning)
+		.build();
 }

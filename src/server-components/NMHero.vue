@@ -1,97 +1,102 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useFocusEntry } from '@/composables/useFocusEntry'
-import { buildImageUrl, BACKDROP_SIZE } from '@/lib/images/urls'
-import type { NMCardWrapper, Update } from './types'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useFocusEntry } from '@/composables/useFocusEntry';
+import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
+import type { NMCardWrapper, Update } from './types';
 
 const props = defineProps<{
-  id: string
-  data: NMCardWrapper
-  update?: Update
-}>()
+	id: string;
+	data: NMCardWrapper;
+	update?: Update;
+}>();
 
-const router = useRouter()
-const el = ref<HTMLElement | null>(null)
-const imageUrl = buildImageUrl(props.data.image, BACKDROP_SIZE)
-const logoUrl = buildImageUrl(props.data.logo, { width: 480 })
+const router = useRouter();
+const el = ref<HTMLElement | null>(null);
+const imageUrl = buildImageUrl(props.data.image, BACKDROP_SIZE);
+const logoUrl = buildImageUrl(props.data.logo, { width: 480 });
 
 useFocusEntry({
-  key: props.id,
-  el,
-  onAction: () => {
-    if (props.data.link) router.push(props.data.link)
-  },
-})
+	key: props.id,
+	el,
+	onAction: () => {
+		if (props.data.link)
+			router.push(props.data.link);
+	},
+});
 </script>
 
 <template>
-  <section ref="el" class="hero" data-focusable tabindex="0" role="button">
-    <div class="art">
-      <img v-if="imageUrl" :src="imageUrl" :alt="props.data.title ?? ''" decoding="async" />
-      <div class="scrim" />
-    </div>
-    <div class="meta">
-      <img v-if="logoUrl" :src="logoUrl" :alt="props.data.title ?? ''" class="logo" />
-      <h1 v-else class="title">{{ props.data.title }}</h1>
-      <p v-if="props.data.description" class="description">{{ props.data.description }}</p>
-    </div>
-  </section>
+	<section ref="el" class="hero" data-focusable tabindex="0" role="button">
+		<div class="art">
+			<img v-if="imageUrl" :src="imageUrl" :alt="props.data.title ?? ''" decoding="async">
+			<div class="scrim" />
+		</div>
+		<div class="meta">
+			<img v-if="logoUrl" :src="logoUrl" :alt="props.data.title ?? ''" class="logo">
+			<h1 v-else class="title">
+				{{ props.data.title }}
+			</h1>
+			<p v-if="props.data.description" class="description">
+				{{ props.data.description }}
+			</p>
+		</div>
+	</section>
 </template>
 
 <style scoped>
 .hero {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 21/9;
-  display: block;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  contain: layout paint;
-  outline: none;
-  overflow: hidden;
-  border-radius: var(--radius-card);
+	position: relative;
+	width: 100%;
+	aspect-ratio: 21/9;
+	display: block;
+	border: 0;
+	padding: 0;
+	background: transparent;
+	cursor: pointer;
+	contain: layout paint;
+	outline: none;
+	overflow: hidden;
+	border-radius: var(--radius-card);
 }
 .art {
-  position: absolute;
-  inset: 0;
+	position: absolute;
+	inset: 0;
 }
 .art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 .scrim {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, transparent 30%, oklch(0 0 0 / 0.6) 100%),
-    linear-gradient(90deg, oklch(0 0 0 / 0.6) 0%, transparent 50%);
+	position: absolute;
+	inset: 0;
+	background:
+		linear-gradient(180deg, transparent 30%, oklch(0 0 0 / 0.6) 100%),
+		linear-gradient(90deg, oklch(0 0 0 / 0.6) 0%, transparent 50%);
 }
 .meta {
-  position: absolute;
-  inset: auto 5% 8% 5%;
-  max-width: 60%;
+	position: absolute;
+	inset: auto 5% 8% 5%;
+	max-width: 60%;
 }
 .logo {
-  max-height: 120px;
-  max-width: 480px;
+	max-height: 120px;
+	max-width: 480px;
 }
 .title {
-  margin: 0;
-  font-size: 56px;
-  font-weight: 700;
+	margin: 0;
+	font-size: 56px;
+	font-weight: 700;
 }
 .description {
-  margin: 12px 0 0;
-  font-size: 18px;
-  color: var(--color-text-secondary);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+	margin: 12px 0 0;
+	font-size: 18px;
+	color: var(--color-text-secondary);
+	line-height: 1.4;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 </style>

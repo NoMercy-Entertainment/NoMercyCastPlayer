@@ -6,12 +6,12 @@ on:
     paths:
       - 'src/**'
       - 'public/**'
-      - 'package.json'
-      - 'yarn.lock'
-      - 'index.html'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
-      - 'tailwind.config.cjs'
+      - package.json
+      - yarn.lock
+      - index.html
+      - vite.config.ts
+      - tsconfig.json
+      - tailwind.config.cjs
     branches:
       - master
 

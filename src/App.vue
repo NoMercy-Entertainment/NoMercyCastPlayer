@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { authStore } from '@/stores/authStore'
-import { useDPad } from '@/composables/useDPad'
-import { screensaverStore } from '@/stores/screensaverStore'
-import SenderRequiredScreen from '@/views/splash/SenderRequiredScreen.vue'
-import ScreensaverOverlay from '@/layout/ScreensaverOverlay.vue'
+import { computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { authStore } from '@/stores/authStore';
+import { useDPad } from '@/composables/useDPad';
+import { screensaverStore } from '@/stores/screensaverStore';
+import SenderRequiredScreen from '@/views/splash/SenderRequiredScreen.vue';
+import ScreensaverOverlay from '@/layout/ScreensaverOverlay.vue';
 
 /**
  * Root layout. Phase 1 only renders splash routes via <RouterView>;
@@ -21,28 +21,29 @@ import ScreensaverOverlay from '@/layout/ScreensaverOverlay.vue'
  * sender-required splash.
  */
 
-const router = useRouter()
-useDPad(router)
+const router = useRouter();
+useDPad(router);
 
-const inDegraded = computed(() => authStore.receiverState.value === 'DEGRADED')
+const inDegraded = computed(() => authStore.receiverState.value === 'DEGRADED');
 
 onMounted(() => {
-  // Kick off the idle timer so the screensaver can fire the first time
-  // even if no key has been pressed yet (long-running cast sessions
-  // sometimes never see initial input).
-  screensaverStore.resetIdle()
+	// Kick off the idle timer so the screensaver can fire the first time
+	// even if no key has been pressed yet (long-running cast sessions
+	// sometimes never see initial input).
+	screensaverStore.resetIdle();
 
-  document.addEventListener('visibilitychange', () => {
-    console.debug('[app] visibilitychange', document.visibilityState)
-    // Reset idle on resume so the overlay doesn't pop instantly when
-    // cast_shell unsuspends us.
-    if (document.visibilityState === 'visible') screensaverStore.resetIdle()
-  })
-})
+	document.addEventListener('visibilitychange', () => {
+		console.debug('[app] visibilitychange', document.visibilityState);
+		// Reset idle on resume so the overlay doesn't pop instantly when
+		// cast_shell unsuspends us.
+		if (document.visibilityState === 'visible')
+			screensaverStore.resetIdle();
+	});
+});
 </script>
 
 <template>
-  <SenderRequiredScreen v-if="inDegraded" />
-  <RouterView v-else />
-  <ScreensaverOverlay />
+	<SenderRequiredScreen v-if="inDegraded" />
+	<RouterView v-else />
+	<ScreensaverOverlay />
 </template>

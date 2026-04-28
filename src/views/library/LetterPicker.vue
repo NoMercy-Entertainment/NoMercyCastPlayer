@@ -7,28 +7,30 @@
  * hook supports server-side letter-jump endpoints.
  */
 defineProps<{
-  letters?: string[]
-}>()
+	letters?: string[];
+}>();
 </script>
 
 <template>
-  <aside v-if="letters?.length" class="letter-picker">
-    <ul>
-      <li v-for="l in letters" :key="l">{{ l }}</li>
-    </ul>
-  </aside>
+	<aside v-if="letters?.length" class="letter-picker">
+		<ul>
+			<li v-for="l in letters" :key="l">
+				{{ l }}
+			</li>
+		</ul>
+	</aside>
 </template>
 
 <style scoped>
 .letter-picker {
-  position: fixed;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: oklch(1 0 0 / 0.06);
-  border-radius: 8px;
-  padding: 8px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
+	position: fixed;
+	right: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: oklch(1 0 0 / 0.06);
+	border-radius: 8px;
+	padding: 8px;
+	font-size: 12px;
+	color: var(--color-text-secondary);
 }
 </style>

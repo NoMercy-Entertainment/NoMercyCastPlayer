@@ -1,141 +1,145 @@
-import { socketStore } from '@/stores/socketStore'
-import { playbackStore, type CurrentTrackSnapshot } from '@/stores/playbackStore'
+import { socketStore } from '@/stores/socketStore';
+import { playbackStore } from '@/stores/playbackStore';
+import type { CurrentTrackSnapshot } from '@/stores/playbackStore';
 
-type Throttled<T extends (...args: never[]) => void> = T
+type Throttled<T extends (...args: never[]) => void> = T;
 
 function throttle<T extends (...args: never[]) => void>(fn: T, ms: number): Throttled<T> {
-  let last = 0
-  let pending: ReturnType<typeof setTimeout> | null = null
-  return ((...args: never[]) => {
-    const now = Date.now()
-    if (now - last >= ms) {
-      last = now
-      fn(...args)
-    } else if (pending === null) {
-      pending = setTimeout(
-        () => {
-          last = Date.now()
-          pending = null
-          fn(...args)
-        },
-        ms - (now - last),
-      )
-    }
-  }) as Throttled<T>
+	let last = 0;
+	let pending: ReturnType<typeof setTimeout> | null = null;
+	return ((...args: never[]) => {
+		const now = Date.now();
+		if (now - last >= ms) {
+			last = now;
+			fn(...args);
+		}
+		else if (pending === null) {
+			pending = setTimeout(
+				() => {
+					last = Date.now();
+					pending = null;
+					fn(...args);
+				},
+				ms - (now - last),
+			);
+		}
+	}) as Throttled<T>;
 }
 
 interface MusicEngineLike {
-  on: (event: string, handler: (...args: unknown[]) => void) => void
-  off: (event: string, handler?: (...args: unknown[]) => void) => void
-  play: () => void
-  pause: () => void
-  next: () => void
-  previous: () => void
-  seek: (seconds: number) => void
-  loadTrack?: (data: unknown) => void
-  applyServerState?: (state: unknown) => void
-  currentTrack?: () => CurrentTrackSnapshot
+	on: (event: string, handler: (...args: unknown[]) => void) => void;
+	off: (event: string, handler?: (...args: unknown[]) => void) => void;
+	play: () => void;
+	pause: () => void;
+	next: () => void;
+	previous: () => void;
+	seek: (seconds: number) => void;
+	loadTrack?: (data: unknown) => void;
+	applyServerState?: (state: unknown) => void;
+	currentTrack?: () => CurrentTrackSnapshot;
 }
 
-let engine: MusicEngineLike | null = null
-const unsubs: Array<() => void> = []
+let engine: MusicEngineLike | null = null;
+const unsubs: Array<() => void> = [];
 
 function bindOutbound(p: MusicEngineLike): void {
-  // Player events → SignalR. Server tracks state, propagates to other senders.
-  const onPlay = (): void => {
-    void socketStore.musicHub.value?.invoke('PlayCommand')
-    playbackStore.music.applyPlayState(true)
-  }
-  const onPause = (): void => {
-    void socketStore.musicHub.value?.invoke('PauseCommand')
-    playbackStore.music.applyPlayState(false)
-  }
-  const onNext = (): void => {
-    void socketStore.musicHub.value?.invoke('NextCommand')
-  }
-  const onPrev = (): void => {
-    void socketStore.musicHub.value?.invoke('PreviousCommand')
-  }
-  const onSeek = (...args: unknown[]): void => {
-    const t = args[0] as number
-    void socketStore.musicHub.value?.invoke('SeekCommand', Math.round(t * 1000))
-  }
-  const onTime = throttle((...args: unknown[]) => {
-    const data = args[0] as { currentTime?: number; position?: number } | number
-    const seconds = typeof data === 'number' ? data : (data.position ?? data.currentTime ?? 0)
-    playbackStore.music.applyTime(Math.round(seconds * 1000))
-    void socketStore.musicHub.value?.invoke('SetTimeCommand', {
-      Time: Math.round(seconds * 1000),
-      TrackId: p.currentTrack?.()?.id,
-    })
-  }, 5000)
+	// Player events → SignalR. Server tracks state, propagates to other senders.
+	const onPlay = (): void => {
+		void socketStore.musicHub.value?.invoke('PlayCommand');
+		playbackStore.music.applyPlayState(true);
+	};
+	const onPause = (): void => {
+		void socketStore.musicHub.value?.invoke('PauseCommand');
+		playbackStore.music.applyPlayState(false);
+	};
+	const onNext = (): void => {
+		void socketStore.musicHub.value?.invoke('NextCommand');
+	};
+	const onPrev = (): void => {
+		void socketStore.musicHub.value?.invoke('PreviousCommand');
+	};
+	const onSeek = (...args: unknown[]): void => {
+		const t = args[0] as number;
+		void socketStore.musicHub.value?.invoke('SeekCommand', Math.round(t * 1000));
+	};
+	const onTime = throttle((...args: unknown[]) => {
+		const data = args[0] as { currentTime?: number; position?: number } | number;
+		const seconds = typeof data === 'number' ? data : (data.position ?? data.currentTime ?? 0);
+		playbackStore.music.applyTime(Math.round(seconds * 1000));
+		void socketStore.musicHub.value?.invoke('SetTimeCommand', {
+			Time: Math.round(seconds * 1000),
+			TrackId: p.currentTrack?.()?.id,
+		});
+	}, 5000);
 
-  p.on('play', onPlay)
-  p.on('pause', onPause)
-  p.on('next', onNext)
-  p.on('previous', onPrev)
-  p.on('seek', onSeek)
-  p.on('time', onTime)
+	p.on('play', onPlay);
+	p.on('pause', onPause);
+	p.on('next', onNext);
+	p.on('previous', onPrev);
+	p.on('seek', onSeek);
+	p.on('time', onTime);
 
-  unsubs.push(
-    () => p.off('play', onPlay),
-    () => p.off('pause', onPause),
-    () => p.off('next', onNext),
-    () => p.off('previous', onPrev),
-    () => p.off('seek', onSeek),
-    () => p.off('time', onTime),
-  )
+	unsubs.push(
+		() => p.off('play', onPlay),
+		() => p.off('pause', onPause),
+		() => p.off('next', onNext),
+		() => p.off('previous', onPrev),
+		() => p.off('seek', onSeek),
+		() => p.off('time', onTime),
+	);
 }
 
 function bindInbound(p: MusicEngineLike): void {
-  const hub = socketStore.musicHub.value
-  if (!hub) return
+	const hub = socketStore.musicHub.value;
+	if (!hub)
+		return;
 
-  const onPlay = (): void => p.play()
-  const onPause = (): void => p.pause()
-  const onNext = (): void => p.next()
-  const onPrev = (): void => p.previous()
-  const onSeek = (...args: unknown[]): void => p.seek((args[0] as number) / 1000)
-  const onLoad = (...args: unknown[]): void => p.loadTrack?.(args[0])
-  const onState = (...args: unknown[]): void => p.applyServerState?.(args[0])
+	const onPlay = (): void => p.play();
+	const onPause = (): void => p.pause();
+	const onNext = (): void => p.next();
+	const onPrev = (): void => p.previous();
+	const onSeek = (...args: unknown[]): void => p.seek((args[0] as number) / 1000);
+	const onLoad = (...args: unknown[]): void => p.loadTrack?.(args[0]);
+	const onState = (...args: unknown[]): void => p.applyServerState?.(args[0]);
 
-  hub.on('Play', onPlay)
-  hub.on('Pause', onPause)
-  hub.on('Next', onNext)
-  hub.on('Previous', onPrev)
-  hub.on('Seek', onSeek)
-  hub.on('LoadTrack', onLoad)
-  hub.on('MusicState', onState)
+	hub.on('Play', onPlay);
+	hub.on('Pause', onPause);
+	hub.on('Next', onNext);
+	hub.on('Previous', onPrev);
+	hub.on('Seek', onSeek);
+	hub.on('LoadTrack', onLoad);
+	hub.on('MusicState', onState);
 
-  unsubs.push(
-    () => hub.off('Play', onPlay),
-    () => hub.off('Pause', onPause),
-    () => hub.off('Next', onNext),
-    () => hub.off('Previous', onPrev),
-    () => hub.off('Seek', onSeek),
-    () => hub.off('LoadTrack', onLoad),
-    () => hub.off('MusicState', onState),
-  )
+	unsubs.push(
+		() => hub.off('Play', onPlay),
+		() => hub.off('Pause', onPause),
+		() => hub.off('Next', onNext),
+		() => hub.off('Previous', onPrev),
+		() => hub.off('Seek', onSeek),
+		() => hub.off('LoadTrack', onLoad),
+		() => hub.off('MusicState', onState),
+	);
 }
 
 export const musicSyncBridge = {
-  attach(e: MusicEngineLike): void {
-    engine = e
-    bindOutbound(e)
-    bindInbound(e)
-  },
-  detach(): void {
-    while (unsubs.length > 0) {
-      const fn = unsubs.pop()
-      try {
-        fn?.()
-      } catch {
-        // best-effort cleanup
-      }
-    }
-    engine = null
-  },
-  current(): MusicEngineLike | null {
-    return engine
-  },
-}
+	attach(e: MusicEngineLike): void {
+		engine = e;
+		bindOutbound(e);
+		bindInbound(e);
+	},
+	detach(): void {
+		while (unsubs.length > 0) {
+			const fn = unsubs.pop();
+			try {
+				fn?.();
+			}
+			catch {
+				// best-effort cleanup
+			}
+		}
+		engine = null;
+	},
+	current(): MusicEngineLike | null {
+		return engine;
+	},
+};

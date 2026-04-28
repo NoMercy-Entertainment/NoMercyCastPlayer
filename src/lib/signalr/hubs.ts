@@ -1,4 +1,4 @@
-import type { HubConnection } from '@microsoft/signalr'
+import type { HubConnection } from '@microsoft/signalr';
 
 /**
  * Typed thin wrappers around the three hubs receiver subscribes to per
@@ -11,34 +11,35 @@ import type { HubConnection } from '@microsoft/signalr'
  */
 
 export class TypedHub {
-  constructor(private readonly conn: HubConnection) {}
+	constructor(private readonly conn: HubConnection) {}
 
-  invoke<T = unknown>(method: string, ...args: unknown[]): Promise<T> {
-    return this.conn.invoke<T>(method, ...args)
-  }
+	invoke<T = unknown>(method: string, ...args: unknown[]): Promise<T> {
+		return this.conn.invoke<T>(method, ...args);
+	}
 
-  on(event: string, handler: (...args: unknown[]) => void): void {
-    this.conn.on(event, handler)
-  }
+	on(event: string, handler: (...args: unknown[]) => void): void {
+		this.conn.on(event, handler);
+	}
 
-  off(event: string, handler?: (...args: unknown[]) => void): void {
-    if (handler) this.conn.off(event, handler)
-    else this.conn.off(event)
-  }
+	off(event: string, handler?: (...args: unknown[]) => void): void {
+		if (handler)
+			this.conn.off(event, handler);
+		else this.conn.off(event);
+	}
 
-  get state(): string {
-    return this.conn.state
-  }
+	get state(): string {
+		return this.conn.state;
+	}
 
-  start(): Promise<void> {
-    return this.conn.start()
-  }
+	start(): Promise<void> {
+		return this.conn.start();
+	}
 
-  stop(): Promise<void> {
-    return this.conn.stop()
-  }
+	stop(): Promise<void> {
+		return this.conn.stop();
+	}
 
-  raw(): HubConnection {
-    return this.conn
-  }
+	raw(): HubConnection {
+		return this.conn;
+	}
 }

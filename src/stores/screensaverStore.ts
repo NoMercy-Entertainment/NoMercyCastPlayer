@@ -1,5 +1,5 @@
-import { ref } from 'vue'
-import { playbackStore } from './playbackStore'
+import { ref } from 'vue';
+import { playbackStore } from './playbackStore';
 
 /**
  * Idle / screensaver state per spec §12.11.
@@ -12,34 +12,35 @@ import { playbackStore } from './playbackStore'
  *   visible as ambient art (Spotify style).
  */
 
-const IDLE_TIMEOUT_MS = 5 * 60_000
+const IDLE_TIMEOUT_MS = 5 * 60_000;
 
-const active = ref(false)
-let idleTimer: number | null = null
+const active = ref(false);
+let idleTimer: number | null = null;
 
 function clearTimer(): void {
-  if (idleTimer !== null) {
-    window.clearTimeout(idleTimer)
-    idleTimer = null
-  }
+	if (idleTimer !== null) {
+		window.clearTimeout(idleTimer);
+		idleTimer = null;
+	}
 }
 
 function resetIdle(): void {
-  active.value = false
-  clearTimer()
-  idleTimer = window.setTimeout(() => {
-    if (playbackStore.video.playing.value) return
-    active.value = true
-  }, IDLE_TIMEOUT_MS)
+	active.value = false;
+	clearTimer();
+	idleTimer = window.setTimeout(() => {
+		if (playbackStore.video.playing.value)
+			return;
+		active.value = true;
+	}, IDLE_TIMEOUT_MS);
 }
 
 function deactivate(): void {
-  active.value = false
-  clearTimer()
+	active.value = false;
+	clearTimer();
 }
 
 export const screensaverStore = {
-  active,
-  resetIdle,
-  deactivate,
-}
+	active,
+	resetIdle,
+	deactivate,
+};

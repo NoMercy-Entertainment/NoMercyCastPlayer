@@ -13,50 +13,53 @@
  */
 
 interface PlayerLike {
-  on: (event: string, handler: (data: unknown) => void) => void
-  off: (event: string, handler?: (data: unknown) => void) => void
-  emit?: (event: string, data?: unknown) => void
-  getCurrentChapter?: () =>
-    | { id: string; type?: string; endTime?: number; startTime?: number }
-    | null
-  seek: (seconds: number) => void
+	on: (event: string, handler: (data: unknown) => void) => void;
+	off: (event: string, handler?: (data: unknown) => void) => void;
+	emit?: (event: string, data?: unknown) => void;
+	getCurrentChapter?: () =>
+		| { id: string; type?: string; endTime?: number; startTime?: number }
+		| null;
+	seek: (seconds: number) => void;
 }
 
-let lastChapterId: string | null = null
-const unsubs: Array<() => void> = []
+let lastChapterId: string | null = null;
+const unsubs: Array<() => void> = [];
 
-let userPrefAutoSkip = false
+let userPrefAutoSkip = false;
 export function setAutoSkipEnabled(enabled: boolean): void {
-  userPrefAutoSkip = enabled
+	userPrefAutoSkip = enabled;
 }
 
 export function attachChapterAutoSkip(player: PlayerLike): void {
-  const onTime = (): void => {
-    const chapter = player.getCurrentChapter?.()
-    if (!chapter || chapter.id === lastChapterId) return
+	const onTime = (): void => {
+		const chapter = player.getCurrentChapter?.();
+		if (!chapter || chapter.id === lastChapterId)
+			return;
 
-    if (chapter.type === 'credits' || chapter.type === 'intro') {
-      if (userPrefAutoSkip && typeof chapter.endTime === 'number') {
-        player.seek(chapter.endTime)
-      } else {
-        player.emit?.('chapter-skip-available', chapter)
-      }
-    }
+		if (chapter.type === 'credits' || chapter.type === 'intro') {
+			if (userPrefAutoSkip && typeof chapter.endTime === 'number') {
+				player.seek(chapter.endTime);
+			}
+			else {
+				player.emit?.('chapter-skip-available', chapter);
+			}
+		}
 
-    lastChapterId = chapter.id
-  }
+		lastChapterId = chapter.id;
+	};
 
-  player.on('time', onTime)
-  unsubs.push(() => player.off('time', onTime))
+	player.on('time', onTime);
+	unsubs.push(() => player.off('time', onTime));
 }
 
 export function detachChapterAutoSkip(): void {
-  while (unsubs.length > 0) {
-    try {
-      unsubs.pop()?.()
-    } catch {
-      // best-effort
-    }
-  }
-  lastChapterId = null
+	while (unsubs.length > 0) {
+		try {
+			unsubs.pop()?.();
+		}
+		catch {
+			// best-effort
+		}
+	}
+	lastChapterId = null;
 }

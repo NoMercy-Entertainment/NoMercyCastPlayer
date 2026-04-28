@@ -1,12 +1,12 @@
-import { createApp } from 'vue'
-import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
-import App from './App.vue'
-import router from './router'
-import { bootCastReceiver } from './cast/receiver'
-import { setQueryClient, defaultQueryClientOptions, staleSweep } from './queries/client'
-import { socketStore } from './stores/socketStore'
-import { scheduleIdle } from './composables/useIdleCallback'
-import './styles/tailwind.css'
+import { createApp } from 'vue';
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
+import App from './App.vue';
+import router from './router';
+import { bootCastReceiver } from './cast/receiver';
+import { defaultQueryClientOptions, setQueryClient, staleSweep } from './queries/client';
+import { socketStore } from './stores/socketStore';
+import { scheduleIdle } from './composables/useIdleCallback';
+import './styles/tailwind.css';
 
 /**
  * Bootstrap order:
@@ -21,39 +21,39 @@ import './styles/tailwind.css'
  * so cast.framework is available by the time bootCastReceiver fires.
  */
 
-const queryClient = new QueryClient(defaultQueryClientOptions)
-setQueryClient(queryClient)
+const queryClient = new QueryClient(defaultQueryClientOptions);
+setQueryClient(queryClient);
 
-const app = createApp(App)
-app.use(router)
-app.use(VueQueryPlugin, { queryClient })
+const app = createApp(App);
+app.use(router);
+app.use(VueQueryPlugin, { queryClient });
 
-app.mount('#app')
+app.mount('#app');
 
-bootCastReceiver(router)
+bootCastReceiver(router);
 
 // Foreground resume sweep — visibilitychange hidden→visible triggers
 // invalidateAllLibrary so we catch missed RefreshLibrary events while
 // cast_shell had us suspended.
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    socketStore.onForegroundResume()
-  }
-})
+	if (document.visibilityState === 'visible') {
+		socketStore.onForegroundResume();
+	}
+});
 
 // Stale sweep timer per spec §6.5. Every 30 minutes, idle-fenced, walk
 // the cache and invalidate queries older than 3 hours.
-const STALE_SWEEP_INTERVAL_MS = 30 * 60_000
+const STALE_SWEEP_INTERVAL_MS = 30 * 60_000;
 window.setInterval(() => {
-  scheduleIdle(() => staleSweep(), { timeout: 5_000 })
-}, STALE_SWEEP_INTERVAL_MS)
+	scheduleIdle(() => staleSweep(), { timeout: 5_000 });
+}, STALE_SWEEP_INTERVAL_MS);
 
 // Pre-warm common server-component renderers per spec §11.3. Idle-fenced
 // so they don't fight the home query for first-paint bandwidth.
 scheduleIdle(() => {
-  void import('./server-components/NMCarousel.vue')
-  void import('./server-components/NMGrid.vue')
-  void import('./server-components/NMHomeCard.vue')
-  void import('./server-components/NMHero.vue')
-  void import('./server-components/NMCard.vue')
-})
+	void import('./server-components/NMCarousel.vue');
+	void import('./server-components/NMGrid.vue');
+	void import('./server-components/NMHomeCard.vue');
+	void import('./server-components/NMHero.vue');
+	void import('./server-components/NMCard.vue');
+});
