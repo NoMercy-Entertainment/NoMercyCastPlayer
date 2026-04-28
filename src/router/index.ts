@@ -55,7 +55,27 @@ const routes: RouteRecordRaw[] = [
         name: 'person',
         component: () => import('@/views/person/PersonScreen.vue'),
       },
-      // Phases 6-9 land search / music / watch / now-playing.
+      {
+        path: 'music',
+        name: 'music',
+        component: () => import('@/views/music/MusicStartScreen.vue'),
+      },
+      {
+        path: 'music/genres',
+        name: 'music-genres',
+        component: () => import('@/views/music/MusicGenresScreen.vue'),
+      },
+      {
+        path: 'music/cards/:pathMatch(.*)*',
+        name: 'music-cards',
+        component: () => import('@/views/music/MusicCardsScreen.vue'),
+      },
+      {
+        path: 'music/:type/:id',
+        name: 'music-list',
+        component: () => import('@/views/music/MusicListScreen.vue'),
+      },
+      // Phases 8-9 land now-playing / watch.
     ],
   },
 ]
