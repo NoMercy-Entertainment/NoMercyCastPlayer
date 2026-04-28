@@ -30,7 +30,27 @@ const routes: RouteRecordRaw[] = [
         name: 'home',
         component: () => import('@/views/home/HomeScreen.vue'),
       },
-      // Phases 5-9 land their concrete views as additional children.
+      {
+        path: 'libraries',
+        name: 'libraries',
+        component: () => import('@/views/libraries/LibrariesScreen.vue'),
+      },
+      {
+        path: 'library/:pathMatch(.*)*',
+        name: 'library',
+        component: () => import('@/views/library/LibraryScreen.vue'),
+      },
+      {
+        path: 'info/:type/:id',
+        name: 'info',
+        component: () => import('@/views/info/InfoScreen.vue'),
+      },
+      {
+        path: 'person/:id',
+        name: 'person',
+        component: () => import('@/views/person/PersonScreen.vue'),
+      },
+      // Phases 6-9 land search / music / watch / now-playing.
     ],
   },
 ]
