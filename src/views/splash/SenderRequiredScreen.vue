@@ -1,53 +1,126 @@
 <script setup lang="ts">
+import logoWide from '@/assets/logo-wide.svg';
+import mobile from '@/assets/mobile.svg';
+import splash from '@/assets/splash.png';
+
 /**
- * DEGRADED-state splash per spec §3.2 + §8.5.
- * Refresh failure → "Re-cast from your phone to continue."
- * Receiver doesn't auto-end the session; cast_shell decides when to unload.
+ * DEGRADED-state splash per spec §3.2 + §8.5. Same composition as
+ * ReadyToCastScreen so the receiver's visual identity holds across
+ * states — only the messaging changes. Refresh failure → "Re-cast
+ * from your phone to continue." Receiver doesn't auto-end the
+ * session; cast_shell decides when to unload.
  */
 </script>
 
 <template>
-	<main class="degraded">
-		<div class="card">
-			<div class="icon" aria-hidden="true">
-				↻
+	<main class="splash">
+		<img class="bg" :src="splash" alt="" aria-hidden="true">
+
+		<section class="content">
+			<div class="status-row">
+				<h1 class="status-text pulse">
+					Re-cast from your phone
+				</h1>
 			</div>
-			<h1>Re-cast from your phone</h1>
-			<p>
-				Your cast session expired. Open NoMercy on your phone or desktop and
-				cast to this device to continue.
+
+			<p class="instructions">
+				<span>Your cast session expired. Open NoMercy on your phone or desktop and tap the</span>
+				<br>
+				<span class="emphasis">Chromecast</span>
+				<span> button to continue.</span>
 			</p>
-		</div>
+		</section>
+
+		<img class="phone" :src="mobile" alt="" aria-hidden="true">
+
+		<img class="brand" :src="logoWide" alt="NoMercy">
 	</main>
 </template>
 
 <style scoped>
-.degraded {
+.splash {
 	width: 100%;
 	height: 100%;
-	display: grid;
-	place-items: center;
-	background: var(--color-bg-base);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	position: relative;
+	overflow: hidden;
+	background: linear-gradient(180deg, #232323, #161616);
+	padding: 45px 100px;
 }
-.card {
-	text-align: center;
-	padding: 64px;
-	max-width: 720px;
+
+.bg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	pointer-events: none;
+	opacity: 0.6;
 }
-.icon {
-	font-size: 80px;
-	color: var(--color-accent);
-	margin-bottom: 16px;
+
+.content {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	width: 720px;
+	z-index: 1;
 }
-h1 {
-	font-size: 40px;
-	font-weight: 700;
-	margin: 0 0 16px;
+
+.status-row {
+	display: flex;
+	align-items: center;
+	gap: 16px;
 }
-p {
-	font-size: 20px;
-	color: var(--color-text-secondary);
-	line-height: 1.5;
+
+.status-text {
 	margin: 0;
+	font-size: 40px;
+	font-weight: 900;
+	color: #ededed;
+	line-height: 1;
+}
+
+.pulse {
+	animation: pulse 2s ease-in-out infinite;
+}
+
+.instructions {
+	margin: 0;
+	font-size: 20px;
+	color: #ededed;
+	line-height: 1.4;
+}
+
+.emphasis {
+	font-weight: 700;
+}
+
+.phone {
+	position: relative;
+	width: 208px;
+	height: 232px;
+	z-index: 1;
+}
+
+.brand {
+	position: relative;
+	height: 40px;
+	width: max-content;
+	z-index: 1;
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 0.7;
+	}
+
+	50% {
+		opacity: 1;
+	}
 }
 </style>

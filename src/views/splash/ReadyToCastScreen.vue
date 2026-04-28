@@ -1,76 +1,82 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { authStore } from '@/stores/authStore';
+import { socketStore } from '@/stores/socketStore';
+import logoWide from '@/assets/logo-wide.svg';
+import mobile from '@/assets/mobile.svg';
+import splash from '@/assets/splash.png';
 
-const stateLabel = computed(() => {
+/**
+ * Splash screen styled to match the original cast-player aesthetic so
+ * the receiver shares visual language with sender apps. Wired to
+ * authStore + socketStore reactive state — no debug console (TV
+ * burn-in risk; dev playground at /__focus is the diagnostic surface
+ * during development).
+ */
+
+const status = computed(() => {
 	switch (authStore.receiverState.value) {
 		case 'LOADING':
 			return 'Connecting…';
 		case 'AUTHED':
-			return 'Authenticated';
+			return 'Connecting to your server…';
 		case 'CONNECTING':
 			return 'Connecting to your server…';
 		case 'READY':
-			return 'Ready';
-		case 'DEGRADED':
-			return 'Degraded';
+			return 'Ready to cast';
 		case 'TEARDOWN':
 			return 'Closing';
 		default:
-			return '';
+			return 'Ready to cast';
 	}
 });
 
-const userLabel = computed(() => {
+const userName = computed(() => {
 	const claims = authStore.userClaims.value;
 	if (!claims)
 		return '';
-	return (claims.display_name as string) ?? (claims.preferred_username as string) ?? (claims.sub as string) ?? '';
+	return (claims.display_name as string) ?? (claims.preferred_username as string) ?? '';
 });
 
-const expiryLabel = computed(() => {
-	const exp = authStore.expiresAtMs.value;
-	if (!exp)
-		return '';
-	const minutes = Math.max(0, Math.round((exp - Date.now()) / 60_000));
-	return `Token valid for ${minutes} min`;
-});
+const isConnected = computed(() => socketStore.connectionState.value === 'connected');
+const isPulsing = computed(() => !isConnected.value);
 </script>
 
 <template>
 	<main class="splash">
-		<div class="splash-card">
-			<div class="logo-mark" aria-hidden="true">
-				NM
+		<img class="bg" :src="splash" alt="" aria-hidden="true">
+
+		<section class="content">
+			<div class="status-row">
+				<h1 class="status-text" :class="[{ pulse: isPulsing }]">
+					{{ status }}
+				</h1>
+				<div
+					v-if="isConnected"
+					class="dot"
+					title="Connected"
+				/>
 			</div>
-			<h1 class="brand">
-				NoMercy
-			</h1>
-			<p class="subline">
-				Cast Receiver
+
+			<p class="instructions">
+				<template v-if="userName">
+					<span>Hi <strong>{{ userName }}</strong>, to start casting tap the</span>
+					<br>
+					<span class="emphasis">Chromecast</span>
+					<span> button in the NoMercy app.</span>
+				</template>
+				<template v-else>
+					<span>To start casting audio or video tap the</span>
+					<br>
+					<span class="emphasis">Chromecast</span>
+					<span> button in the MediaPlayer or App.</span>
+				</template>
 			</p>
+		</section>
 
-			<div v-if="authStore.ready.value" class="status">
-				<p class="state-label">
-					{{ stateLabel }}
-				</p>
-				<p v-if="userLabel" class="user-label">
-					Signed in as <strong>{{ userLabel }}</strong>
-				</p>
-				<p v-if="expiryLabel" class="expiry-label">
-					{{ expiryLabel }}
-				</p>
-			</div>
+		<img class="phone" :src="mobile" alt="" aria-hidden="true">
 
-			<div v-else class="status">
-				<p class="state-label">
-					{{ stateLabel }}
-				</p>
-				<p class="hint">
-					Cast from your phone or desktop to start.
-				</p>
-			</div>
-		</div>
+		<img class="brand" :src="logoWide" alt="NoMercy">
 	</main>
 </template>
 
@@ -78,63 +84,93 @@ const expiryLabel = computed(() => {
 .splash {
 	width: 100%;
 	height: 100%;
-	display: grid;
-	place-items: center;
-	background:
-		radial-gradient(circle at 30% 30%, oklch(0.22 0.04 285 / 0.6), transparent 60%),
-		radial-gradient(circle at 70% 70%, oklch(0.22 0.06 35 / 0.5), transparent 60%), var(--color-bg-base);
-}
-.splash-card {
-	text-align: center;
 	display: flex;
 	flex-direction: column;
+	justify-content: space-between;
+	position: relative;
+	overflow: hidden;
+	background: linear-gradient(180deg, #232323, #161616);
+	padding: 45px 100px;
+}
+
+.bg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	pointer-events: none;
+}
+
+.content {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	width: 625px;
+	z-index: 1;
+}
+
+.status-row {
+	display: flex;
 	align-items: center;
 	gap: 16px;
-	padding: 64px;
-	border-radius: 32px;
-	background: oklch(0.16 0.01 250 / 0.6);
-	backdrop-filter: blur(24px);
 }
-.logo-mark {
-	font-size: 64px;
-	font-weight: 800;
-	letter-spacing: -2px;
-	background: linear-gradient(135deg, oklch(0.85 0.18 35), oklch(0.6 0.2 285));
-	-webkit-background-clip: text;
-	background-clip: text;
-	color: transparent;
+
+.status-text {
+	margin: 0;
+	font-size: 40px;
+	font-weight: 900;
+	color: #ededed;
+	line-height: 1;
 }
-.brand {
-	font-size: 48px;
+
+.status-text.pulse {
+	animation: pulse 2s ease-in-out infinite;
+}
+
+.dot {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: oklch(0.7 0.15 145);
+	animation: pulse 2s ease-in-out infinite;
+}
+
+.instructions {
+	margin: 0;
+	font-size: 20px;
+	color: #ededed;
+	line-height: 1.4;
+}
+
+.emphasis {
 	font-weight: 700;
-	margin: 0;
-	letter-spacing: -1px;
 }
-.subline {
-	font-size: 20px;
-	color: var(--color-text-secondary);
-	margin: 0;
+
+.phone {
+	position: relative;
+	width: 208px;
+	height: 232px;
+	z-index: 1;
 }
-.status {
-	margin-top: 24px;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
+
+.brand {
+	position: relative;
+	height: 40px;
+	width: max-content;
+	z-index: 1;
 }
-.state-label {
-	font-size: 20px;
-	font-weight: 600;
-	color: var(--color-accent);
-	margin: 0;
-}
-.user-label,
-.expiry-label,
-.hint {
-	font-size: 16px;
-	color: var(--color-text-secondary);
-	margin: 0;
-}
-.user-label strong {
-	color: var(--color-text-primary);
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 0.7;
+	}
+
+	50% {
+		opacity: 1;
+	}
 }
 </style>
