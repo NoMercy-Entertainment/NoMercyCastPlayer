@@ -19,6 +19,22 @@
 
 		<link rel="preload" as="image" href="/splash.png" />
 
+		<!-- SPA deep-link redirect for GitHub Pages — see public/404.html -->
+		<script>
+			(function (l) {
+				if (l.search[1] === '/') {
+					var decoded = l.search
+						.slice(1)
+						.split('&')
+						.map(function (s) {
+							return s.replace(/~and~/g, '&');
+						})
+						.join('?');
+					window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+				}
+			})(window.location);
+		</script>
+
 		<!-- Cast Application Framework — required globals -->
 		<script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
 		<script type="module" crossorigin src="/assets/index-ConmU-HL.js"></script>
