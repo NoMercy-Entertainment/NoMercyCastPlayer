@@ -75,7 +75,12 @@ const routes: RouteRecordRaw[] = [
         name: 'music-list',
         component: () => import('@/views/music/MusicListScreen.vue'),
       },
-      // Phases 8-9 land now-playing / watch.
+      {
+        path: 'now-playing',
+        name: 'now-playing',
+        component: () => import('@/views/now-playing/NowPlayingScreen.vue'),
+      },
+      // Phase 9 lands /watch.
     ],
   },
 ]
