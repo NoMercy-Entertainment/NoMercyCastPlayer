@@ -1,6 +1,7 @@
 import { onBeforeUnmount, onMounted } from 'vue'
 import type { Router } from 'vue-router'
 import { focusStore } from '@/stores/focusStore'
+import { screensaverStore } from '@/stores/screensaverStore'
 
 /**
  * Window-level D-pad handler per spec §10.5. Mounted once at App.vue.
@@ -32,6 +33,18 @@ export function useDPad(router: Router): void {
   function handler(e: KeyboardEvent): void {
     if (!DPAD_KEYS.has(e.key)) return
     if (isInputFocused()) return
+
+    // Any D-pad press resets the idle timer — and if the screensaver is
+    // active, the first press dismisses it without consuming the input
+    // for normal traversal. That way the ambient overlay clears
+    // immediately and the user's next intent (the same key, repeated)
+    // moves focus naturally.
+    const wasScreensaverActive = screensaverStore.active.value
+    screensaverStore.resetIdle()
+    if (wasScreensaverActive) {
+      e.preventDefault()
+      return
+    }
 
     const active = focusStore.activeGroup()
     let handled = false
