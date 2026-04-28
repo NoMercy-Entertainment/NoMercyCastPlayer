@@ -3,29 +3,26 @@ import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
 import App from './App.vue'
 import router from './router'
 import { bootCastReceiver } from './cast/receiver'
+import { setQueryClient, defaultQueryClientOptions, staleSweep } from './queries/client'
+import { socketStore } from './stores/socketStore'
+import { scheduleIdle } from './composables/useIdleCallback'
 import './styles/tailwind.css'
 
 /**
  * Bootstrap order:
- *   1. Construct query client (config tuned in Phase 2 — for now defaults).
+ *   1. Construct query client + register the singleton in queries/client.ts
+ *      so non-component code (stores, message handlers) can invalidate it.
  *   2. Mount Vue app with router + query client.
  *   3. Boot cast receiver — wires custom namespaces, attaches launch
- *      listener, dispatches initial intent into router.
+ *      listener, dispatches initial intent into router, kicks SignalR.
+ *   4. Wire visibilitychange + stale-sweep timer per spec §6.4 + §6.5.
  *
  * The CAF SDK is loaded synchronously in index.html before main.ts runs,
  * so cast.framework is available by the time bootCastReceiver fires.
  */
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60_000,
-      gcTime: 10 * 60_000,
-      retry: 2,
-      refetchOnWindowFocus: false,
-    },
-  },
-})
+const queryClient = new QueryClient(defaultQueryClientOptions)
+setQueryClient(queryClient)
 
 const app = createApp(App)
 app.use(router)
@@ -34,3 +31,19 @@ app.use(VueQueryPlugin, { queryClient })
 app.mount('#app')
 
 bootCastReceiver(router)
+
+// Foreground resume sweep — visibilitychange hidden→visible triggers
+// invalidateAllLibrary so we catch missed RefreshLibrary events while
+// cast_shell had us suspended.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    socketStore.onForegroundResume()
+  }
+})
+
+// Stale sweep timer per spec §6.5. Every 30 minutes, idle-fenced, walk
+// the cache and invalidate queries older than 3 hours.
+const STALE_SWEEP_INTERVAL_MS = 30 * 60_000
+window.setInterval(() => {
+  scheduleIdle(() => staleSweep(), { timeout: 5_000 })
+}, STALE_SWEEP_INTERVAL_MS)

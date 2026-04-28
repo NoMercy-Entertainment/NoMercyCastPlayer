@@ -4,6 +4,7 @@ import { attachLaunchListener, consumeLaunchAuth } from './launchAuth'
 import { attachMessageBus, onSenderIntent, onSenderLaunch } from './messageBus'
 import { authStore } from '@/stores/authStore'
 import { navStore } from '@/stores/navStore'
+import { socketStore } from '@/stores/socketStore'
 import type { LaunchCustomData } from '@/types/cast'
 
 /**
@@ -65,14 +66,14 @@ export function bootCastReceiver(router: Router): void {
   attachLaunchListener(context, (data: LaunchCustomData) => {
     if (consumeLaunchAuth(data)) {
       authStore.receiverState.value = 'AUTHED'
-      navStore.dispatchInitialIntent(data.intent, router)
+      void bootSocketsAndDispatch(data, router)
     }
   })
 
   onSenderLaunch((data) => {
     if (consumeLaunchAuth(data)) {
       authStore.receiverState.value = 'AUTHED'
-      navStore.dispatchInitialIntent(data.intent, router)
+      void bootSocketsAndDispatch(data, router)
     }
   })
 
@@ -81,8 +82,29 @@ export function bootCastReceiver(router: Router): void {
   })
 
   context.addEventListener('SHUTDOWN', () => {
+    void socketStore.disconnectAll()
     authStore.clear()
   })
 
   context.start(options)
+}
+
+/**
+ * Boot SignalR + dispatch initial intent. Sequenced so the receiver's
+ * Vue components can read live socket state (and fire RPC commands) by
+ * the time their first `onMounted` lifecycle runs.
+ *
+ * SignalR connection failure does NOT block intent dispatch — the UI
+ * shows the splash / browse view with the connection-state badge, and
+ * forever-retry recovers in the background.
+ */
+async function bootSocketsAndDispatch(
+  data: LaunchCustomData,
+  router: Router,
+): Promise<void> {
+  authStore.receiverState.value = 'CONNECTING'
+  void socketStore.connectAll().then(() => {
+    authStore.receiverState.value = 'READY'
+  })
+  navStore.dispatchInitialIntent(data.intent, router)
 }
