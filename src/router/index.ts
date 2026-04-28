@@ -20,13 +20,22 @@ const routes: RouteRecordRaw[] = [
     name: 'sender-required',
     component: () => import('@/views/splash/SenderRequiredScreen.vue'),
   },
-  {
-    // Phases 4-9 land their concrete views; for now park unknown intents
-    // on the splash so dispatched intents don't crash the router.
-    path: '/:pathMatch(.*)*',
-    redirect: '/',
-  },
 ]
+
+if (import.meta.env.DEV) {
+  routes.push({
+    path: '/__focus',
+    name: 'dev-focus-playground',
+    component: () => import('@/views/__test__/FocusPlayground.vue'),
+  })
+}
+
+routes.push({
+  // Phases 4-9 land their concrete views; for now park unknown intents
+  // on the splash so dispatched intents don't crash the router.
+  path: '/:pathMatch(.*)*',
+  redirect: '/',
+})
 
 export const router = createRouter({
   history: createWebHistory(),
