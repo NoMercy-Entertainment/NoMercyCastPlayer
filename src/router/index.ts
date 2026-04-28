@@ -22,6 +22,14 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/splash/ReadyToCastScreen.vue'),
   },
   {
+    // Watch is fullscreen — sits outside AppShell so the topnav and
+    // backdrop don't paint behind the video. Sender intent
+    // play_video routes here directly.
+    path: '/watch/:type/:id',
+    name: 'watch',
+    component: () => import('@/views/watch/WatchScreen.vue'),
+  },
+  {
     path: '/',
     component: () => import('@/layout/AppShell.vue'),
     children: [
