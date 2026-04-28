@@ -1,22 +1,16 @@
-name: Deploy to GitHub Pages
+name: CI
 
 on:
-  workflow_dispatch:
   push:
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
-      - 'yarn.lock'
-      - 'index.html'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
-      - 'tailwind.config.cjs'
+    branches-ignore:
+      - master
+      - gh-pages
+  pull_request:
     branches:
       - master
 
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -42,10 +36,3 @@ jobs:
 
       - name: Build
         run: yarn build
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          cname: cast.nomercy.tv

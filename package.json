@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint . --ext .ts,.vue --report-unused-disable-directives --max-warnings 0",
+		"lint:fix": "eslint --fix ./src --ext .ts,.vue --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,vue,css}\""
   },
   "dependencies": {
