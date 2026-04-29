@@ -65,23 +65,29 @@ export function attachLaunchListener(
 				: null,
 			customDataType: typeof customData,
 		};
-		// console.error gets through cast_shell's WebView filter; lower
-		// levels are dropped on production receivers. Tagged so we can grep.
-		console.error('[NM-DIAG-READY]', JSON.stringify(diag));
+		// cast_shell filters all console.* on production receivers. Use
+		// document.title — page title changes ARE logged by cast_shell.
+		const diagStr = JSON.stringify(diag);
 		try {
-			document.body.dataset.launchDiag = JSON.stringify(diag);
+			document.title = `NM-DIAG ${diagStr}`;
+			document.body.dataset.launchDiag = diagStr;
 		}
 		catch {
-			document.body.dataset.launchDiag = 'stringify-failed';
+			document.title = 'NM-DIAG stringify-failed';
 		}
+		console.error('[NM-DIAG-READY]', diagStr);
 		if (customData) {
 			const ok = consumeLaunchAuth(customData);
+			document.title = `NM-DIAG-CONSUME ok=${ok}`;
 			console.error('[NM-DIAG-CONSUME]', JSON.stringify({ ok }));
 			if (ok) {
 				const stored = (customData as LaunchCustomData) ?? null;
 				if (stored)
 					onIntent(stored);
 			}
+		}
+		else {
+			document.title = 'NM-DIAG no customData';
 		}
 	});
 
