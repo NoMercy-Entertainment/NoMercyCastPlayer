@@ -149,6 +149,7 @@ useFocusGroup({
 	position: absolute;
 	z-index: 2;
 	display: grid;
+	width: 100%;
 	grid-template-columns: 1fr 3fr 1fr;
 	align-items: center;
 	padding: 16px var(--tv-safe-padding);
