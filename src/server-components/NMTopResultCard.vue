@@ -52,12 +52,21 @@ useFocusEntry({
 	grid-template-columns: 200px 1fr;
 	gap: 24px;
 	padding: 24px;
-	border: 0;
+	border: 3px solid transparent;
 	background: oklch(0.18 0.01 250);
 	border-radius: var(--radius-card);
 	cursor: pointer;
 	outline: none;
 	text-align: start;
+	transition:
+		transform var(--motion-fast),
+		border-color var(--motion-fast),
+		box-shadow var(--motion-fast);
+}
+.top-result:focus-visible {
+	transform: translateY(-2px);
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .art {
 	width: 200px;
