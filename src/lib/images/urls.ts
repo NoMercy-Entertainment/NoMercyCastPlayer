@@ -121,6 +121,10 @@ export interface PaletteColors {
 
 const paletteCache = new WeakMap<PaletteColors, Map<string, string>>();
 
+function inRange(c: string | undefined, dark: number, light: number): boolean {
+	return !!c && !tooDark(c, dark) && !tooLight(c, light);
+}
+
 export function pickPaletteColor(color_palette?: PaletteColors | null | undefined, dark = 40, light = 120): string {
 	if (!color_palette || !color_palette.darkVibrant) {
 		return '';
@@ -134,24 +138,14 @@ export function pickPaletteColor(color_palette?: PaletteColors | null | undefine
 			return cached;
 	}
 
-	function inRange(c: string | undefined): boolean {
-		return !!c && !tooDark(c, dark) && !tooLight(c, light);
-	}
-
-	const result
-		= inRange(color_palette.darkVibrant)
-			? color_palette.darkVibrant!
-			: inRange(color_palette.primary)
-				? color_palette.primary!
-				: inRange(color_palette.dominant)
-					? color_palette.dominant!
-					: inRange(color_palette.lightVibrant)
-						? color_palette.lightVibrant!
-						: inRange(color_palette.darkMuted)
-							? color_palette.darkMuted!
-							: inRange(color_palette.lightMuted)
-								? color_palette.lightMuted!
-								: '';
+	const result = [
+		color_palette.darkVibrant,
+		color_palette.primary,
+		color_palette.dominant,
+		color_palette.lightVibrant,
+		color_palette.darkMuted,
+		color_palette.lightMuted,
+	].find(c => inRange(c, dark, light)) ?? '';
 
 	if (!cache) {
 		cache = new Map();

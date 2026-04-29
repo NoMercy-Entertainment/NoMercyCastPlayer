@@ -1,4 +1,4 @@
-import { pickPaletteColor } from '@/lib/images/urls';
+import { applyThemeColor } from '@/lib/theme';
 import { ref, watch } from 'vue';
 
 /**
@@ -8,23 +8,10 @@ import { ref, watch } from 'vue';
  *   val activeCardState = remember { MutableStateFlow(...) }
  *   val debouncedFlow = remember { activeCardState.debounce(...) }
  *
- * Debounce: 650ms on horizontal nav (rail scrubbing), 2000ms on
- * vertical nav (rail-to-rail). The APK switches based on
- * navbarBridge.lastNavigationDirection — useDPad calls
- * focusedCardStore.setNavDirection() each keypress so the next fire
- * picks the right delay.
+ * Debounce defaults: 650ms (horizontal nav) / 2000ms (vertical nav).
+ * The APK switches based on lastNavigationDirection; we use 650ms
+ * everywhere for now and tighten later if it feels wrong.
  */
-
-interface PaletteShape {
-	dominant?: string;
-	primary?: string;
-	lightVibrant?: string;
-	darkVibrant?: string;
-	lightMuted?: string;
-	darkMuted?: string;
-	light?: string;
-	dark?: string;
-}
 
 export interface FocusedCardData {
 	id?: string;
@@ -39,12 +26,9 @@ export interface FocusedCardData {
 	have_items?: number;
 	number_of_items?: number;
 	color_palette?: {
-		backdrop?: PaletteShape;
-		poster?: PaletteShape;
-		logo?: PaletteShape;
-		cover?: PaletteShape;
-		image?: PaletteShape;
-		profile?: PaletteShape;
+		backdrop?: { dominant?: string; light?: string; dark?: string; primary?: string };
+		poster?: { dominant?: string; light?: string; dark?: string; primary?: string };
+		logo?: { dominant?: string; light?: string; dark?: string; primary?: string };
 	};
 }
 
@@ -56,25 +40,13 @@ let pending: number | null = null;
 let lastNavDir: 'horizontal' | 'vertical' = 'horizontal';
 
 /*
- * Apply the focused card's palette as a CSS variable so the hero scrim,
- * focus borders, and rail accents pick it up automatically. APK
- * NMHomeCard prefers the backdrop palette on TV (since the backdrop
- * aspect dominates the hero area); fall through to poster / cover /
- * image / profile to cover the full media-type matrix.
+ * Apply the focused card's palette via the shared applyThemeColor
+ * helper so the hero scrim, focus borders, rail accents, mini-player,
+ * and OSD progress bar all pick it up via --color-primary.
  */
 function applyPalette(card: FocusedCardData | null): void {
-	const root = document.documentElement;
 	const palette = card?.color_palette;
-	const color
-		= pickPaletteColor(palette?.backdrop)
-			|| pickPaletteColor(palette?.poster)
-			|| pickPaletteColor(palette?.cover)
-			|| pickPaletteColor(palette?.image)
-			|| pickPaletteColor(palette?.profile);
-	if (color)
-		root.style.setProperty('--color-primary', color);
-	else
-		root.style.removeProperty('--color-primary');
+	applyThemeColor(palette?.poster ?? palette?.backdrop ?? null);
 }
 
 watch(_activeCard, (next) => {
