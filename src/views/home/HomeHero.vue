@@ -50,17 +50,17 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 			<div :key="transitionKey" class="content">
 				<img
 					v-if="logoUrl"
-					class="logo"
+					class="nm-hero-logo"
 					:src="logoUrl"
 					:alt="card.title ?? ''"
 				>
 				<SplitTitleText
 					v-else
 					:title="card.title"
-					main-class="hero-main"
-					subtitle-class="hero-sub"
+					main-class="nm-hero-title-main"
+					subtitle-class="nm-hero-title-sub"
 				/>
-				<p v-if="card.overview" class="overview">
+				<p v-if="card.overview" class="nm-hero-overview">
 					{{ card.overview }}
 				</p>
 			</div>
@@ -72,7 +72,7 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 .hero {
 	position: relative;
 	width: 100%;
-	height: 60vh;
+	height: 62vh;
 	overflow: hidden;
 	background: oklch(0.12 0.01 250);
 }
@@ -84,46 +84,12 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	position: absolute;
 	inset: 0;
 	width: 60%;
-	padding: 20px 16px 32px 40px;
+	padding: 32px 16px 32px 40px;
 	color: #fff;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	gap: 12px;
-}
-.logo {
-	max-width: 420px;
-	max-height: 96px;
-	object-fit: contain;
-	object-position: left center;
-	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
-}
-/* APK HeroRow uses SemiBold 28sp main, Medium 19sp sub */
-:deep(.hero-main) {
-	font-size: 28px;
-	font-weight: 600;
-	line-height: 1.1;
-	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-:deep(.hero-sub) {
-	font-size: 19px;
-	font-weight: 500;
-	line-height: 1.2;
-	color: oklch(0.92 0.005 250);
-	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-}
-.overview {
-	margin: 0;
-	font-size: 19px;
-	font-weight: 600;
-	line-height: 20px;
-	color: oklch(1 0 0);
-	display: -webkit-box;
-	-webkit-line-clamp: 5;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	max-width: 600px;
-	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+	gap: 18px;
 }
 
 .hero-fade-enter-active,

@@ -79,6 +79,50 @@
 	);
 }
 
+/* ─── Hero typography ───────────────────────────────────────────────── */
+
+/*
+ * APK HeroRow / NMHomeCardLeftColumn / InfoScreen all share the same
+ * title block: logo image (or SplitTitleText fallback at 28-36sp) +
+ * 14sp SemiBold overview clamped to 5-8 lines. Capture the SplitTitleText
+ * size pair here so each hero can pick the variant via class.
+ */
+.nm-hero-logo {
+	max-width: 420px;
+	max-height: 96px;
+	object-fit: contain;
+	object-position: left center;
+	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
+}
+.nm-hero-title-main {
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: -0.005em;
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+	color: #fff;
+}
+.nm-hero-title-sub {
+	font-size: 19px;
+	font-weight: 500;
+	line-height: 1.2;
+	color: oklch(0.92 0.005 250);
+	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+.nm-hero-overview {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.5;
+	color: oklch(1 0 0);
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	-webkit-line-clamp: 5;
+	max-width: 600px;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
 /* ─── Pill button (Watch / Details / Play) ──────────────────────────── */
 
 .nm-pill {

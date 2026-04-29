@@ -98,10 +98,10 @@ useFocusEntry({
 			</div>
 			<SplitTitleText
 				:title="props.data.title"
-				main-class="card-main"
-				subtitle-class="card-sub"
+				main-class="nm-hero-title-main"
+				subtitle-class="nm-hero-title-sub"
 			/>
-			<p v-if="overview" class="overview">
+			<p v-if="overview" class="nm-hero-overview">
 				{{ overview }}
 			</p>
 
@@ -201,31 +201,6 @@ useFocusEntry({
 	font-weight: 600;
 	letter-spacing: 0.05em;
 	color: oklch(0.85 0.01 250);
-}
-:deep(.card-main) {
-	font-size: 32px;
-	font-weight: 700;
-	line-height: 1.05;
-	letter-spacing: -0.01em;
-	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-:deep(.card-sub) {
-	font-size: 20px;
-	font-weight: 500;
-	line-height: 1.15;
-	color: oklch(0.92 0.005 250);
-	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-}
-.overview {
-	margin: 0;
-	font-size: 15px;
-	line-height: 1.45;
-	color: oklch(0.95 0.005 250);
-	display: -webkit-box;
-	-webkit-line-clamp: 5;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	max-width: 560px;
 }
 .actions {
 	display: flex;

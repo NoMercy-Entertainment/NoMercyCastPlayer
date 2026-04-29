@@ -185,7 +185,7 @@ async function toggleWatchlist(): Promise<void> {
 		<div class="hero-row">
 			<img
 				v-if="logoUrl"
-				class="logo"
+				class="nm-hero-logo"
 				:src="logoUrl"
 				:alt="info.title ?? ''"
 				loading="eager"
@@ -194,8 +194,8 @@ async function toggleWatchlist(): Promise<void> {
 			<SplitTitleText
 				v-else
 				:title="info.title"
-				main-class="info-title-main"
-				subtitle-class="info-title-sub"
+				main-class="nm-hero-title-main"
+				subtitle-class="nm-hero-title-sub"
 			/>
 
 			<div v-if="yearText || durationText || ratingText" class="meta-row">
@@ -206,7 +206,7 @@ async function toggleWatchlist(): Promise<void> {
 				<span v-if="ratingText">{{ ratingText }}</span>
 			</div>
 
-			<p v-if="info.overview" class="overview">
+			<p v-if="info.overview" class="nm-hero-overview info-overview">
 				{{ info.overview }}
 			</p>
 		</div>
@@ -314,28 +314,6 @@ async function toggleWatchlist(): Promise<void> {
 	padding: 80px 36px 24px 40px;
 	max-width: 720px;
 }
-.logo {
-	max-width: 280px;
-	max-height: 140px;
-	object-fit: contain;
-	margin-bottom: 16px;
-	filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.5));
-}
-:deep(.info-title-main) {
-	margin-bottom: 16px;
-	font-size: 36px;
-	font-weight: 700;
-	line-height: 1.05;
-	letter-spacing: -0.01em;
-	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-:deep(.info-title-sub) {
-	margin-bottom: 16px;
-	font-size: 22px;
-	font-weight: 500;
-	color: oklch(0.92 0.005 250);
-	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-}
 .meta-row {
 	display: flex;
 	gap: 8px;
@@ -344,16 +322,10 @@ async function toggleWatchlist(): Promise<void> {
 	margin-bottom: 12px;
 	letter-spacing: 0.02em;
 }
-.overview {
-	margin: 0;
-	font-size: 15px;
-	line-height: 1.5;
-	color: oklch(0.95 0.005 250);
-	display: -webkit-box;
+/* Info overview is a bit longer than the home hero — extend the line
+   clamp from the shared utility's 5 lines to 8. */
+.info-overview {
 	-webkit-line-clamp: 8;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 .actions {
 	position: relative;
