@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusEntry } from '@/composables/useFocusEntry';
+import { useFocusGroup } from '@/composables/useFocusGroup';
 import FallbackPoster from '@/components/cards/FallbackPoster.vue';
 import SplitTitleText from '@/components/text/SplitTitleText.vue';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
@@ -9,10 +10,9 @@ import type { NMHomeCardWrapper, Update } from './types';
 
 /*
  * Hero card on home — matches APK NMHomeCard.kt's TV layout:
- *   Edge-to-edge backdrop (TMDB w1280), gradient overlay anchored bottom-left,
- *   title + 7-line overview + Watch / Details buttons stacked in the left 60%
- *   of the card. Right column reserved for visual breathing room (and a
- *   trailer overlay slot in a follow-up).
+ *   Edge-to-edge backdrop, OverlayGradient scrim, Watch / Details
+ *   buttons stacked in the left 60%. Each button is individually
+ *   D-pad focusable (mirrors APK NMHomeCardLeftColumn LinkButtons).
  */
 const props = defineProps<{
 	id: string;
@@ -21,10 +21,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const el = ref<HTMLElement | null>(null);
 
-// Server payload uses backdrop / poster / image depending on the row context;
-// the hero on home prefers backdrop. Falls through poster → image otherwise.
 const imageSource
 	= (props.data as unknown as { backdrop?: string }).backdrop
 		?? (props.data as unknown as { poster?: string }).poster
@@ -47,28 +44,37 @@ const watchPath = computed(() => {
 
 const detailsPath = computed(() => props.data.link ?? null);
 
+const actionsEl = ref<HTMLElement | null>(null);
+useFocusGroup({
+	type: 'horizontal',
+	restorationKey: `home-card-${props.id}`,
+	containerEl: actionsEl,
+});
+
+const watchEl = ref<HTMLElement | null>(null);
+const detailsEl = ref<HTMLElement | null>(null);
+
 useFocusEntry({
-	key: props.id,
-	el,
+	key: `${props.id}-watch`,
+	el: watchEl,
 	onAction: () => {
 		if (watchPath.value)
 			router.push(watchPath.value);
 	},
 });
 
-function handleWatch(): void {
-	if (watchPath.value)
-		router.push(watchPath.value);
-}
-
-function handleDetails(): void {
-	if (detailsPath.value)
-		router.push(detailsPath.value);
-}
+useFocusEntry({
+	key: `${props.id}-details`,
+	el: detailsEl,
+	onAction: () => {
+		if (detailsPath.value)
+			router.push(detailsPath.value);
+	},
+});
 </script>
 
 <template>
-	<article ref="el" class="hero" data-focusable tabindex="0" role="button">
+	<section class="hero" :data-card-id="id">
 		<div class="art">
 			<img
 				v-if="imageUrl"
@@ -98,13 +104,15 @@ function handleDetails(): void {
 				{{ overview }}
 			</p>
 
-			<div class="actions">
+			<div ref="actionsEl" class="actions">
 				<button
 					v-if="watchPath"
+					ref="watchEl"
+					type="button"
 					class="btn btn-primary"
 					data-focusable
 					tabindex="0"
-					@click.prevent="handleWatch"
+					@click.prevent="watchPath && router.push(watchPath)"
 				>
 					<svg
 						width="16"
@@ -118,10 +126,12 @@ function handleDetails(): void {
 				</button>
 				<button
 					v-if="detailsPath"
+					ref="detailsEl"
+					type="button"
 					class="btn btn-secondary"
 					data-focusable
 					tabindex="0"
-					@click.prevent="handleDetails"
+					@click.prevent="detailsPath && router.push(detailsPath)"
 				>
 					<svg
 						width="16"
@@ -141,7 +151,7 @@ function handleDetails(): void {
 				</button>
 			</div>
 		</div>
-	</article>
+	</section>
 </template>
 
 <style scoped>
@@ -156,12 +166,6 @@ function handleDetails(): void {
 	border: 0;
 	background: oklch(0.12 0.01 250);
 	padding: 0;
-	cursor: pointer;
-	outline: none;
-}
-.hero:focus-visible {
-	outline: 3px solid var(--color-primary, oklch(0.7 0.2 285));
-	outline-offset: -3px;
 }
 .art {
 	position: absolute;
@@ -173,25 +177,26 @@ function handleDetails(): void {
 	object-fit: cover;
 	object-position: top;
 }
-/*
- * Bottom-left scrim mirroring the APK's OverlayGradient — readable text
- * on top of the backdrop without covering the full image.
- */
 .scrim {
 	position: absolute;
 	inset: 0;
-	background:
-		linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 45%, transparent 70%),
-		linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 60%);
+	background: radial-gradient(
+		ellipse 130% 130% at 80% -10%,
+		transparent 0%,
+		transparent 35%,
+		rgba(0, 0, 0, 0.85) 75%,
+		rgba(0, 0, 0, 1) 100%
+	);
 }
 .content {
 	position: absolute;
-	inset: auto 0 0 0;
+	inset: 0;
 	width: 60%;
-	padding: 24px 36px 32px;
+	padding: 32px var(--tv-safe-padding) 56px;
 	color: #fff;
 	display: flex;
 	flex-direction: column;
+	justify-content: center;
 	gap: 12px;
 }
 .show {
@@ -248,12 +253,13 @@ function handleDetails(): void {
 	border-radius: 999px;
 	font-size: 14px;
 	font-weight: 600;
-	border: 0;
+	border: 2px solid transparent;
 	cursor: pointer;
 	outline: none;
 	transition:
 		transform var(--motion-fast),
-		background var(--motion-fast);
+		background var(--motion-fast),
+		border-color var(--motion-fast);
 }
 .btn-primary {
 	background: #fff;
@@ -263,6 +269,7 @@ function handleDetails(): void {
 .btn-primary:focus-visible {
 	background: oklch(0.95 0 0);
 	transform: translateY(-1px);
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
 }
 .btn-secondary {
 	background: rgba(0, 0, 0, 0.7);
@@ -272,7 +279,7 @@ function handleDetails(): void {
 .btn-secondary:hover,
 .btn-secondary:focus-visible {
 	background: rgba(0, 0, 0, 0.85);
-	border-color: rgba(255, 255, 255, 0.5);
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
 	transform: translateY(-1px);
 }
 </style>
