@@ -67,12 +67,8 @@ useFocusEntry({
 	justify-content: center;
 }
 .nav-link.active {
-	background: linear-gradient(
-		90deg,
-		var(--color-primary, oklch(0.7 0.2 285)),
-		var(--color-primary, oklch(0.7 0.2 285))
-	);
-	box-shadow: 0 6px 16px oklch(0.7 0.2 285 / 0.35);
+	background: var(--color-primary, oklch(0.7 0.2 285));
+	box-shadow: 0 6px 16px hsl(from var(--color-primary, oklch(0.7 0.2 285)) h s l / 0.35);
 }
 .nav-link:focus-visible {
 	outline-color: var(--color-primary, oklch(0.7 0.2 285));
