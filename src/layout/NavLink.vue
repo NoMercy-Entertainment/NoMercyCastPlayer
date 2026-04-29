@@ -47,9 +47,10 @@ useFocusEntry({
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	padding: 6px 14px;
-	border-radius: 20px;
-	font-size: 13px;
+	padding: 10px 22px;
+	height: 44px;
+	border-radius: 999px;
+	font-size: 14px;
 	font-weight: 600;
 	color: #fff;
 	text-decoration: none;
@@ -58,17 +59,22 @@ useFocusEntry({
 	border: 2px solid transparent;
 	transition:
 		background var(--motion-fast),
-		border-color var(--motion-fast);
+		border-color var(--motion-fast),
+		transform var(--motion-fast);
 }
 .nav-link.icon-only {
-	padding: 6px 8px;
+	width: 44px;
+	padding: 0;
+	justify-content: center;
 }
 .nav-link.active {
-	background: linear-gradient(90deg, var(--color-primary, oklch(0.7 0.2 285)), oklch(0.7 0.2 285 / 0.8));
+	background: linear-gradient(90deg, var(--color-primary, oklch(0.7 0.2 285)), oklch(0.7 0.2 285 / 0.85));
 	box-shadow: 0 4px 16px oklch(0.7 0.2 285 / 0.4);
+	color: oklch(0.18 0.02 35);
 }
 .nav-link:focus-visible {
-	border-color: var(--color-primary, oklch(0.7 0.2 285));
+	border-color: oklch(1 0 0 / 0.85);
+	transform: translateY(-1px);
 	outline: none;
 }
 </style>

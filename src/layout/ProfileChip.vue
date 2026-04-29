@@ -39,6 +39,18 @@ const initials = computed(() => {
 });
 
 const avatarUrl = computed(() => {
+	// APK ProfileImage falls through these in order: explicit override →
+	// userProfile.avatarUrl (server fetch) → userInfo.avatarUrl (claim) →
+	// gravatar from email. We don't have the server fetch in the cast
+	// receiver yet, so check JWT claims for the picture / avatar_url
+	// fields first.
+	const claims = authStore.userClaims.value;
+	const claimAvatar
+		= (claims?.picture as string | undefined)
+			?? (claims?.avatar_url as string | undefined)
+			?? (claims?.avatarUrl as string | undefined);
+	if (claimAvatar && typeof claimAvatar === 'string' && claimAvatar.length > 0)
+		return claimAvatar;
 	const email = userEmail.value;
 	if (!email)
 		return null;
