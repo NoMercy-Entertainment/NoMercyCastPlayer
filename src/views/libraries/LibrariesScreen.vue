@@ -121,11 +121,8 @@ onBeforeUnmount(() => {
 <style scoped>
 .libraries {
 	height: 100%;
-	overflow-y: auto;
-	scroll-behavior: smooth;
+	overflow: hidden;
 	scrollbar-width: none;
-	scroll-padding-top: 96px;
-	scroll-padding-bottom: 96px;
 }
 .libraries::-webkit-scrollbar {
 	display: none;
@@ -139,7 +136,10 @@ onBeforeUnmount(() => {
 	position: relative;
 	z-index: 1;
 	overflow: auto;
-	height: inherit;
+	height: 50vh;
+}
+.rails::-webkit-scrollbar {
+	display: none;
 }
 .rails > :deep(.rail-section) {
 	scroll-margin-top: 120px;
