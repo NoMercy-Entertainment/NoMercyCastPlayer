@@ -36,7 +36,7 @@ const errVal = computed(() => (props.error as Error | null) ?? null);
 </script>
 
 <template>
-	<div ref="containerEl" class="server-driven">
+	<div ref="containerEl" class="server-driven nm-no-scrollbar">
 		<ErrorPanel
 			v-if="errVal"
 			:error="errVal"
@@ -71,9 +71,5 @@ const errVal = computed(() => (props.error as Error | null) ?? null);
 	height: 100%;
 	overflow-y: auto;
 	scroll-behavior: smooth;
-	scrollbar-width: none;
-}
-.server-driven::-webkit-scrollbar {
-	display: none;
 }
 </style>

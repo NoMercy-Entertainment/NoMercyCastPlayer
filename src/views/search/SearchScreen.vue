@@ -67,7 +67,7 @@ function setMode(next: 'video' | 'music'): void {
 				<span v-else class="mode-pill">Video</span>
 			</header>
 
-			<div class="results">
+			<div class="results nm-no-scrollbar">
 				<template v-if="!debouncedQuery">
 					<p class="hint">
 						Start typing to search.
@@ -159,10 +159,6 @@ function setMode(next: 'video' | 'music'): void {
 	display: flex;
 	flex-direction: column;
 	gap: 24px;
-	scrollbar-width: none;
-}
-.results::-webkit-scrollbar {
-	display: none;
 }
 .hint {
 	color: var(--color-text-secondary);

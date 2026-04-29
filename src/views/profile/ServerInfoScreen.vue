@@ -50,8 +50,8 @@ const uptime = computed(() => formatUptime(info.value?.bootTime, now.value));
 </script>
 
 <template>
-	<div class="server-info-screen">
-		<header class="page-header">
+	<div class="server-info-screen nm-no-scrollbar">
+		<header class="nm-page-header">
 			<h1>Server info</h1>
 		</header>
 
@@ -104,20 +104,7 @@ const uptime = computed(() => formatUptime(info.value?.bootTime, now.value));
 .server-info-screen {
 	height: 100%;
 	overflow-y: auto;
-	scrollbar-width: none;
 	padding: 32px;
-}
-.server-info-screen::-webkit-scrollbar {
-	display: none;
-}
-.page-header {
-	max-width: 920px;
-	margin: 0 auto 16px;
-}
-.page-header h1 {
-	margin: 0;
-	font-size: 24px;
-	font-weight: 700;
 }
 .card {
 	max-width: 920px;

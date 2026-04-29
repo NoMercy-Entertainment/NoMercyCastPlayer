@@ -170,3 +170,32 @@
 	scroll-margin-top: 120px;
 	scroll-margin-bottom: 80px;
 }
+
+/* ─── Status pills ──────────────────────────────────────────────────── */
+
+/* Floating "Refreshing…" / "Reconnecting…" pill anchored at the bottom
+   of the viewport. Used by Home / Libraries / Library / MusicStart /
+   Search to surface stale-while-revalidate refetch state. */
+.nm-refresh-hint {
+	position: fixed;
+	inset: auto auto 16px 50%;
+	transform: translateX(-50%);
+	background: oklch(1 0 0 / 0.08);
+	padding: 6px 16px;
+	border-radius: 999px;
+	font-size: 13px;
+	color: var(--color-text-secondary);
+	z-index: 4;
+}
+
+/* ─── Settings / Profile page headers ───────────────────────────────── */
+
+.nm-page-header {
+	max-width: 920px;
+	margin: 0 auto 16px;
+}
+.nm-page-header h1 {
+	margin: 0;
+	font-size: 24px;
+	font-weight: 700;
+}

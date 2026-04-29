@@ -124,22 +124,9 @@ onBeforeUnmount(() => {
 					:component="component"
 				/>
 			</div>
-			<p v-if="isFetching" class="refresh-hint">
+			<p v-if="isFetching" class="nm-refresh-hint">
 				Refreshing…
 			</p>
 		</template>
 	</div>
 </template>
-
-<style scoped>
-.refresh-hint {
-	position: fixed;
-	inset: auto auto 16px 50%;
-	transform: translateX(-50%);
-	background: oklch(1 0 0 / 0.08);
-	padding: 6px 16px;
-	border-radius: 999px;
-	font-size: 13px;
-	color: var(--color-text-secondary);
-}
-</style>

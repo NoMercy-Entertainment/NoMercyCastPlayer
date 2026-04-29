@@ -54,8 +54,8 @@ useFocusEntry({
 </script>
 
 <template>
-	<div class="settings-screen">
-		<header class="page-header">
+	<div class="settings-screen nm-no-scrollbar">
+		<header class="nm-page-header">
 			<h1>Settings</h1>
 		</header>
 		<div ref="containerEl" class="list">
@@ -126,20 +126,7 @@ useFocusEntry({
 .settings-screen {
 	height: 100%;
 	overflow-y: auto;
-	scrollbar-width: none;
 	padding: 32px;
-}
-.settings-screen::-webkit-scrollbar {
-	display: none;
-}
-.page-header {
-	max-width: 920px;
-	margin: 0 auto 16px;
-}
-.page-header h1 {
-	margin: 0;
-	font-size: 24px;
-	font-weight: 700;
 }
 .list {
 	display: flex;

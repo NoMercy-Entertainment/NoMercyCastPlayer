@@ -120,7 +120,7 @@ function confirmSignOut(): void {
 </script>
 
 <template>
-	<div class="profile-screen">
+	<div class="profile-screen nm-no-scrollbar">
 		<div ref="containerEl" class="list">
 			<button
 				ref="headerEl"
@@ -233,11 +233,7 @@ function confirmSignOut(): void {
 .profile-screen {
 	height: 100%;
 	overflow-y: auto;
-	scrollbar-width: none;
 	padding: 32px;
-}
-.profile-screen::-webkit-scrollbar {
-	display: none;
 }
 .list {
 	display: flex;

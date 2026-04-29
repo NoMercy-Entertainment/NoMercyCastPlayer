@@ -203,7 +203,7 @@ function trackArtistText(track: MusicTrack): string {
 			</button>
 		</div>
 
-		<div class="tracks-col">
+		<div class="tracks-col nm-no-scrollbar">
 			<header class="tracks-head">
 				<span>#</span>
 				<span>Title</span>
@@ -313,10 +313,6 @@ function trackArtistText(track: MusicTrack): string {
 }
 .tracks-col {
 	overflow-y: auto;
-	scrollbar-width: none;
-}
-.tracks-col::-webkit-scrollbar {
-	display: none;
 }
 .tracks-head {
 	display: grid;
