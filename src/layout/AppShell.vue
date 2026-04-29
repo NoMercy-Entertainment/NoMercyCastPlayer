@@ -30,13 +30,11 @@ import TopNavBar from './TopNavBar.vue';
 	position: relative;
 	width: 100%;
 	height: 100%;
-	display: flex;
-	flex-direction: column;
 }
 .page {
-	position: relative;
+	position: absolute;
+	inset: 0;
 	z-index: 1;
-	flex: 1;
 	overflow: hidden;
 }
 </style>

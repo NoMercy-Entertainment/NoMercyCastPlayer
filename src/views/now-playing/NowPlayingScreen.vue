@@ -67,10 +67,7 @@ const backdropUrl = computed(() => {
 watch(track, (next) => {
 	const root = document.documentElement;
 	const palette = next?.color_palette;
-	const color
-		= pickPaletteColor(palette?.cover ?? null)
-			?? pickPaletteColor(palette?.image ?? null)
-			?? pickPaletteColor(palette?.backdrop ?? null);
+	const color = pickPaletteColor(palette?.cover ?? palette?.image ?? palette?.backdrop ?? null);
 	if (color)
 		root.style.setProperty('--color-primary', color);
 	else
