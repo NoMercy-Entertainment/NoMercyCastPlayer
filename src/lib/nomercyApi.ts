@@ -1,3 +1,5 @@
+import { decodeJwt } from '@/lib/jwt';
+
 /**
  * NoMercy SaaS API base URL helper. The cast receiver hits two
  * different APIs:
@@ -6,28 +8,43 @@
  *   - Cross-server: NoMercy SaaS — used for /v1/me, server registration,
  *     and certificate issuance.
  *
- * Derive the SaaS base from VITE_DEFAULT_API_BASE_URL when set, or
- * from the auth URL by swapping `auth.` → `api.` (covers both
- * auth.nomercy.tv → api.nomercy.tv and auth-dev → api-dev).
+ * The SaaS hostname must match the user's environment (prod vs dev) —
+ * otherwise a dev token hits the prod API and returns 401, which is why
+ * the avatar refused to load. Derive the base at call time from the
+ * access token's `iss` claim (Keycloak issuer URL has the same
+ * `auth.` / `auth-dev.` prefix as the matching SaaS API).
+ * VITE_DEFAULT_API_BASE_URL still wins when set so local dev against a
+ * different host is unaffected.
  */
 
-const AUTH_BASE
-	= import.meta.env.VITE_DEFAULT_AUTH_BASE_URL ?? 'https://auth.nomercy.tv/realms/NoMercyTV';
-
+const ENV_BASE = import.meta.env.VITE_DEFAULT_API_BASE_URL as string | undefined;
+const STATIC_FALLBACK = 'https://api.nomercy.tv';
 const AUTH_HOSTNAME_PREFIX = /^auth/;
 
-function deriveFromAuth(): string {
+function deriveFromIssuer(accessToken: string): string | null {
+	const payload = decodeJwt(accessToken);
+	const iss = payload?.iss;
+	if (typeof iss !== 'string' || iss.length === 0)
+		return null;
 	try {
-		const u = new URL(AUTH_BASE);
+		const u = new URL(iss);
 		return `${u.protocol}//${u.hostname.replace(AUTH_HOSTNAME_PREFIX, 'api')}`;
 	}
 	catch {
-		return 'https://api.nomercy.tv';
+		return null;
 	}
 }
 
-export const NOMERCY_API_BASE
-	= import.meta.env.VITE_DEFAULT_API_BASE_URL ?? deriveFromAuth();
+export function nomercyApiBase(accessToken: string | null): string {
+	if (ENV_BASE)
+		return ENV_BASE;
+	if (accessToken) {
+		const fromIss = deriveFromIssuer(accessToken);
+		if (fromIss)
+			return fromIss;
+	}
+	return STATIC_FALLBACK;
+}
 
 export interface SaasUser {
 	id: string;
@@ -51,16 +68,23 @@ interface SaasResponse<T> {
 export async function fetchSaasUser(accessToken: string): Promise<SaasUser | null> {
 	if (!accessToken)
 		return null;
-	const res = await fetch(`${NOMERCY_API_BASE}/v1/me`, {
+	const base = nomercyApiBase(accessToken);
+	const res = await fetch(`${base}/v1/me`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 			Accept: 'application/json',
 		},
 	});
-	if (!res.ok)
+	if (!res.ok) {
+		console.warn('[saas/me] non-OK response', res.status, base);
 		return null;
-	const body = (await res.json()) as SaasResponse<SaasUser>;
-	if (body.status !== 'ok')
-		return null;
-	return body.data;
+	}
+	const body = (await res.json()) as SaasResponse<SaasUser> | SaasUser;
+	if (body && typeof body === 'object' && 'status' in body) {
+		const env = body as SaasResponse<SaasUser>;
+		if (env.status !== 'ok')
+			return null;
+		return env.data;
+	}
+	return body as SaasUser;
 }
