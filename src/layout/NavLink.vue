@@ -2,15 +2,6 @@
 import { ref } from 'vue';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 
-/*
- * Pill matches APK TvNavigationBarButton.
- *   - Inactive: black 0.6 alpha bg, 20dp inner radius
- *   - Active: primary→primary 0.85 horizontal gradient with shadow
- *   - Outer focus border ring at 24dp radius (palette-tinted)
- *   - Icon (20dp white tint) + label (13sp white) — text colour stays
- *     white in both states, the gradient + shadow are the active marker
- */
-
 const props = defineProps<{
 	focusKey: string;
 	label: string;
@@ -66,9 +57,6 @@ useFocusEntry({
 	transition:
 		background var(--motion-fast),
 		box-shadow var(--motion-fast);
-	/* APK uses a 2dp outer border with a 6dp gap from the pill — render
-		that as a transparent outline that fills with palette colour on
-		focus, keeping the pill itself the same size. */
 	outline: 2px solid transparent;
 	outline-offset: 6px;
 	border-radius: 20px;
@@ -79,7 +67,11 @@ useFocusEntry({
 	justify-content: center;
 }
 .nav-link.active {
-	background: linear-gradient(90deg, var(--color-primary, oklch(0.7 0.2 285)), oklch(0.7 0.2 285 / 0.85));
+	background: linear-gradient(
+		90deg,
+		var(--color-primary, oklch(0.7 0.2 285)),
+		var(--color-primary, oklch(0.7 0.2 285))
+	);
 	box-shadow: 0 6px 16px oklch(0.7 0.2 285 / 0.35);
 }
 .nav-link:focus-visible {
