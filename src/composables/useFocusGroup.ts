@@ -20,12 +20,17 @@ export interface FocusGroupOptions {
 	onEscape?: (dir: Direction) => boolean;
 	/** Container element for scroll-into-view bookkeeping. */
 	containerEl?: Ref<HTMLElement | null>;
+	/** Don't auto-focus the first child on mount. */
+	autoFocus?: boolean;
 }
 
 /**
- * Focus group composable per spec §10.3. Provides FocusGroupRegistry to
- * nested useFocusEntry calls, registers itself on the focusStore stack,
- * implements neighbor-picking based on group type.
+ * Focus group composable. Provides FocusGroupRegistry to nested
+ * useFocusEntry calls, registers itself on the focusStore stack, and
+ * (when a parent exists) registers itself as a proxy entry in the
+ * parent group so cross-group navigation (rails ↔ rails on home,
+ * actions ↔ rails on info, etc.) routes through the parent's
+ * pickNeighbor naturally.
  */
 export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & FocusGroupRegistry {
 	const entries = ref<FocusEntry[]>([]);
@@ -70,9 +75,6 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 			}
 			case 'modal':
 			case 'free': {
-				// Geometric closest-in-direction. Compute element rects and pick
-				// the entry whose center is closest along the requested axis,
-				// breaking ties by perpendicular distance.
 				const currentEl = current.el();
 				if (!currentEl)
 					return null;
@@ -152,8 +154,14 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 		},
 		handleKey(dir) {
 			const current = entries.value.find(e => e.isFocused());
-			if (!current)
-				return handle.focusFirst();
+			if (!current) {
+				// Focus is outside this group's direct entries — defer to
+				// parent so cross-group navigation walks up the tree
+				// instead of stealing focus to our first entry.
+				if (opts.onEscape?.(dir))
+					return true;
+				return parent?.handleKey(dir) ?? false;
+			}
 			const target = pickNeighbor(current, dir);
 			if (target) {
 				target.focus();
@@ -172,16 +180,51 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 
 	provide(FocusGroupInjectionKey, handle);
 
+	let parentUnregister: (() => void) | undefined;
+	const proxyKey = `group:${opts.restorationKey ?? Math.random().toString(36).slice(2, 10)}`;
+
 	onMounted(() => {
 		focusStore.pushGroup(handle);
+
+		// Register self as a focusable proxy in the parent group so the
+		// parent's pickNeighbor can navigate between sibling groups
+		// (e.g. rails ↔ rails on home, action col ↔ poster col on info).
+		if (parent) {
+			const proxyEntry: FocusEntry = {
+				key: proxyKey,
+				order: 0,
+				enabled: true,
+				el: () => opts.containerEl?.value ?? null,
+				isFocused: () => handle.containsFocused(),
+				focus: () => {
+					if (opts.restorationKey) {
+						const restored = focusStore.consumeRestoration(opts.restorationKey);
+						if (restored && handle.focusByKey(restored))
+							return;
+					}
+					handle.focusFirst();
+				},
+				blur: () => {},
+				action: () => {},
+			};
+			parentUnregister = parent.register(proxyEntry);
+		}
+
+		if (opts.autoFocus === false)
+			return;
+
+		// Only auto-focus on mount when there's no parent group (root) or
+		// when the parent doesn't already own focus. Prevents nested
+		// carousels from stealing focus on each mount.
+		if (parent && parent.containsFocused())
+			return;
 		if (opts.restorationKey) {
 			const restored = focusStore.consumeRestoration(opts.restorationKey);
 			if (restored && handle.focusByKey(restored))
 				return;
 		}
-		if (opts.initialFocusKey && handle.focusByKey(opts.initialFocusKey))
-			return;
-		handle.focusFirst();
+		if (opts.initialFocusKey)
+			handle.focusByKey(opts.initialFocusKey);
 	});
 
 	onBeforeUnmount(() => {
@@ -190,6 +233,7 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 			if (focused)
 				focusStore.saveRestoration(opts.restorationKey, focused.key);
 		}
+		parentUnregister?.();
 		focusStore.popGroup(handle);
 	});
 
