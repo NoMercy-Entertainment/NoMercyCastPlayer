@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue';
+import { onBeforeUnmount, watch } from 'vue';
 import { musicSyncBridge } from './syncBridge';
 import { authStore } from '@/stores/authStore';
 
@@ -10,17 +10,21 @@ import { authStore } from '@/stores/authStore';
  * ProgressControls + QueuePeek render off the playbackStore the bridge
  * keeps fresh.
  *
- * audiomotion-analyzer is an optional peer dep we deliberately skip per
- * spec §12.7 — visualizations are too expensive on weak Cast hardware.
- *
- * Engine lifecycle: created on mount, disposed on unmount. NowPlaying
- * route exists inside KeepAlive(:max=6) so disposal only happens when
- * the cast session unloads or the user navigates past 6 pages.
+ * Engine creation is deferred until the auth store is ready so the
+ * engine has a server URL + access token resolver from the start.
+ * Re-creates if the receiver swaps servers mid-session (rare; today
+ * the LAUNCH customData pins one server per cast session).
  */
 
 let engine: { dispose?: () => void } | null = null;
+let stoppedByUnmount = false;
 
-onMounted(async () => {
+async function initEngine(): Promise<void> {
+	if (engine || stoppedByUnmount)
+		return;
+	const serverUrl = authStore.serverUrl.value;
+	if (!serverUrl)
+		return;
 	try {
 		const mod = await import('@nomercy-entertainment/nomercy-music-player');
 		const Ctor
@@ -30,20 +34,32 @@ onMounted(async () => {
 			console.warn('[music-player] no constructor exported from package');
 			return;
 		}
-		engine = new Ctor({
+		const created = new Ctor({
 			siteTitle: 'NoMercy',
-			baseUrl: authStore.serverUrl.value ?? '',
+			baseUrl: serverUrl,
 			expose: false,
 			disableAutoPlayback: false,
-		}) as { dispose?: () => void };
+		}) as { dispose?: () => void; setAccessToken?: (t: string | (() => string)) => void };
+		created.setAccessToken?.(() => authStore.accessToken.value ?? '');
+		engine = created;
 		musicSyncBridge.attach(engine as never);
 	}
 	catch (err) {
 		console.error('[music-player] init failed', err);
 	}
-});
+}
+
+watch(
+	() => authStore.ready.value,
+	(ready) => {
+		if (ready)
+			void initEngine();
+	},
+	{ immediate: true },
+);
 
 onBeforeUnmount(() => {
+	stoppedByUnmount = true;
 	musicSyncBridge.detach();
 	engine?.dispose?.();
 	engine = null;
