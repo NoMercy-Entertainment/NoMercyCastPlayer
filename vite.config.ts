@@ -34,29 +34,23 @@ export default defineConfig({
 	server: {
 		open: true,
 		port: 5501,
-		allowedHosts: ['vscode.nomercy.tv', 'cast.nomercy.tv'],
+		allowedHosts: ['vscode.nomercy.tv', 'cast.nomercy.tv', 'cast-dev.nomercy.tv'],
 		// Dev-only proxy so localhost:5501 can hit the user's server without
 		// hitting CORS. CAST_DEV_SERVER_URL overrides the target when set.
 		proxy: {
 			'/api': {
-				target:
-					process.env.CAST_DEV_SERVER_URL
-					?? 'https://192-168-2-201.fcbb730a-a562-2ca5-d054-5d6acf2a1aaa.nomercy.tv:7626',
+				target: 'https://85-144-244-49.fcbb730a-a562-2ca5-d054-5d6acf2a1aaa.nomercy.tv:7626',
 				changeOrigin: true,
 				secure: false,
 			},
 			'/videoHub': {
-				target:
-					process.env.CAST_DEV_SERVER_URL
-					?? 'https://192-168-2-201.fcbb730a-a562-2ca5-d054-5d6acf2a1aaa.nomercy.tv:7626',
+				target: 'https://85-144-244-49.fcbb730a-a562-2ca5-d054-5d6acf2a1aaa.nomercy.tv:7626',
 				changeOrigin: true,
 				secure: false,
 				ws: true,
 			},
 			'/musicHub': {
-				target:
-					process.env.CAST_DEV_SERVER_URL
-					?? 'https://192-168-2-201.fcbb730a-a562-2ca5-d054-5d6acf2a1aaa.nomercy.tv:7626',
+				target: 'https://85-144-244-49.fcbb730a-a562-2ca5-d054-5d6acf2a1aaa.nomercy.tv:7626',
 				changeOrigin: true,
 				secure: false,
 				ws: true,

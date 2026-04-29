@@ -1,4 +1,4 @@
-import { inject, onBeforeUnmount, onMounted, provide, ref } from 'vue';
+import { getCurrentInstance, inject, onActivated, onBeforeUnmount, onDeactivated, onMounted, provide, ref } from 'vue';
 import type { Ref } from 'vue';
 import {
 	focusStore,
@@ -183,6 +183,52 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 	let parentUnregister: (() => void) | undefined;
 	const proxyKey = `group:${opts.restorationKey ?? Math.random().toString(36).slice(2, 10)}`;
 
+	function focusableActiveElement(): boolean {
+		const el = document.activeElement as HTMLElement | null;
+		if (!el || el === document.body)
+			return false;
+		// Treat any [data-focusable] or natively-focusable form element as
+		// owning focus for auto-focus arbitration purposes.
+		return el.matches('[data-focusable], button, a[href], input, textarea, select, [tabindex="0"]');
+	}
+
+	function attemptAutoFocus(): void {
+		if (opts.autoFocus === false)
+			return;
+
+		// Defer to a microtask so deepest-first onMounted siblings (e.g.
+		// child carousel groups) can register before we decide who wins.
+		// First group whose microtask runs and finds nothing focused wins;
+		// later siblings short-circuit on the focusableActiveElement guard.
+		queueMicrotask(() => {
+			if (focusableActiveElement())
+				return;
+			if (parent && parent.containsFocused())
+				return;
+			if (opts.restorationKey) {
+				const restored = focusStore.consumeRestoration(opts.restorationKey);
+				if (restored && handle.focusByKey(restored))
+					return;
+			}
+			if (opts.initialFocusKey && handle.focusByKey(opts.initialFocusKey))
+				return;
+			// Top-level page groups (no parent) always fall through to first.
+			// Nested groups skip the fallback so the parent's proxy walk wins
+			// — if the parent group decides this is the active sub-group,
+			// it'll call this group's focusFirst via the proxy entry below.
+			if (!parent)
+				handle.focusFirst();
+		});
+	}
+
+	function saveRestoration(): void {
+		if (!opts.restorationKey)
+			return;
+		const focused = entries.value.find(e => e.isFocused());
+		if (focused)
+			focusStore.saveRestoration(opts.restorationKey, focused.key);
+	}
+
 	onMounted(() => {
 		focusStore.pushGroup(handle);
 
@@ -210,29 +256,52 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 			parentUnregister = parent.register(proxyEntry);
 		}
 
-		if (opts.autoFocus === false)
-			return;
-
-		// Only auto-focus on mount when there's no parent group (root) or
-		// when the parent doesn't already own focus. Prevents nested
-		// carousels from stealing focus on each mount.
-		if (parent && parent.containsFocused())
-			return;
-		if (opts.restorationKey) {
-			const restored = focusStore.consumeRestoration(opts.restorationKey);
-			if (restored && handle.focusByKey(restored))
-				return;
-		}
-		if (opts.initialFocusKey)
-			handle.focusByKey(opts.initialFocusKey);
+		attemptAutoFocus();
 	});
 
+	// KeepAlive cycle: re-enter restored page → reattach to focusStore stack
+	// and re-attempt auto-focus so the saved entry regains focus. Without
+	// this, going back from /info to / leaves focus on document.body and
+	// the user's D-pad presses do nothing until they click something.
+	if (getCurrentInstance()) {
+		onActivated(() => {
+			// pushGroup is idempotent because we always pop on deactivate.
+			focusStore.pushGroup(handle);
+			if (parent) {
+				// Re-register the proxy in the parent's entries.
+				const proxyEntry: FocusEntry = {
+					key: proxyKey,
+					order: 0,
+					enabled: true,
+					el: () => opts.containerEl?.value ?? null,
+					isFocused: () => handle.containsFocused(),
+					focus: () => {
+						if (opts.restorationKey) {
+							const restored = focusStore.consumeRestoration(opts.restorationKey);
+							if (restored && handle.focusByKey(restored))
+								return;
+						}
+						handle.focusFirst();
+					},
+					blur: () => {},
+					action: () => {},
+				};
+				parentUnregister?.();
+				parentUnregister = parent.register(proxyEntry);
+			}
+			attemptAutoFocus();
+		});
+
+		onDeactivated(() => {
+			saveRestoration();
+			parentUnregister?.();
+			parentUnregister = undefined;
+			focusStore.popGroup(handle);
+		});
+	}
+
 	onBeforeUnmount(() => {
-		if (opts.restorationKey) {
-			const focused = entries.value.find(e => e.isFocused());
-			if (focused)
-				focusStore.saveRestoration(opts.restorationKey, focused.key);
-		}
+		saveRestoration();
 		parentUnregister?.();
 		focusStore.popGroup(handle);
 	});

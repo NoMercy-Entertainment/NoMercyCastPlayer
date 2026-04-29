@@ -27,6 +27,9 @@ useFocusGroup({
 	type: 'horizontal',
 	restorationKey: 'topnav',
 	containerEl: navEl,
+	// The page below is the cold-start focus target; the topnav only
+	// receives focus when the user explicitly walks UP into it.
+	autoFocus: false,
 	onEscape: (dir) => {
 		if (dir !== 'down')
 			return false;

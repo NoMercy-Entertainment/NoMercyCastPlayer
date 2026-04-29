@@ -26,11 +26,15 @@ const emit = defineEmits<{
 }>();
 
 const containerEl = ref<HTMLElement | null>(null);
+// 'free' spatial nav instead of 'grid' — the utility row has 4 keys
+// covering 6 logical columns (Space + Backspace each span 2 cells), so
+// the index-based grid math walked DOWN from "Space" to letter "C"
+// instead of "A". Geometric nearest-neighbor mirrors APK Compose's
+// LazyVerticalGrid focus traversal accurately.
 useFocusGroup({
-	type: 'grid',
+	type: 'free',
 	restorationKey: 'search-keyboard',
 	initialFocusKey: 'kb-a',
-	columns: 6,
 	containerEl,
 });
 
