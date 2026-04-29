@@ -12,6 +12,29 @@ import { authStore } from '@/stores/authStore';
 const ABSOLUTE_URL = /^https?:\/\//i;
 const TRAILING_SLASH = /\/$/;
 
+// TMDB CDN. Server returns bare TMDB poster/backdrop paths (`/abc.jpg`)
+// rather than absolute URLs. The receiver fetches them direct from
+// image.tmdb.org — the server doesn't currently expose a proxy at
+// /api/v1/images for these paths and TMDB serves them with permissive
+// caching headers anyway.
+const TMDB_BASE = 'https://image.tmdb.org/t/p';
+
+function pickTmdbSize(width: number | undefined): string {
+	if (!width)
+		return 'original';
+	if (width <= 200)
+		return 'w185';
+	if (width <= 320)
+		return 'w300';
+	if (width <= 400)
+		return 'w342';
+	if (width <= 600)
+		return 'w500';
+	if (width <= 800)
+		return 'w780';
+	return 'original';
+}
+
 export function buildImageUrl(
 	path: string | null | undefined,
 	options: { width?: number; height?: number; quality?: number } = {},
@@ -20,6 +43,11 @@ export function buildImageUrl(
 		return null;
 	if (ABSOLUTE_URL.test(path))
 		return path;
+
+	// TMDB-shaped paths — go straight to TMDB; the server doesn't proxy them.
+	if (/\.(jpg|jpeg|png|webp)$/i.test(path)) {
+		return `${TMDB_BASE}/${pickTmdbSize(options.width)}${path.startsWith('/') ? path : `/${path}`}`;
+	}
 
 	const base = authStore.serverUrl.value?.replace(TRAILING_SLASH, '') ?? '';
 	if (!base)
