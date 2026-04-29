@@ -4,6 +4,8 @@ import type { EpisodeItem } from './pluginPanels/EpisodeScreen';
 import { mountLanguageScreen } from './pluginPanels/LanguageScreen';
 import type { TrackItem } from './pluginPanels/LanguageScreen';
 import { mountSeekContainer } from './pluginPanels/SeekContainer';
+import { mountPlaybackOSD } from './pluginPanels/PlaybackOSD';
+import type { PlaybackOSDHandle } from './pluginPanels/PlaybackOSD';
 
 /**
  * TV overlay orchestrator per spec §12.3. Owns the pre-screen / episode
@@ -50,6 +52,7 @@ interface PlayerLike {
 	};
 	getAutoSkipChapters?: () => boolean;
 	setAutoSkipChapters?: (next: boolean) => void;
+	getChapters?: () => Array<{ start: number; end?: number }>;
 }
 
 export interface TVOverlayPluginOptions {
@@ -59,6 +62,7 @@ export interface TVOverlayPluginOptions {
 export class TVOverlayPlugin {
 	private currentPanel: 'pre' | 'episode' | 'language' | 'seek' | null = null;
 	private unmount: (() => void) | null = null;
+	private osd: PlaybackOSDHandle | null = null;
 	private boundHandlers: Array<{ event: string; handler: (data?: unknown) => void }> = [];
 
 	constructor(
@@ -74,15 +78,50 @@ export class TVOverlayPlugin {
 		this.bind('show-language-screen', () => this.showLanguageScreen());
 		this.bind('show-episode-screen', () => this.showEpisodeScreen());
 		this.bind('pause', () => this.maybeShowPreScreen());
-		this.bind('play', () => this.closeAllPanels());
+		this.bind('play', () => {
+			this.closeAllPanels();
+			this.ensureOSD();
+		});
+		this.bind('item', () => this.refreshOSD());
+		this.bind('showControls', () => this.osd?.setVisible(true));
+		this.bind('hideControls', () => this.osd?.setVisible(false));
+		this.bind('controls', showing => this.osd?.setVisible(Boolean(showing)));
 	}
 
 	detach(): void {
 		this.closeAllPanels();
+		this.osd?.dispose();
+		this.osd = null;
 		for (const { event, handler } of this.boundHandlers) {
 			this.player.off(event, handler);
 		}
 		this.boundHandlers = [];
+	}
+
+	private ensureOSD(): void {
+		const host = this.overlayHost();
+		if (!host || this.osd)
+			return;
+		const item = this.player.playlistItem?.();
+		this.osd = mountPlaybackOSD({
+			parent: host,
+			title: item?.title ?? '',
+			subtitle: item?.subtitle ?? null,
+			getCurrentTime: () => this.player.getCurrentTime?.() ?? 0,
+			getDuration: () => this.player.getDuration?.() ?? 0,
+			chapters: this.player.getChapters?.() ?? [],
+		});
+	}
+
+	private refreshOSD(): void {
+		if (!this.osd)
+			return;
+		const item = this.player.playlistItem?.();
+		this.osd.setTitle({
+			title: item?.title ?? '',
+			subtitle: item?.subtitle ?? null,
+		});
+		this.osd.setChapters(this.player.getChapters?.() ?? []);
 	}
 
 	private bind(event: string, handler: (data?: unknown) => void): void {

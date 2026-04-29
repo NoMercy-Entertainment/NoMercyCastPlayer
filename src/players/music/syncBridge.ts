@@ -39,6 +39,42 @@ interface MusicEngineLike {
 	currentTrack?: () => CurrentTrackSnapshot;
 }
 
+interface RawTrack {
+	id?: string | number;
+	name?: string;
+	cover?: string;
+	album_track?: Array<{ name?: string; cover?: string; backdrop?: string | null; color_palette?: unknown; [k: string]: unknown }>;
+	artist_track?: Array<{ name?: string; backdrop?: string | null; [k: string]: unknown }>;
+	duration?: number | string;
+	color_palette?: unknown;
+	favorite?: boolean;
+	[k: string]: unknown;
+}
+
+function toSnapshot(raw: RawTrack | null | undefined): CurrentTrackSnapshot | null {
+	if (!raw)
+		return null;
+	const album = raw.album_track?.[0];
+	const artist = raw.artist_track?.map(a => a.name).filter(Boolean).join(', ') ?? '';
+	const durationSec = typeof raw.duration === 'number'
+		? raw.duration
+		: Number(raw.duration ?? 0);
+	const palette = (raw.color_palette ?? album?.color_palette ?? null) as
+		CurrentTrackSnapshot['color_palette'];
+	const backdrop = (album?.backdrop ?? raw.artist_track?.find(a => a.backdrop)?.backdrop) ?? null;
+	return {
+		id: String(raw.id ?? raw.name ?? Math.random()),
+		name: raw.name ?? '',
+		artist,
+		album: album?.name,
+		cover: raw.cover ?? album?.cover,
+		backdrop,
+		duration_ms: Number.isFinite(durationSec) ? Math.round(durationSec * 1000) : undefined,
+		color_palette: palette,
+		favorite: raw.favorite ?? false,
+	};
+}
+
 let engine: MusicEngineLike | null = null;
 const unsubs: Array<() => void> = [];
 
@@ -71,6 +107,24 @@ function bindOutbound(p: MusicEngineLike): void {
 			TrackId: p.currentTrack?.()?.id,
 		});
 	}, 5000);
+	const onSong = (...args: unknown[]): void => {
+		const raw = args[0] as RawTrack | null;
+		const snap = toSnapshot(raw);
+		const queue = playbackStore.music.queue.value;
+		playbackStore.music.applyTrack(snap, queue);
+	};
+	const onQueue = (...args: unknown[]): void => {
+		const raws = (args[0] ?? []) as RawTrack[];
+		const next = raws.map(toSnapshot).filter((x): x is CurrentTrackSnapshot => x !== null);
+		playbackStore.music.applyTrack(playbackStore.music.track.value, next);
+	};
+	const onShuffle = (...args: unknown[]): void => {
+		playbackStore.music.applyShuffle(Boolean(args[0]));
+	};
+	const onRepeat = (...args: unknown[]): void => {
+		const mode = args[0] as 'off' | 'all' | 'one';
+		playbackStore.music.applyRepeat(mode);
+	};
 
 	p.on('play', onPlay);
 	p.on('pause', onPause);
@@ -78,6 +132,10 @@ function bindOutbound(p: MusicEngineLike): void {
 	p.on('previous', onPrev);
 	p.on('seek', onSeek);
 	p.on('time', onTime);
+	p.on('song', onSong);
+	p.on('queue', onQueue);
+	p.on('shuffle', onShuffle);
+	p.on('repeat', onRepeat);
 
 	unsubs.push(
 		() => p.off('play', onPlay),
@@ -86,6 +144,10 @@ function bindOutbound(p: MusicEngineLike): void {
 		() => p.off('previous', onPrev),
 		() => p.off('seek', onSeek),
 		() => p.off('time', onTime),
+		() => p.off('song', onSong),
+		() => p.off('queue', onQueue),
+		() => p.off('shuffle', onShuffle),
+		() => p.off('repeat', onRepeat),
 	);
 }
 
