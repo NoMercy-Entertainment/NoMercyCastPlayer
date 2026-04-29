@@ -6,6 +6,16 @@ import Resolver from '@/server-components/Resolver.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
 import EmptyState from '@/components/feedback/EmptyState.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
+import HomeHero from './HomeHero.vue';
+import type { Component } from '@/server-components/types';
+
+/*
+ * Mirrors APK TvHomeScreen.kt — hero region pinned to the top of the
+ * viewport, rails laid below it with a small overlap so the rail nudge
+ * peeks under the hero scrim. Hero is seeded with the first card of the
+ * first carousel; once focus events flow we'll let the focused card
+ * drive the hero (Phase 2).
+ */
 
 const containerEl = ref<HTMLElement | null>(null);
 useFocusGroup({
@@ -17,7 +27,36 @@ useFocusGroup({
 const { data, isLoading, error, refetch, isFetching } = useHomeQuery();
 
 const isInitialLoad = computed(() => isLoading.value && !data.value);
-const components = computed(() => data.value ?? []);
+const components = computed<Component[]>(() => data.value ?? []);
+
+interface CardData {
+	title?: string;
+	overview?: string;
+	backdrop?: string;
+	poster?: string;
+	link?: string;
+	type?: string;
+	year?: number;
+}
+
+interface CarouselWrapper {
+	items?: Array<{ component: string; props?: { title?: string; data?: CardData } }>;
+}
+
+const heroCard = computed<CardData | null>(() => {
+	for (const c of components.value) {
+		if (!c.props || typeof c.props !== 'object')
+			continue;
+		const wrapper = c.props as CarouselWrapper;
+		const items = wrapper.items;
+		if (!Array.isArray(items) || items.length === 0)
+			continue;
+		const first = items.find(i => i.props?.data && (i.props.data.backdrop || i.props.data.poster));
+		if (first?.props?.data)
+			return first.props.data;
+	}
+	return null;
+});
 </script>
 
 <template>
@@ -41,11 +80,14 @@ const components = computed(() => data.value ?? []);
 			/>
 		</template>
 		<template v-else>
-			<Resolver
-				v-for="component in components"
-				:key="component.id"
-				:component="component"
-			/>
+			<HomeHero v-if="heroCard" :card="heroCard" />
+			<div class="rails">
+				<Resolver
+					v-for="component in components"
+					:key="component.id"
+					:component="component"
+				/>
+			</div>
 			<p v-if="isFetching" class="refresh-hint">
 				Refreshing…
 			</p>
@@ -55,10 +97,6 @@ const components = computed(() => data.value ?? []);
 
 <style scoped>
 .home {
-	display: flex;
-	flex-direction: column;
-	gap: 32px;
-	padding: 24px 0 64px;
 	height: 100%;
 	overflow-y: auto;
 	scroll-behavior: smooth;
@@ -66,6 +104,15 @@ const components = computed(() => data.value ?? []);
 }
 .home::-webkit-scrollbar {
 	display: none;
+}
+.rails {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	padding: 16px 0 64px;
+	margin-top: -56px; /* hero scrim overlap, mirrors APK overlap=72.dp */
+	position: relative;
+	z-index: 1;
 }
 .refresh-hint {
 	position: fixed;

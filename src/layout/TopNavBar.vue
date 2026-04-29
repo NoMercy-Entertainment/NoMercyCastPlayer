@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import NowPlayingPill from './NowPlayingPill.vue';
 import ProfileChip from './ProfileChip.vue';
 import NavLink from './NavLink.vue';
+import { socketStore } from '@/stores/socketStore';
 
+/*
+ * Topnav matches APK TvNavigationBar layout:
+ *   [music indicator | brand]   [Home | Libraries | Music | (search-icon)]   [profile circle]
+ *      weight 1                          weight 3 (centered)                       weight 1
+ *
+ * Search is the magnifier icon at the trailing edge of the nav row, not a
+ * pill with text — APK keeps it visually subordinate to the primary three.
+ */
 interface NavItem {
 	key: string;
 	label: string;
@@ -14,7 +23,6 @@ interface NavItem {
 
 const items: NavItem[] = [
 	{ key: 'nav-home', label: 'Home', path: '/' },
-	{ key: 'nav-search', label: 'Search', path: '/search' },
 	{ key: 'nav-libraries', label: 'Libraries', path: '/libraries' },
 	{ key: 'nav-music', label: 'Music', path: '/music' },
 ];
@@ -22,6 +30,11 @@ const items: NavItem[] = [
 const navEl = ref<HTMLElement | null>(null);
 const router = useRouter();
 const route = useRoute();
+
+// Show the now-playing pill on the leading slot only when music is actually
+// playing (placeholder — wire to a music store flag in a follow-up).
+// eslint-disable-next-line ts/no-unused-vars
+const isMusicPlaying = computed(() => false && socketStore.connectionState.value === 'connected');
 
 useFocusGroup({
 	type: 'horizontal',
@@ -32,8 +45,11 @@ useFocusGroup({
 
 <template>
 	<header class="topnav">
-		<div class="brand">
-			<span class="logo-mark">NM</span>
+		<div class="leading">
+			<NowPlayingPill v-if="isMusicPlaying" />
+			<div v-else class="brand">
+				<span class="logo-mark">NM</span>
+			</div>
 		</div>
 		<nav ref="navEl" class="nav-items">
 			<NavLink
@@ -45,9 +61,31 @@ useFocusGroup({
 				:active="route.path === item.path"
 				@action="(p) => router.push(p)"
 			/>
+			<NavLink
+				focus-key="nav-search"
+				label=""
+				path="/search"
+				:icon-only="true"
+				aria-label="Search"
+				:active="route.path === '/search'"
+				@action="(p) => router.push(p)"
+			>
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<circle cx="11" cy="11" r="7" />
+					<line x1="21" y1="21" x2="16.65" y2="16.65" />
+				</svg>
+			</NavLink>
 		</nav>
 		<div class="trailing">
-			<NowPlayingPill />
 			<ProfileChip />
 		</div>
 	</header>
@@ -58,11 +96,15 @@ useFocusGroup({
 	position: relative;
 	z-index: 2;
 	display: grid;
-	grid-template-columns: auto 1fr auto;
+	grid-template-columns: 1fr 3fr 1fr;
 	align-items: center;
-	gap: 24px;
-	padding: 16px var(--tv-safe-padding);
+	padding: 16px 36px;
 	height: var(--topnav-height);
+}
+.leading {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
 }
 .brand {
 	font-weight: 800;
@@ -76,11 +118,12 @@ useFocusGroup({
 }
 .nav-items {
 	display: flex;
-	gap: 8px;
+	justify-content: center;
+	gap: 16px;
 }
 .trailing {
 	display: flex;
-	gap: 16px;
+	justify-content: flex-end;
 	align-items: center;
 }
 </style>

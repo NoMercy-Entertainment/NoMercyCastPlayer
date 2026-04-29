@@ -2,104 +2,93 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusEntry } from '@/composables/useFocusEntry';
-import FallbackPoster from '@/components/cards/FallbackPoster.vue';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
-import type { NMHomeCardWrapper, Update } from './types';
 
 /*
- * Hero card on home — matches APK NMHomeCard.kt's TV layout:
- *   Edge-to-edge backdrop (TMDB w1280), gradient overlay anchored bottom-left,
- *   title + 7-line overview + Watch / Details buttons stacked in the left 60%
- *   of the card. Right column reserved for visual breathing room (and a
- *   trailer overlay slot in a follow-up).
+ * Hero pinned to the top of the home view. Mirrors APK
+ * VideoMusicHeroSection.kt — backdrop image full-bleed, gradient scrim
+ * anchored bottom-left, title + overview + Watch / Details buttons in
+ * the left 60% of the card.
  */
+
+interface CardData {
+	title?: string;
+	overview?: string;
+	backdrop?: string;
+	poster?: string;
+	link?: string;
+	year?: number;
+	type?: string;
+}
+
 const props = defineProps<{
-	id: string;
-	data: NMHomeCardWrapper;
-	update?: Update;
+	card: CardData;
 }>();
 
 const router = useRouter();
-const el = ref<HTMLElement | null>(null);
+const watchEl = ref<HTMLElement | null>(null);
+const detailsEl = ref<HTMLElement | null>(null);
 
-// Server payload uses backdrop / poster / image depending on the row context;
-// the hero on home prefers backdrop. Falls through poster → image otherwise.
-const imageSource
-	= (props.data as unknown as { backdrop?: string }).backdrop
-		?? (props.data as unknown as { poster?: string }).poster
-		?? props.data.image;
-const imageUrl = computed(() => buildImageUrl(imageSource, BACKDROP_SIZE));
-
-const overview = computed(
-	() =>
-		(props.data as unknown as { overview?: string; description?: string }).overview
-		?? props.data.description
-		?? '',
+const backdropUrl = computed(() =>
+	buildImageUrl(props.card.backdrop ?? props.card.poster ?? null, BACKDROP_SIZE),
 );
 
 const watchPath = computed(() => {
-	const link = props.data.link;
+	const link = props.card.link;
 	if (!link)
 		return null;
 	return link.endsWith('/watch') ? link : `${link}/watch`;
 });
 
-const detailsPath = computed(() => props.data.link ?? null);
+const detailsPath = computed(() => props.card.link ?? null);
 
 useFocusEntry({
-	key: props.id,
-	el,
+	key: 'home-hero-watch',
+	el: watchEl,
 	onAction: () => {
 		if (watchPath.value)
 			router.push(watchPath.value);
 	},
 });
 
-function handleWatch(): void {
-	if (watchPath.value)
-		router.push(watchPath.value);
-}
-
-function handleDetails(): void {
-	if (detailsPath.value)
-		router.push(detailsPath.value);
-}
+useFocusEntry({
+	key: 'home-hero-details',
+	el: detailsEl,
+	onAction: () => {
+		if (detailsPath.value)
+			router.push(detailsPath.value);
+	},
+});
 </script>
 
 <template>
-	<article ref="el" class="hero" data-focusable tabindex="0" role="button">
+	<section class="hero">
 		<div class="art">
 			<img
-				v-if="imageUrl"
-				:src="imageUrl"
-				:alt="props.data.title ?? ''"
+				v-if="backdropUrl"
+				:src="backdropUrl"
+				:alt="card.title ?? ''"
 				loading="eager"
 				decoding="async"
 			>
-			<FallbackPoster v-else :title="props.data.title" />
 			<div class="scrim" />
 		</div>
 
 		<div class="content">
-			<p v-if="props.data.show" class="show">
-				{{ props.data.show }}
-			</p>
 			<h1 class="title">
-				<span v-if="props.data.season">S{{ props.data.season }} </span>
-				<span v-if="props.data.episode">E{{ props.data.episode }} </span>
-				{{ props.data.title }}
+				{{ card.title }}
 			</h1>
-			<p v-if="overview" class="overview">
-				{{ overview }}
+			<p v-if="card.overview" class="overview">
+				{{ card.overview }}
 			</p>
-
 			<div class="actions">
 				<button
 					v-if="watchPath"
+					ref="watchEl"
 					class="btn btn-primary"
 					data-focusable
 					tabindex="0"
-					@click.prevent="handleWatch"
+					@click.prevent="watchPath && router.push(watchPath)"
 				>
 					<svg
 						width="16"
@@ -113,10 +102,11 @@ function handleDetails(): void {
 				</button>
 				<button
 					v-if="detailsPath"
+					ref="detailsEl"
 					class="btn btn-secondary"
 					data-focusable
 					tabindex="0"
-					@click.prevent="handleDetails"
+					@click.prevent="detailsPath && router.push(detailsPath)"
 				>
 					<svg
 						width="16"
@@ -136,27 +126,18 @@ function handleDetails(): void {
 				</button>
 			</div>
 		</div>
-	</article>
+	</section>
 </template>
 
 <style scoped>
 .hero {
 	position: relative;
-	display: block;
 	width: 100%;
 	height: 60vh;
 	min-height: 320px;
 	max-height: 432px;
 	overflow: hidden;
-	border: 0;
 	background: oklch(0.12 0.01 250);
-	padding: 0;
-	cursor: pointer;
-	outline: none;
-}
-.hero:focus-visible {
-	outline: 3px solid var(--color-primary, oklch(0.7 0.2 285));
-	outline-offset: -3px;
 }
 .art {
 	position: absolute;
@@ -167,38 +148,26 @@ function handleDetails(): void {
 	height: 100%;
 	object-fit: cover;
 }
-/*
- * Bottom-left scrim mirroring the APK's OverlayGradient — readable text
- * on top of the backdrop without covering the full image.
- */
 .scrim {
 	position: absolute;
 	inset: 0;
 	background:
-		linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 45%, transparent 70%),
-		linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 60%);
+		linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 45%, transparent 75%),
+		linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 65%);
 }
 .content {
 	position: absolute;
 	inset: auto 0 0 0;
 	width: 60%;
-	padding: 24px 36px 32px;
+	padding: 24px 36px 56px;
 	color: #fff;
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
 }
-.show {
-	margin: 0;
-	font-size: 13px;
-	font-weight: 700;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	color: oklch(0.85 0.01 250);
-}
 .title {
 	margin: 0;
-	font-size: 32px;
+	font-size: 36px;
 	font-weight: 700;
 	line-height: 1.05;
 	letter-spacing: -0.01em;
@@ -213,7 +182,7 @@ function handleDetails(): void {
 	-webkit-line-clamp: 5;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
-	max-width: 560px;
+	max-width: 600px;
 }
 .actions {
 	display: flex;

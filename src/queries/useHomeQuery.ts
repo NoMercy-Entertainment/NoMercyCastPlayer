@@ -10,8 +10,11 @@ export interface HomeResponse {
 }
 
 async function fetchHome(): Promise<Component[]> {
+	// /api/v1/home/tv is the leanback-shaped server-driven layout the APK
+	// consumes — ordering, first rails, hero are tuned for TV. The /home
+	// endpoint without /tv returns the mobile-shaped layout.
 	const response = await apiFetch<unknown>({
-		path: '/api/v1/home',
+		path: '/api/v1/home/tv',
 		method: 'GET',
 	});
 	// Server-driven endpoints wrap their payload in { id, data } envelopes
