@@ -88,9 +88,16 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 .scrim {
 	position: absolute;
 	inset: 0;
-	background:
-		linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 45%, transparent 75%),
-		linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 65%);
+	/* APK OverlayGradient — radial centered above the top-right corner so
+		the right side stays clean (faces visible) and the left/bottom fade
+		to black where the title + overview sit. */
+	background: radial-gradient(
+		ellipse 130% 130% at 80% -10%,
+		transparent 0%,
+		transparent 35%,
+		rgba(0, 0, 0, 0.85) 75%,
+		rgba(0, 0, 0, 1) 100%
+	);
 }
 .content {
 	position: absolute;
