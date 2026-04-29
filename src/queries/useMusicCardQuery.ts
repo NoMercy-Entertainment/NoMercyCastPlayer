@@ -10,13 +10,22 @@ import type { Component } from '@/server-components/types';
 const LEADING_SLASH = /^\//;
 
 async function fetchMusicCards(path: string): Promise<Component[]> {
-	const response = await apiFetch<{ components?: Component[] } | Component[]>({
+	const response = await apiFetch<unknown>({
 		path: `/api/v1/music/${path.replace(LEADING_SLASH, '')}`,
 		method: 'GET',
 	});
+	if (response && typeof response === 'object' && 'data' in response) {
+		const data = (response as { data: unknown }).data;
+		if (Array.isArray(data))
+			return data as Component[];
+		if (data && typeof data === 'object' && 'components' in data)
+			return (data as { components: Component[] }).components ?? [];
+	}
 	if (Array.isArray(response))
-		return response;
-	return response.components ?? [];
+		return response as Component[];
+	if (response && typeof response === 'object' && 'components' in response)
+		return (response as { components: Component[] }).components ?? [];
+	return [];
 }
 
 export function useMusicCardQuery(path: Ref<string>) {

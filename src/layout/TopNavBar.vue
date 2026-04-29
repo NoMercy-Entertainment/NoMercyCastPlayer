@@ -2,10 +2,10 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
-import NowPlayingPill from './NowPlayingPill.vue';
 import ProfileChip from './ProfileChip.vue';
 import NavLink from './NavLink.vue';
-import { socketStore } from '@/stores/socketStore';
+import TvMiniPlayer from './TvMiniPlayer.vue';
+import { playbackStore } from '@/stores/playbackStore';
 
 /*
  * Topnav matches APK TvNavigationBar layout:
@@ -31,10 +31,10 @@ const navEl = ref<HTMLElement | null>(null);
 const router = useRouter();
 const route = useRoute();
 
-// Show the now-playing pill on the leading slot only when music is actually
-// playing (placeholder — wire to a music store flag in a follow-up).
-
-const isMusicPlaying = computed(() => false && socketStore.connectionState.value === 'connected');
+// Show the TvMiniPlayer on the leading slot only when there's an active
+// track in the music playback store. Mirrors APK TvNavigationBar.kt's
+// `if (currentSong != null) TvMiniPlayer(...) else AppLogoSquare()`.
+const hasActiveTrack = computed(() => playbackStore.music.track.value != null);
 
 useFocusGroup({
 	type: 'horizontal',
@@ -46,7 +46,7 @@ useFocusGroup({
 <template>
 	<header class="topnav">
 		<div class="leading">
-			<NowPlayingPill v-if="isMusicPlaying" />
+			<TvMiniPlayer v-if="hasActiveTrack" />
 			<div v-else class="brand">
 				<span class="logo-mark">NM</span>
 			</div>
