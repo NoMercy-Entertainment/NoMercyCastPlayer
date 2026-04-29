@@ -71,9 +71,11 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 .hero {
 	position: relative;
 	width: 100%;
-	height: 60vh;
-	min-height: 320px;
-	max-height: 432px;
+	/* APK heroHeight is 336dp — at 720p that's 47vh. Capped so it
+		never eats the rails on smaller screens. */
+	height: 47vh;
+	min-height: 280px;
+	max-height: 380px;
 	overflow: hidden;
 	background: oklch(0.12 0.01 250);
 }
@@ -130,7 +132,7 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	line-height: 1.45;
 	color: oklch(0.95 0.005 250);
 	display: -webkit-box;
-	-webkit-line-clamp: 7;
+	-webkit-line-clamp: 5;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	max-width: 600px;

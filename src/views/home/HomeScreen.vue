@@ -144,8 +144,8 @@ onBeforeUnmount(() => {
 	display: flex;
 	flex-direction: column;
 	gap: 24px;
-	padding: 16px 0 64px;
-	margin-top: -56px; /* hero scrim overlap, mirrors APK overlap=72.dp */
+	padding: 8px 0 64px;
+	margin-top: -72px; /* APK overlap=72.dp keeps the rails peeking under the hero scrim */
 	position: relative;
 	z-index: 1;
 }

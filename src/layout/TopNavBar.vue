@@ -6,6 +6,7 @@ import ProfileChip from './ProfileChip.vue';
 import NavLink from './NavLink.vue';
 import TvMiniPlayer from './TvMiniPlayer.vue';
 import { playbackStore } from '@/stores/playbackStore';
+import logoSquare from '@/assets/logo.svg';
 
 /*
  * Topnav matches APK TvNavigationBar layout:
@@ -58,9 +59,7 @@ useFocusGroup({
 	<header class="topnav">
 		<div class="leading">
 			<TvMiniPlayer v-if="hasActiveTrack" />
-			<div v-else class="brand">
-				<span class="logo-mark">NM</span>
-			</div>
+			<img v-else class="brand-logo" :src="logoSquare" alt="NoMercy">
 		</div>
 		<nav ref="navEl" class="nav-items">
 			<NavLink
@@ -117,15 +116,11 @@ useFocusGroup({
 	align-items: center;
 	justify-content: flex-start;
 }
-.brand {
-	font-weight: 800;
-	font-size: 24px;
-}
-.logo-mark {
-	background: linear-gradient(135deg, oklch(0.85 0.18 35), oklch(0.6 0.2 285));
-	-webkit-background-clip: text;
-	background-clip: text;
-	color: transparent;
+.brand-logo {
+	width: 44px;
+	height: 44px;
+	object-fit: contain;
+	filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
 .nav-items {
 	display: flex;
