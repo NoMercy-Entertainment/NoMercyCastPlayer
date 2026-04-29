@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
+import { useAutoRetry } from '@/composables/useAutoRetry';
+import { useHeroSeed } from '@/composables/useHeroSeed';
 import { useLibraryQuery } from '@/queries/useLibraryQuery';
 import Resolver from '@/server-components/Resolver.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
@@ -11,7 +13,6 @@ import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
 import HomeHero from '../home/HomeHero.vue';
 import type { Component } from '@/server-components/types';
 import { focusedCardStore } from '@/stores/focusedCardStore';
-import type { FocusedCardData } from '@/stores/focusedCardStore';
 
 /*
  * Library drilldown view — used for /libraries/:id, /genres/:id,
@@ -20,24 +21,16 @@ import type { FocusedCardData } from '@/stores/focusedCardStore';
  */
 
 const LEADING_SLASH = /^\//;
-
 const route = useRoute();
-
-const path = computed(() => {
-	// Library-style routes share the same useLibraryQuery API surface — pass
-	// the URL path through, stripping the leading slash, so it slots into
-	// /api/v1/{path}?version=lolomo.
-	return route.fullPath.replace(LEADING_SLASH, '').split('?')[0];
-});
+const path = computed(() => route.fullPath.replace(LEADING_SLASH, '').split('?')[0]);
 
 const containerEl = ref<HTMLElement | null>(null);
 const railsGroup = useFocusGroup({
 	type: 'vertical',
-	restorationKey: `library-rails`,
+	restorationKey: 'library-rails',
 	containerEl,
 	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
-
 useNavFocusBridge({ handle: railsGroup, containerEl });
 
 const { data, isLoading, error, refetch, isFetching } = useLibraryQuery(path);
@@ -45,54 +38,10 @@ const { data, isLoading, error, refetch, isFetching } = useLibraryQuery(path);
 const isInitialLoad = computed(() => isLoading.value && !data.value);
 const components = computed<Component[]>(() => data.value ?? []);
 
-interface CarouselWrapper {
-	items?: Array<{ component: string; props?: { title?: string; data?: FocusedCardData } }>;
-}
-
-const seedCard = computed<FocusedCardData | null>(() => {
-	for (const c of components.value) {
-		if (!c.props || typeof c.props !== 'object')
-			continue;
-		const wrapper = c.props as CarouselWrapper;
-		const items = wrapper.items;
-		if (!Array.isArray(items) || items.length === 0)
-			continue;
-		const first = items.find(i => i.props?.data && (i.props.data.backdrop || i.props.data.poster));
-		if (first?.props?.data)
-			return first.props.data;
-	}
-	return null;
-});
-
-watch(
-	[seedCard, path],
-	([card]) => {
-		if (card)
-			focusedCardStore.seed(card);
-	},
-	{ immediate: true },
-);
+useHeroSeed(components);
+useAutoRetry({ error, refetch });
 
 const heroCard = computed(() => focusedCardStore.debouncedCard.value);
-
-let retryTimer: number | null = null;
-watch(error, (next) => {
-	if (next) {
-		if (retryTimer === null) {
-			retryTimer = window.setInterval(() => {
-				void refetch();
-			}, 15_000);
-		}
-	}
-	else if (retryTimer !== null) {
-		window.clearInterval(retryTimer);
-		retryTimer = null;
-	}
-});
-onBeforeUnmount(() => {
-	if (retryTimer !== null)
-		window.clearInterval(retryTimer);
-});
 </script>
 
 <template>
