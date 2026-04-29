@@ -93,7 +93,35 @@ export class TVOverlayPlugin {
 			this.showSkipPrompt(chapter as { type?: string; endTime?: number; startTime?: number } | null);
 		});
 		this.bind('chapter-skip-clear', () => this.clearSkipPrompt());
+
+		// CAF receiver remote shortcut keys — APK TvUiPlugin maps Channel
+		// Up / Down to language and episode pickers; we mirror that, plus
+		// listen for explicit 'audio' / 'episodes' key codes.
+		document.addEventListener('keydown', this.onShortcut, true);
 	}
+
+	private onShortcut = (e: KeyboardEvent): void => {
+		if (this.currentPanel !== null)
+			return;
+		switch (e.key) {
+			case 'ChannelUp':
+			case 'MediaTrackNext':
+			case 'l':
+			case 'L':
+				e.preventDefault();
+				this.showLanguageScreen();
+				break;
+			case 'ChannelDown':
+			case 'MediaTrackPrevious':
+			case 'e':
+			case 'E':
+				e.preventDefault();
+				this.showEpisodeScreen();
+				break;
+			default:
+				break;
+		}
+	};
 
 	detach(): void {
 		this.closeAllPanels();
@@ -101,6 +129,7 @@ export class TVOverlayPlugin {
 		this.osd = null;
 		this.skipPrompt?.dispose();
 		this.skipPrompt = null;
+		document.removeEventListener('keydown', this.onShortcut, true);
 		for (const { event, handler } of this.boundHandlers) {
 			this.player.off(event, handler);
 		}
