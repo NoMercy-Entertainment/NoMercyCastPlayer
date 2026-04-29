@@ -128,7 +128,7 @@ function confirmSignOut(): void {
 </script>
 
 <template>
-	<div class="profile-screen nm-no-scrollbar">
+	<div class="profile-screen nm-page-screen">
 		<div ref="containerEl" class="list">
 			<button
 				ref="headerEl"
@@ -202,19 +202,19 @@ function confirmSignOut(): void {
 
 		<div
 			v-if="showSignOutConfirm"
-			class="dialog-backdrop"
+			class="nm-dialog-backdrop"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="signout-dialog-title"
 		>
-			<div class="dialog">
-				<h2 id="signout-dialog-title" class="dialog-title">
+			<div class="nm-dialog">
+				<h2 id="signout-dialog-title" class="nm-dialog-title">
 					Sign out
 				</h2>
-				<p class="dialog-message">
+				<p class="nm-dialog-message">
 					Sign out of {{ userName }}?
 				</p>
-				<div class="dialog-actions">
+				<div class="nm-dialog-actions">
 					<button
 						ref="dialogCancelEl"
 						type="button"
@@ -238,11 +238,6 @@ function confirmSignOut(): void {
 </template>
 
 <style scoped>
-.profile-screen {
-	height: 100%;
-	overflow-y: auto;
-	padding: 32px;
-}
 .list {
 	display: flex;
 	flex-direction: column;
@@ -341,38 +336,6 @@ function confirmSignOut(): void {
 	background: rgba(255, 255, 255, 0.1);
 	padding: 6px 10px;
 	border-radius: 8px;
-}
-.dialog-backdrop {
-	position: fixed;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.6);
-	display: grid;
-	place-items: center;
-	z-index: 200;
-}
-.dialog {
-	background: oklch(0.16 0.01 250);
-	border-radius: 16px;
-	padding: 24px;
-	max-width: 420px;
-	width: 90%;
-	color: #fff;
-	border: 1px solid rgba(255, 255, 255, 0.12);
-}
-.dialog-title {
-	margin: 0 0 8px;
-	font-size: 20px;
-	font-weight: 700;
-}
-.dialog-message {
-	margin: 0 0 20px;
-	font-size: 14px;
-	color: oklch(0.85 0.005 250);
-}
-.dialog-actions {
-	display: flex;
-	justify-content: flex-end;
-	gap: 12px;
 }
 .btn {
 	padding: 10px 16px;

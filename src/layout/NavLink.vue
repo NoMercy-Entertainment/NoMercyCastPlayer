@@ -49,8 +49,8 @@ useFocusEntry({
 	padding: 0 14px 0 12px;
 	height: 40px;
 	border-radius: 20px;
-	font-size: 13px;
-	font-weight: 600;
+	font-size: 18px;
+	font-weight: 400;
 	color: #fff;
 	text-decoration: none;
 	background: oklch(0 0 0 / 0.6);

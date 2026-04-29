@@ -84,8 +84,7 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	position: absolute;
 	inset: 0;
 	width: 60%;
-	/* APK HeroRow.LeftColumn padding(start = 40.dp, end = 16.dp) */
-	padding: 32px 16px 32px 40px;
+	padding: 20px 16px 32px 40px;
 	color: #fff;
 	display: flex;
 	flex-direction: column;
@@ -93,9 +92,6 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	gap: 12px;
 }
 .logo {
-	/* APK HeroRow logo: widthIn(max = 420.dp). Title block ~58dp but
-		the logo aspect ratio varies — let it scale up to ~96px tall so
-		multi-line wordmarks read at couch distance. */
 	max-width: 420px;
 	max-height: 96px;
 	object-fit: contain;
@@ -119,8 +115,7 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 }
 .overview {
 	margin: 0;
-	/* APK HeroRow overview: bodyMedium SemiBold 14sp / 20sp lineHeight */
-	font-size: 14px;
+	font-size: 19px;
 	font-weight: 600;
 	line-height: 20px;
 	color: oklch(1 0 0);

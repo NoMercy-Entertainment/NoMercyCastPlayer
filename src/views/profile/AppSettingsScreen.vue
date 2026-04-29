@@ -54,7 +54,7 @@ useFocusEntry({
 </script>
 
 <template>
-	<div class="settings-screen nm-no-scrollbar">
+	<div class="settings-screen nm-page-screen">
 		<header class="nm-page-header">
 			<h1>Settings</h1>
 		</header>
@@ -123,11 +123,6 @@ useFocusEntry({
 </template>
 
 <style scoped>
-.settings-screen {
-	height: 100%;
-	overflow-y: auto;
-	padding: 32px;
-}
 .list {
 	display: flex;
 	flex-direction: column;

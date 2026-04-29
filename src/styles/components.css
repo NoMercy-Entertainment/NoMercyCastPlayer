@@ -199,3 +199,52 @@
 	font-size: 24px;
 	font-weight: 700;
 }
+
+/*
+ * Outer container for Profile / Settings / About / ServerInfo —
+ * full-viewport scroll with 32px page padding, hidden scrollbar.
+ */
+.nm-page-screen {
+	height: 100%;
+	overflow-y: auto;
+	padding: 32px;
+	scrollbar-width: none;
+}
+.nm-page-screen::-webkit-scrollbar {
+	display: none;
+}
+
+/* ─── Modal dialogs ─────────────────────────────────────────────────── */
+
+.nm-dialog-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.6);
+	display: grid;
+	place-items: center;
+	z-index: 200;
+}
+.nm-dialog {
+	background: oklch(0.16 0.01 250);
+	border-radius: 16px;
+	padding: 24px;
+	max-width: 420px;
+	width: 90%;
+	color: #fff;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.nm-dialog-title {
+	margin: 0 0 8px;
+	font-size: 20px;
+	font-weight: 700;
+}
+.nm-dialog-message {
+	margin: 0 0 20px;
+	font-size: 14px;
+	color: oklch(0.85 0.005 250);
+}
+.nm-dialog-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
