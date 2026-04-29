@@ -48,13 +48,20 @@ useFocusEntry({
 	align-items: center;
 	gap: 16px;
 	padding: 8px 16px;
-	border: 0;
+	border: 2px solid transparent;
 	background: transparent;
 	cursor: pointer;
 	border-radius: 8px;
 	outline: none;
 	text-align: start;
 	width: 100%;
+	transition:
+		background var(--motion-fast),
+		border-color var(--motion-fast);
+}
+.track-row:focus-visible {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
 }
 .position {
 	color: var(--color-text-secondary);

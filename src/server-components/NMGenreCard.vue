@@ -41,13 +41,22 @@ useFocusEntry({
 	width: 320px;
 	aspect-ratio: 16/9;
 	position: relative;
-	border: 0;
+	border: 3px solid transparent;
 	padding: 0;
 	background: oklch(0.18 0.01 250);
 	cursor: pointer;
 	border-radius: var(--radius-card);
 	overflow: hidden;
 	outline: none;
+	transition:
+		transform var(--motion-fast),
+		border-color var(--motion-fast),
+		box-shadow var(--motion-fast);
+}
+.genre-card:focus-visible {
+	transform: scale(1.04);
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .genre-card img {
 	position: absolute;

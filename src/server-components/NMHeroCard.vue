@@ -62,12 +62,22 @@ useFocusEntry({
 	cursor: pointer;
 	contain: layout paint;
 	outline: none;
+	transition: transform var(--motion-fast);
+}
+.hero-card:focus-visible {
+	transform: scale(1.04);
+}
+.hero-card:focus-visible .art {
+	box-shadow:
+		0 0 0 2px var(--color-primary, oklch(0.7 0.2 285)),
+		0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .art {
 	width: 100%;
 	aspect-ratio: 16/9;
 	border-radius: var(--radius-card);
 	overflow: hidden;
+	transition: box-shadow var(--motion-fast);
 }
 .art img {
 	width: 100%;
