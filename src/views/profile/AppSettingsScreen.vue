@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useFocusEntry } from '@/composables/useFocusEntry';
+import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 
 /*
  * App settings — mirrors APK AppSettingsScreen.kt's TvToggleRow stack
@@ -10,11 +11,14 @@ import { useFocusEntry } from '@/composables/useFocusEntry';
  * toggles are session-local placeholders until the cast spec extends.
  */
 const containerEl = ref<HTMLElement | null>(null);
-useFocusGroup({
+const settingsGroup = useFocusGroup({
 	type: 'vertical',
 	restorationKey: 'settings-list',
 	containerEl,
+	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
+
+useNavFocusBridge(settingsGroup);
 
 const useAutoThemeColors = ref(true);
 const enableSubtitleHints = ref(true);
