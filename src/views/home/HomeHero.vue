@@ -103,7 +103,8 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	position: absolute;
 	inset: 0;
 	width: 60%;
-	padding: 32px var(--tv-safe-padding) 56px var(--tv-safe-padding);
+	/* APK HeroRow.LeftColumn padding(start = 40.dp, end = 16.dp) */
+	padding: 32px 16px 32px 40px;
 	color: #fff;
 	display: flex;
 	flex-direction: column;
