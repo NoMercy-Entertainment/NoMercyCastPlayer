@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
+import { useQueryClient } from '@tanstack/vue-query';
 import { usePlaylistQuery } from '@/queries/usePlaylistQuery';
+import { QueryKeys } from '@/queries/keys';
 import VideoPlayer from '@/players/video/VideoPlayer.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
@@ -29,6 +31,15 @@ const { data, isLoading, error, refetch } = usePlaylistQuery(type, id);
 
 const playlist = computed(() => data.value?.playlist ?? []);
 const initialItem = computed(() => data.value?.item);
+
+// On exit, invalidate Home + Libraries so Continue Watching reflects the
+// updated playback position the server recorded while we were on this
+// screen — mirrors APK WatchScreen.kt onDispose's cache invalidation.
+const queryClient = useQueryClient();
+onBeforeUnmount(() => {
+	void queryClient.invalidateQueries({ queryKey: QueryKeys.home() });
+	void queryClient.invalidateQueries({ queryKey: QueryKeys.libraries() });
+});
 </script>
 
 <template>
