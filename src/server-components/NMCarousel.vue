@@ -78,7 +78,6 @@ useFocusEntry({
 .rail-section {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
 	contain: layout paint;
 }
 .rail-header {

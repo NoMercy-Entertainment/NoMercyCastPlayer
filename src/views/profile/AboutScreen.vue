@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import SetupBackdrop from '@/components/SetupBackdrop.vue';
+import AppLogo from '@/layout/AppLogo.vue';
+
 /*
  * About screen — APK preferences/about/tv/AboutScreen.kt parity.
- * Centered product card: logo + app name + version + tagline +
- * developed-by + copyright. No technical details (build flavor,
- * package name, installer ID) — those belong on the dashboard.
+ * SetupBackdrop + centered product card: AppLogo (wide) + version +
+ * tagline + developed-by + copyright. No technical details (build
+ * flavor, package name, installer ID) — those belong on a developer
+ * dashboard, not the user-facing About page.
  */
 
 const APP_VERSION = '1.0.0-alpha';
@@ -13,19 +17,13 @@ const currentYear = new Date().getFullYear();
 
 <template>
 	<div class="about-screen">
+		<SetupBackdrop />
 		<div class="about-card">
-			<div class="logo">
-				<span class="logo-mark">NM</span>
-			</div>
+			<AppLogo class="brand-logo" />
 
-			<div class="brand-row">
-				<h1 class="brand">
-					NoMercy
-				</h1>
-				<p class="version">
-					Version {{ APP_VERSION }}
-				</p>
-			</div>
+			<p class="version">
+				Version {{ APP_VERSION }}
+			</p>
 
 			<p class="tagline">
 				Your media, on every screen. Self-hosted. No ads, no tracking,
@@ -48,12 +46,16 @@ const currentYear = new Date().getFullYear();
 
 <style scoped>
 .about-screen {
+	position: relative;
 	height: 100%;
 	display: grid;
 	place-items: center;
 	padding: 48px;
+	overflow: hidden;
 }
 .about-card {
+	position: relative;
+	z-index: 1;
 	max-width: 720px;
 	width: 100%;
 	display: flex;
@@ -63,32 +65,10 @@ const currentYear = new Date().getFullYear();
 	color: #fff;
 	text-align: center;
 }
-.logo {
-	width: 96px;
-	height: 96px;
-	border-radius: 24px;
-	background: linear-gradient(135deg, oklch(0.85 0.18 35), oklch(0.6 0.2 285));
-	display: grid;
-	place-items: center;
-	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
-}
-.logo-mark {
-	font-size: 36px;
-	font-weight: 800;
-	color: #fff;
-	letter-spacing: -0.04em;
-}
-.brand-row {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 4px;
-}
-.brand {
-	margin: 0;
-	font-size: 40px;
-	font-weight: 800;
-	letter-spacing: -0.02em;
+.brand-logo {
+	width: 320px;
+	height: 80px;
+	filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
 }
 .version {
 	margin: 0;

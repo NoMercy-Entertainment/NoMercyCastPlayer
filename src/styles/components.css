@@ -290,6 +290,40 @@
 	display: none;
 }
 
+/* ─── Settings / Profile list rows ──────────────────────────────────── */
+
+/*
+ * Vertical list of focusable rows used by Profile / Settings / future
+ * preferences screens. Mirrors APK ProfileScreen / AppSettingsScreen
+ * focusable card rows: 920px max width centered, 8dp gap, dark card
+ * with white border that brightens on focus.
+ */
+.nm-list {
+	max-width: 920px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.nm-list-row {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px;
+	background: oklch(0.18 0.01 250 / 0.85);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 14px;
+	color: #fff;
+	font-family: inherit;
+	cursor: pointer;
+	outline: none;
+	transition: border-color var(--motion-fast);
+}
+.nm-list-row:focus-visible {
+	border-color: rgba(255, 255, 255, 0.85);
+	border-width: 3px;
+}
+
 /* ─── Modal dialogs ─────────────────────────────────────────────────── */
 
 .nm-dialog-backdrop {

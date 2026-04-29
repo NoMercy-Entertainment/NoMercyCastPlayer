@@ -6,6 +6,7 @@ import { useFocusEntry } from '@/composables/useFocusEntry';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { useMeQuery } from '@/queries/useMeQuery';
 import { authStore } from '@/stores/authStore';
+import SetupBackdrop from '@/components/SetupBackdrop.vue';
 
 /*
  * Profile / settings hub. Mirrors APK ProfileScreen.kt — vertical stack
@@ -129,10 +130,11 @@ function confirmSignOut(): void {
 
 <template>
 	<div class="profile-screen nm-page-screen">
-		<div ref="containerEl" class="list">
+		<SetupBackdrop />
+		<div ref="containerEl" class="profile-list nm-list">
 			<button
 				ref="headerEl"
-				class="card header-card"
+				class="nm-list-row header-card"
 				data-focusable
 				tabindex="0"
 				@click.prevent="showSignOutConfirm = true"
@@ -159,7 +161,7 @@ function confirmSignOut(): void {
 
 			<button
 				ref="serverEl"
-				class="card row-card"
+				class="nm-list-row row-card"
 				data-focusable
 				tabindex="0"
 				@click.prevent="router.push('/profile/server-info')"
@@ -177,7 +179,7 @@ function confirmSignOut(): void {
 
 			<button
 				ref="settingsEl"
-				class="card row-card"
+				class="nm-list-row row-card"
 				data-focusable
 				tabindex="0"
 				@click.prevent="router.push('/profile/settings')"
@@ -189,7 +191,7 @@ function confirmSignOut(): void {
 
 			<button
 				ref="aboutEl"
-				class="card row-card"
+				class="nm-list-row row-card"
 				data-focusable
 				tabindex="0"
 				@click.prevent="router.push('/profile/about')"
@@ -238,33 +240,12 @@ function confirmSignOut(): void {
 </template>
 
 <style scoped>
-.list {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	max-width: 920px;
-	margin: 0 auto;
+.profile-screen {
+	position: relative;
 }
-.card {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	padding: 16px;
-	background: oklch(0.18 0.01 250 / 0.85);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	border-radius: 14px;
-	color: #fff;
-	font-family: inherit;
-	cursor: pointer;
-	outline: none;
-	transition:
-		border-color var(--motion-fast),
-		transform var(--motion-fast);
-}
-.card:focus-visible {
-	border-color: rgba(255, 255, 255, 0.85);
-	border-width: 3px;
-	transform: translateY(-1px);
+.profile-list {
+	position: relative;
+	z-index: 1;
 }
 .header-card {
 	gap: 12px;

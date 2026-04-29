@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useServerInfoQuery } from '@/queries/useServerInfoQuery';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
+import SetupBackdrop from '@/components/SetupBackdrop.vue';
 
 /*
  * Server info — APK dashboard/serverInfo/tv/ServerInfoScreen.kt parity.
@@ -51,7 +52,8 @@ const uptime = computed(() => formatUptime(info.value?.bootTime, now.value));
 
 <template>
 	<div class="server-info-screen nm-page-screen">
-		<header class="nm-page-header">
+		<SetupBackdrop />
+		<header class="nm-page-header server-content">
 			<h1>Server info</h1>
 		</header>
 
@@ -62,7 +64,7 @@ const uptime = computed(() => formatUptime(info.value?.bootTime, now.value));
 			:retry="() => refetch()"
 			context="Couldn't load server info"
 		/>
-		<div v-else-if="info" class="card">
+		<div v-else-if="info" class="card server-content">
 			<h2 class="server-name">
 				{{ info.server }}
 			</h2>
@@ -94,13 +96,20 @@ const uptime = computed(() => formatUptime(info.value?.bootTime, now.value));
 			</dl>
 		</div>
 
-		<p class="hint">
+		<p class="hint server-content">
 			Switch servers from the NoMercy app on your phone or browser.
 		</p>
 	</div>
 </template>
 
 <style scoped>
+.server-info-screen {
+	position: relative;
+}
+.server-content {
+	position: relative;
+	z-index: 1;
+}
 .card {
 	max-width: 920px;
 	margin: 0 auto 24px;

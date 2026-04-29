@@ -4,6 +4,7 @@ import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { settingsStore } from '@/stores/settingsStore';
+import SetupBackdrop from '@/components/SetupBackdrop.vue';
 
 /*
  * App settings — mirrors APK preferences/display/tv/AppSettingsScreen.kt:
@@ -55,13 +56,14 @@ useFocusEntry({
 
 <template>
 	<div class="settings-screen nm-page-screen">
-		<header class="nm-page-header">
+		<SetupBackdrop />
+		<header class="nm-page-header settings-header">
 			<h1>Settings</h1>
 		</header>
-		<div ref="containerEl" class="list">
+		<div ref="containerEl" class="settings-list nm-list">
 			<button
 				ref="autoSkipEl"
-				class="row"
+				class="nm-list-row"
 				data-focusable
 				tabindex="0"
 				@click.prevent="settingsStore.autoSkipChapters.value = !settingsStore.autoSkipChapters.value"
@@ -81,7 +83,7 @@ useFocusEntry({
 
 			<button
 				ref="themeEl"
-				class="row"
+				class="nm-list-row"
 				data-focusable
 				tabindex="0"
 				@click.prevent="settingsStore.useAutoThemeColors.value = !settingsStore.useAutoThemeColors.value"
@@ -101,7 +103,7 @@ useFocusEntry({
 
 			<button
 				ref="subtitleEl"
-				class="row"
+				class="nm-list-row"
 				data-focusable
 				tabindex="0"
 				@click.prevent="settingsStore.subtitleHints.value = !settingsStore.subtitleHints.value"
@@ -123,30 +125,13 @@ useFocusEntry({
 </template>
 
 <style scoped>
-.list {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	max-width: 920px;
-	margin: 0 auto;
+.settings-screen {
+	position: relative;
 }
-.row {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	padding: 16px;
-	background: oklch(0.18 0.01 250 / 0.85);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	border-radius: 12px;
-	color: #fff;
-	font-family: inherit;
-	cursor: pointer;
-	outline: none;
-	transition: border-color var(--motion-fast);
-}
-.row:focus-visible {
-	border-color: rgba(255, 255, 255, 0.85);
-	border-width: 3px;
+.settings-header,
+.settings-list {
+	position: relative;
+	z-index: 1;
 }
 .row-text {
 	flex: 1;
