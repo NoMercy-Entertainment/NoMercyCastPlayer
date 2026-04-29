@@ -8,6 +8,7 @@ import { useFocusEntry } from '@/composables/useFocusEntry';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
+import SplitTitleText from '@/components/text/SplitTitleText.vue';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
 import { apiFetch } from '@/lib/http/client';
@@ -177,9 +178,12 @@ async function toggleWatchlist(): Promise<void> {
 				loading="eager"
 				decoding="async"
 			>
-			<h1 v-else class="title">
-				{{ info.title }}
-			</h1>
+			<SplitTitleText
+				v-else
+				:title="info.title"
+				main-class="info-title-main"
+				subtitle-class="info-title-sub"
+			/>
 
 			<div v-if="yearText || durationText || ratingText" class="meta-row">
 				<span v-if="yearText">{{ yearText }}</span>
@@ -304,13 +308,20 @@ async function toggleWatchlist(): Promise<void> {
 	margin-bottom: 16px;
 	filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.5));
 }
-.title {
-	margin: 0 0 16px;
+:deep(.info-title-main) {
+	margin-bottom: 16px;
 	font-size: 36px;
 	font-weight: 700;
 	line-height: 1.05;
 	letter-spacing: -0.01em;
 	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+:deep(.info-title-sub) {
+	margin-bottom: 16px;
+	font-size: 22px;
+	font-weight: 500;
+	color: oklch(0.92 0.005 250);
+	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 .meta-row {
 	display: flex;
