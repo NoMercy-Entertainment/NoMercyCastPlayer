@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import { buildImageUrl } from '@/lib/images/urls';
+import { playbackStore } from '@/stores/playbackStore';
+import { musicSyncBridge } from '@/players/music/syncBridge';
 import type { NMTrackRowWrapper, Update } from './types';
 
 const props = defineProps<{
@@ -15,10 +17,28 @@ const router = useRouter();
 const el = ref<HTMLElement | null>(null);
 const cover = buildImageUrl(props.data.cover, { width: 64, height: 64 });
 
+const isCurrentTrack = computed(
+	() => playbackStore.music.track.value?.id === props.data.id,
+);
+
+const isPlayingCurrent = computed(
+	() => isCurrentTrack.value && playbackStore.music.playing.value,
+);
+
 useFocusEntry({
 	key: props.id,
 	el,
 	onAction: () => {
+		if (isCurrentTrack.value) {
+			const engine = musicSyncBridge.current();
+			if (engine) {
+				if (playbackStore.music.playing.value)
+					engine.pause();
+				else
+					engine.play();
+				return;
+			}
+		}
 		if (props.data.link)
 			router.push(props.data.link);
 	},
@@ -26,8 +46,38 @@ useFocusEntry({
 </script>
 
 <template>
-	<article ref="el" class="track-row" data-focusable tabindex="0" role="button">
-		<span class="position">{{ props.data.position ?? '' }}</span>
+	<article
+		ref="el"
+		class="track-row"
+		:class="[{ 'is-current': isCurrentTrack }]"
+		data-focusable
+		tabindex="0"
+		role="button"
+	>
+		<span class="leading">
+			<svg
+				v-if="isPlayingCurrent"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="currentColor"
+				aria-hidden="true"
+			>
+				<rect x="6" y="4" width="4" height="16" />
+				<rect x="14" y="4" width="4" height="16" />
+			</svg>
+			<svg
+				v-else-if="isCurrentTrack"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="currentColor"
+				aria-hidden="true"
+			>
+				<path d="M8 5v14l11-7z" />
+			</svg>
+			<span v-else class="position">{{ props.data.position ?? '' }}</span>
+		</span>
 		<img v-if="cover" :src="cover" :alt="props.data.name" class="cover">
 		<div class="meta">
 			<p class="name">
@@ -63,10 +113,18 @@ useFocusEntry({
 	background: rgba(255, 255, 255, 0.06);
 	border-color: var(--color-primary, oklch(0.7 0.2 285));
 }
+.track-row.is-current .name {
+	color: var(--color-primary, oklch(0.7 0.2 285));
+}
+.leading {
+	display: grid;
+	place-items: center;
+	color: var(--color-primary, oklch(0.7 0.2 285));
+}
 .position {
 	color: var(--color-text-secondary);
 	font-variant-numeric: tabular-nums;
-	text-align: end;
+	font-size: 14px;
 }
 .cover {
 	width: 48px;
