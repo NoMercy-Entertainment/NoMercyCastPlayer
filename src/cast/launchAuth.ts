@@ -53,33 +53,30 @@ export function attachLaunchListener(
 		const appData = context.getApplicationData() as
 			| { customData?: unknown; launchOptions?: { customData?: unknown } }
 			| null;
-		// CAF SDK populates LAUNCH customData at either appData.customData or
-		// appData.launchOptions.customData depending on how the sender wrapped
-		// the LAUNCH payload. Server-initiated LAUNCH (via sharpcaster) lands
-		// it on launchOptions; sender-SDK initiated LAUNCH lands it on the
-		// top-level field. Read both.
 		const customData = appData?.customData ?? appData?.launchOptions?.customData;
-		// Pin the launch shape to <body data-launch-diag="..."> so we can read
-		// it back via screencap / DOM inspection without remote DevTools.
-		// Cast_shell's WebView filters console.* below ERROR on production
-		// receivers, so console.warn diagnostics never reach logcat.
+		const diag = {
+			hasCustomData: Boolean(customData),
+			appDataKeys: appData ? Object.keys(appData) : null,
+			launchOptionsKeys: appData?.launchOptions
+				? Object.keys(appData.launchOptions)
+				: null,
+			customDataKeys: customData
+				? Object.keys(customData as Record<string, unknown>)
+				: null,
+			customDataType: typeof customData,
+		};
+		// console.error gets through cast_shell's WebView filter; lower
+		// levels are dropped on production receivers. Tagged so we can grep.
+		console.error('[NM-DIAG-READY]', JSON.stringify(diag));
 		try {
-			document.body.dataset.launchDiag = JSON.stringify({
-				hasCustomData: Boolean(customData),
-				appDataKeys: appData ? Object.keys(appData) : null,
-				launchOptionsKeys: appData?.launchOptions
-					? Object.keys(appData.launchOptions)
-					: null,
-				customDataKeys: customData
-					? Object.keys(customData as Record<string, unknown>)
-					: null,
-			});
+			document.body.dataset.launchDiag = JSON.stringify(diag);
 		}
 		catch {
 			document.body.dataset.launchDiag = 'stringify-failed';
 		}
 		if (customData) {
 			const ok = consumeLaunchAuth(customData);
+			console.error('[NM-DIAG-CONSUME]', JSON.stringify({ ok }));
 			if (ok) {
 				const stored = (customData as LaunchCustomData) ?? null;
 				if (stored)
