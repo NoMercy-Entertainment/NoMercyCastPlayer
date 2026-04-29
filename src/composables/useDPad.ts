@@ -1,6 +1,7 @@
 import { onBeforeUnmount, onMounted } from 'vue';
 import type { Router } from 'vue-router';
 import { focusStore } from '@/stores/focusStore';
+import { focusedCardStore } from '@/stores/focusedCardStore';
 import { screensaverStore } from '@/stores/screensaverStore';
 
 /**
@@ -54,15 +55,19 @@ export function useDPad(router: Router): void {
 
 		switch (e.key) {
 			case 'ArrowUp':
+				focusedCardStore.setNavDirection('vertical');
 				handled = active?.handleKey('up') ?? false;
 				break;
 			case 'ArrowDown':
+				focusedCardStore.setNavDirection('vertical');
 				handled = active?.handleKey('down') ?? false;
 				break;
 			case 'ArrowLeft':
+				focusedCardStore.setNavDirection('horizontal');
 				handled = active?.handleKey('left') ?? false;
 				break;
 			case 'ArrowRight':
+				focusedCardStore.setNavDirection('horizontal');
 				handled = active?.handleKey('right') ?? false;
 				break;
 			case 'Enter':

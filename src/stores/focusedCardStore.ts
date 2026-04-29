@@ -33,8 +33,10 @@ export interface FocusedCardData {
 
 const _activeCard = ref<FocusedCardData | null>(null);
 const _debouncedCard = ref<FocusedCardData | null>(null);
-const DEFAULT_DEBOUNCE_MS = 650;
+const HORIZONTAL_DEBOUNCE_MS = 650;
+const VERTICAL_DEBOUNCE_MS = 2000;
 let pending: number | null = null;
+let lastNavDir: 'horizontal' | 'vertical' = 'horizontal';
 
 /*
  * Pick a usable accent color out of a palette object. APK's
@@ -78,11 +80,12 @@ watch(_activeCard, (next) => {
 		window.clearTimeout(pending);
 		pending = null;
 	}
+	const delay = lastNavDir === 'vertical' ? VERTICAL_DEBOUNCE_MS : HORIZONTAL_DEBOUNCE_MS;
 	pending = window.setTimeout(() => {
 		_debouncedCard.value = next;
 		applyPalette(next);
 		pending = null;
-	}, DEFAULT_DEBOUNCE_MS);
+	}, delay);
 }, { flush: 'post' });
 
 export const focusedCardStore = {
@@ -96,5 +99,8 @@ export const focusedCardStore = {
 		_activeCard.value = card;
 		_debouncedCard.value = card;
 		applyPalette(card);
+	},
+	setNavDirection(dir: 'horizontal' | 'vertical'): void {
+		lastNavDir = dir;
 	},
 };
