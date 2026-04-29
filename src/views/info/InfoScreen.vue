@@ -215,7 +215,7 @@ async function toggleWatchlist(): Promise<void> {
 			<button
 				v-if="watchPath"
 				ref="watchEl"
-				class="btn btn-primary"
+				class="nm-pill nm-pill-primary"
 				data-focusable
 				tabindex="0"
 				@click.prevent="watchPath && router.push(watchPath)"
@@ -233,7 +233,7 @@ async function toggleWatchlist(): Promise<void> {
 			<button
 				v-if="hasTrailer"
 				ref="trailerEl"
-				class="btn btn-secondary"
+				class="nm-pill nm-pill-secondary"
 				data-focusable
 				tabindex="0"
 			>
@@ -254,7 +254,7 @@ async function toggleWatchlist(): Promise<void> {
 			</button>
 			<button
 				ref="watchlistEl"
-				class="btn btn-secondary"
+				class="nm-pill nm-pill-secondary"
 				data-focusable
 				tabindex="0"
 			>
@@ -364,41 +364,8 @@ async function toggleWatchlist(): Promise<void> {
 	padding: 0 40px;
 	max-width: 560px;
 }
-.btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	padding: 12px 22px;
-	border-radius: 999px;
-	font-size: 14px;
-	font-weight: 600;
-	border: 0;
-	cursor: pointer;
-	outline: none;
-	transition:
-		transform var(--motion-fast),
-		background var(--motion-fast);
+/* Buttons in the actions column take full container width */
+.actions :deep(.nm-pill) {
 	text-align: left;
-}
-.btn-primary {
-	background: #fff;
-	color: #181818;
-}
-.btn-primary:focus-visible,
-.btn-primary:hover {
-	background: oklch(0.95 0 0);
-	transform: translateY(-1px);
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-}
-.btn-secondary {
-	background: rgba(0, 0, 0, 0.7);
-	color: #fff;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.btn-secondary:focus-visible,
-.btn-secondary:hover {
-	background: rgba(0, 0, 0, 0.85);
-	border-color: rgba(255, 255, 255, 0.55);
-	transform: translateY(-1px);
 }
 </style>

@@ -173,7 +173,7 @@ function trackArtistText(track: MusicTrack): string {
 			</p>
 			<button
 				ref="playEl"
-				class="btn btn-primary"
+				class="nm-pill nm-pill-primary"
 				type="button"
 				data-focusable
 				tabindex="0"
@@ -286,29 +286,14 @@ function trackArtistText(track: MusicTrack): string {
 	font-size: 13px;
 	color: oklch(0.85 0.005 250);
 }
-.btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	width: max-content;
-	padding: 12px 22px;
-	border-radius: 999px;
-	font-size: 14px;
-	font-weight: 600;
-	border: 0;
-	cursor: pointer;
-	outline: none;
-	transition:
-		transform var(--motion-fast),
-		background var(--motion-fast);
-}
-.btn-primary {
+/* Music list Play button — palette-tinted instead of white */
+.header-col :deep(.nm-pill-primary) {
 	background: var(--color-primary, oklch(0.7 0.2 285));
 	color: #fff;
 }
-.btn-primary:focus-visible,
-.btn-primary:hover {
-	transform: translateY(-1px);
+.header-col :deep(.nm-pill-primary):focus-visible,
+.header-col :deep(.nm-pill-primary):hover {
+	background: var(--color-primary, oklch(0.7 0.2 285));
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 .tracks-col {
