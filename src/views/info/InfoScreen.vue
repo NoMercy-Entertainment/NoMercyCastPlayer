@@ -3,6 +3,7 @@ import { computed, ref, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
 import { useInfoQuery } from '@/queries/useInfoQuery';
 import { useFocusEntry } from '@/composables/useFocusEntry';
+import { useFocusGroup } from '@/composables/useFocusGroup';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
@@ -61,6 +62,13 @@ const ratingText = computed(() =>
 		? `${info.value.voteAverage.toFixed(1)} / 10`
 		: '',
 );
+
+const actionsEl = ref<HTMLElement | null>(null);
+useFocusGroup({
+	type: 'vertical',
+	restorationKey: 'info-actions',
+	containerEl: actionsEl,
+});
 
 const watchEl = ref<HTMLElement | null>(null);
 const trailerEl = ref<HTMLElement | null>(null);
@@ -138,7 +146,7 @@ useFocusEntry({
 			</p>
 		</div>
 
-		<div class="actions">
+		<div ref="actionsEl" class="actions">
 			<button
 				v-if="watchPath"
 				ref="watchEl"
