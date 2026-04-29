@@ -8,6 +8,7 @@ import { mountPlaybackOSD } from './pluginPanels/PlaybackOSD';
 import type { PlaybackOSDHandle } from './pluginPanels/PlaybackOSD';
 import { mountSkipChapterPrompt } from './pluginPanels/SkipChapterPrompt';
 import type { SkipChapterPromptHandle } from './pluginPanels/SkipChapterPrompt';
+import { settingsStore } from '@/stores/settingsStore';
 
 /**
  * TV overlay orchestrator per spec §12.3. Owns the pre-screen / episode
@@ -263,7 +264,7 @@ export class TVOverlayPlugin {
 			currentSubtitleId: this.player.getSubtitleTrack?.(),
 			currentQualityId: this.player.getCurrentQuality?.() ?? -1,
 			autoQualityLabel: this.player.getActualQualityLabel?.() ?? null,
-			autoSkipChapters: this.player.getAutoSkipChapters?.() ?? false,
+			autoSkipChapters: settingsStore.autoSkipChapters.value,
 			onPickAudio: id => this.player.setAudioTrack?.(id),
 			onPickSubtitle: (id) => {
 				if (id === 'off')
@@ -273,9 +274,9 @@ export class TVOverlayPlugin {
 			onPickQuality: this.player.setQuality
 				? id => this.player.setQuality?.(id)
 				: undefined,
-			onToggleAutoSkip: this.player.setAutoSkipChapters
-				? next => this.player.setAutoSkipChapters?.(next)
-				: undefined,
+			onToggleAutoSkip: (next) => {
+				settingsStore.autoSkipChapters.value = next;
+			},
 			onExit: () => this.showPreScreen(),
 		});
 	}

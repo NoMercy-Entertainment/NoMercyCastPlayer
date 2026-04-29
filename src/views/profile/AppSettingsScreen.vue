@@ -3,12 +3,16 @@ import { ref } from 'vue';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
+import { settingsStore } from '@/stores/settingsStore';
 
 /*
- * App settings — mirrors APK AppSettingsScreen.kt's TvToggleRow stack
- * with the auto-theme-color toggle. Persistence layer is per-user on
- * the server-side AppConfigStore in the APK; on the receiver these
- * toggles are session-local placeholders until the cast spec extends.
+ * App settings — mirrors APK preferences/display/tv/AppSettingsScreen.kt:
+ *   - Auto-skip chapters toggle (intro / credits)
+ *   - Auto theme colours toggle (palette-tinted accent)
+ *   - Subtitle hints toggle (badge cards with subs available)
+ *
+ * Settings persist to localStorage via settingsStore. The auto-skip
+ * pref drives ChapterAutoSkipPlugin's userPrefAutoSkip flag.
  */
 const containerEl = ref<HTMLElement | null>(null);
 const settingsGroup = useFocusGroup({
@@ -20,17 +24,23 @@ const settingsGroup = useFocusGroup({
 
 useNavFocusBridge(settingsGroup);
 
-const useAutoThemeColors = ref(true);
-const enableSubtitleHints = ref(true);
-
+const autoSkipEl = ref<HTMLElement | null>(null);
 const themeEl = ref<HTMLElement | null>(null);
 const subtitleEl = ref<HTMLElement | null>(null);
+
+useFocusEntry({
+	key: 'settings-auto-skip',
+	el: autoSkipEl,
+	onAction: () => {
+		settingsStore.autoSkipChapters.value = !settingsStore.autoSkipChapters.value;
+	},
+});
 
 useFocusEntry({
 	key: 'settings-theme',
 	el: themeEl,
 	onAction: () => {
-		useAutoThemeColors.value = !useAutoThemeColors.value;
+		settingsStore.useAutoThemeColors.value = !settingsStore.useAutoThemeColors.value;
 	},
 });
 
@@ -38,7 +48,7 @@ useFocusEntry({
 	key: 'settings-subs',
 	el: subtitleEl,
 	onAction: () => {
-		enableSubtitleHints.value = !enableSubtitleHints.value;
+		settingsStore.subtitleHints.value = !settingsStore.subtitleHints.value;
 	},
 });
 </script>
@@ -50,11 +60,31 @@ useFocusEntry({
 		</header>
 		<div ref="containerEl" class="list">
 			<button
+				ref="autoSkipEl"
+				class="row"
+				data-focusable
+				tabindex="0"
+				@click.prevent="settingsStore.autoSkipChapters.value = !settingsStore.autoSkipChapters.value"
+			>
+				<div class="row-text">
+					<p class="row-primary">
+						Auto-skip intros and credits
+					</p>
+					<p class="row-secondary">
+						When a chapter is tagged as intro or credits, jump to the end automatically
+					</p>
+				</div>
+				<span class="toggle" :class="[{ on: settingsStore.autoSkipChapters.value }]">
+					<span class="thumb" />
+				</span>
+			</button>
+
+			<button
 				ref="themeEl"
 				class="row"
 				data-focusable
 				tabindex="0"
-				@click.prevent="useAutoThemeColors = !useAutoThemeColors"
+				@click.prevent="settingsStore.useAutoThemeColors.value = !settingsStore.useAutoThemeColors.value"
 			>
 				<div class="row-text">
 					<p class="row-primary">
@@ -64,7 +94,7 @@ useFocusEntry({
 						Pull accent from the focused poster's palette
 					</p>
 				</div>
-				<span class="toggle" :class="[{ on: useAutoThemeColors }]">
+				<span class="toggle" :class="[{ on: settingsStore.useAutoThemeColors.value }]">
 					<span class="thumb" />
 				</span>
 			</button>
@@ -74,7 +104,7 @@ useFocusEntry({
 				class="row"
 				data-focusable
 				tabindex="0"
-				@click.prevent="enableSubtitleHints = !enableSubtitleHints"
+				@click.prevent="settingsStore.subtitleHints.value = !settingsStore.subtitleHints.value"
 			>
 				<div class="row-text">
 					<p class="row-primary">
@@ -84,7 +114,7 @@ useFocusEntry({
 						Show subtitle availability badge on cards
 					</p>
 				</div>
-				<span class="toggle" :class="[{ on: enableSubtitleHints }]">
+				<span class="toggle" :class="[{ on: settingsStore.subtitleHints.value }]">
 					<span class="thumb" />
 				</span>
 			</button>
