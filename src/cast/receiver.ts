@@ -36,29 +36,21 @@ export function bootCastReceiver(router: Router): void {
 
 	if (!castGlobal?.framework) {
 		console.warn('[cast] CAF SDK not loaded — running in non-cast preview mode');
-		// Dev-only escape hatch — when ?mock=server_url:user_id:access_token
-		// is in the URL we hydrate authStore directly so the receiver UI is
-		// reachable in plain Chrome for parity QC against the APK Leanback
-		// baseline. Production casts always have CAF available; this branch
-		// is ignored there.
-		const params = new URLSearchParams(window.location.search);
-		const mock = params.get('mock');
-		if (mock) {
-			const [server_url, user_id, access_token] = mock.split(',');
-			const intent: { type: 'idle' } = { type: 'idle' };
-			authStore.consumeLaunchAuth({
-				access_token,
-				refresh_token: access_token,
-				user_id,
-				server_id: 'mock',
-				server_url,
-				device_id: 'mock',
-				intent,
-				cast_session_id: 'mock',
-				launch_timestamp: Date.now(),
-				client_locale: 'en-US',
-			});
-			navStore.dispatchInitialIntent(intent, router);
+		// Dev-only escape hatch — set sessionStorage["nm_cast_mock"] to a
+		// LaunchCustomData JSON before navigating to the receiver and we'll
+		// hydrate authStore directly so the receiver UI is reachable in plain
+		// Chrome for parity QC against the APK Leanback baseline. Production
+		// casts always have CAF available; this branch is ignored there.
+		try {
+			const raw = window.sessionStorage.getItem('nm_cast_mock');
+			if (raw) {
+				const mock = JSON.parse(raw) as LaunchCustomData;
+				authStore.consumeLaunchAuth(mock);
+				navStore.dispatchInitialIntent(mock.intent, router);
+			}
+		}
+		catch (err) {
+			console.error('[cast] mock auth hydration failed', err);
 		}
 		return;
 	}
