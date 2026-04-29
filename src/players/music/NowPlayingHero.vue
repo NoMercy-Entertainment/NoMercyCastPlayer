@@ -56,6 +56,7 @@ const cover = computed(() =>
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	object-position: top;
 }
 .meta {
 	min-width: 0;

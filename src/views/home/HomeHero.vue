@@ -71,11 +71,7 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 .hero {
 	position: relative;
 	width: 100%;
-	/* APK heroHeight is 336dp — at 720p that's 47vh. Capped so it
-		never eats the rails on smaller screens. */
-	height: 47vh;
-	min-height: 280px;
-	max-height: 380px;
+	height: 60vh;
 	overflow: hidden;
 	background: oklch(0.12 0.01 250);
 }
@@ -87,6 +83,7 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	object-position: top;
 }
 .scrim {
 	position: absolute;

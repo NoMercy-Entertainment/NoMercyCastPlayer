@@ -171,6 +171,7 @@ function handleDetails(): void {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	object-position: top;
 }
 /*
  * Bottom-left scrim mirroring the APK's OverlayGradient — readable text
