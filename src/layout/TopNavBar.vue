@@ -169,7 +169,7 @@ useFocusGroup({
 .nav-items {
 	display: flex;
 	justify-content: center;
-	gap: 18px;
+	gap: 28px;
 }
 .trailing {
 	display: flex;

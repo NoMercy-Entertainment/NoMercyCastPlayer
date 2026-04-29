@@ -103,7 +103,6 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	font-size: 28px;
 	font-weight: 600;
 	line-height: 1.1;
-	letter-spacing: -0.005em;
 	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 :deep(.hero-sub) {

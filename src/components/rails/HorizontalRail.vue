@@ -10,7 +10,12 @@ defineExpose({ trackEl });
 </script>
 
 <template>
-	<div ref="trackEl" class="rail-track" :aria-label="ariaLabel" role="list">
+	<div
+		ref="trackEl"
+		class="rail-track nm-no-scrollbar"
+		:aria-label="ariaLabel"
+		role="list"
+	>
 		<slot />
 	</div>
 </template>
@@ -25,9 +30,5 @@ defineExpose({ trackEl });
 		the last card never glues to the right edge. */
 	padding: 16px var(--tv-safe-padding) 16px 40px;
 	scroll-behavior: smooth;
-	scrollbar-width: none;
-}
-.rail-track::-webkit-scrollbar {
-	display: none;
 }
 </style>
