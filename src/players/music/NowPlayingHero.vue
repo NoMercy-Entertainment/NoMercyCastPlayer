@@ -4,6 +4,13 @@ import { playbackStore } from '@/stores/playbackStore';
 import { buildImageUrl } from '@/lib/images/urls';
 import FallbackPoster from '@/components/cards/FallbackPoster.vue';
 
+/*
+ * APK FullPlayerScreenTV.TopRowTV — artwork (160dp) + title/artist column
+ * laid out as a horizontal Row anchored bottom-left. Title 36sp ExtraBold,
+ * artist 22sp Medium with 0.8 alpha. We mirror sizes/proportions but use
+ * fluid units so the layout still works at non-1080p resolutions.
+ */
+
 const track = playbackStore.music.track;
 const cover = computed(() =>
 	track.value?.cover ? buildImageUrl(track.value.cover, { width: 800, height: 800 }) : null,
@@ -23,7 +30,7 @@ const cover = computed(() =>
 			<p v-if="track?.artist" class="artist">
 				{{ track.artist }}
 			</p>
-			<p v-if="track?.album" class="album">
+			<p v-else-if="track?.album" class="album">
 				{{ track.album }}
 			</p>
 		</div>
@@ -33,16 +40,17 @@ const cover = computed(() =>
 <style scoped>
 .hero {
 	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 32px;
+	align-items: flex-end;
+	gap: 24px;
+	width: 100%;
 }
 .art {
-	width: 480px;
-	height: 480px;
-	border-radius: 24px;
+	width: 160px;
+	height: 160px;
+	border-radius: 16px;
 	overflow: hidden;
-	box-shadow: 0 24px 64px oklch(0 0 0 / 0.5);
+	box-shadow: 0 16px 48px oklch(0 0 0 / 0.5);
+	flex: 0 0 auto;
 }
 .art img {
 	width: 100%;
@@ -50,22 +58,31 @@ const cover = computed(() =>
 	object-fit: cover;
 }
 .meta {
-	text-align: center;
+	min-width: 0;
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 }
 .title {
 	margin: 0;
 	font-size: 40px;
-	font-weight: 700;
-	letter-spacing: -1px;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
-.artist {
-	margin: 8px 0 0;
-	font-size: 24px;
-	color: var(--color-text-secondary);
-}
+.artist,
 .album {
-	margin: 8px 0 0;
-	font-size: 18px;
-	color: var(--color-text-secondary);
+	margin: 0;
+	font-size: 22px;
+	font-weight: 500;
+	color: oklch(1 0 0 / 0.8);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 </style>

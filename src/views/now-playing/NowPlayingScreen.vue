@@ -271,25 +271,25 @@ onUnmounted(() => {
 	position: relative;
 	z-index: 2;
 	display: grid;
-	grid-template-columns: 1fr auto;
-	gap: 32px;
-	padding: 80px var(--tv-safe-padding) 64px;
+	grid-template-columns: 1fr minmax(280px, auto);
+	gap: 48px;
+	padding: 80px var(--tv-safe-padding) 48px;
 	height: 100%;
-	align-items: center;
+	align-items: end;
 	transition: transform 400ms ease;
 }
 .controls-hidden .content {
-	transform: translateY(8px);
+	transform: translateY(0);
 }
 .left {
 	display: flex;
 	flex-direction: column;
 	gap: 32px;
-	align-items: center;
+	align-items: stretch;
 }
 .right {
 	align-self: end;
-	padding-bottom: 32px;
+	padding-bottom: 24px;
 	transition: opacity 300ms ease;
 }
 .controls-hidden .right {

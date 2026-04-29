@@ -179,8 +179,8 @@ function fmt(ms: number): string {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	width: 600px;
-	margin: 0 auto;
+	width: 100%;
+	max-width: 720px;
 }
 .progress-row {
 	display: grid;
@@ -208,7 +208,7 @@ function fmt(ms: number): string {
 .buttons {
 	display: flex;
 	gap: 14px;
-	justify-content: center;
+	justify-content: flex-start;
 	align-items: center;
 }
 .ctrl-btn {
