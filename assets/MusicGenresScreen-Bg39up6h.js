@@ -1,2 +1,0 @@
-import{B as e,C as t,h as n,l as r,o as i,t as a,tt as o}from"./_plugin-vue_export-helper-8ASmFJWo.js";import{d as s}from"./index-DfeCKpJ9.js";var c={class:`music-genres`},l=a(n({__name:`MusicGenresScreen`,setup(n){let a=s();return(n,s)=>(t(),r(`div`,c,[i(`p`,null,`MusicGenreScreen: `+o(e(a).fullPath),1)]))}}),[[`__scopeId`,`data-v-14df8066`]]);export{l as default};
-//# sourceMappingURL=MusicGenresScreen-Bg39up6h.js.map
