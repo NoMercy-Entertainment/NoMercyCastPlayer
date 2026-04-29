@@ -36,6 +36,30 @@ export function bootCastReceiver(router: Router): void {
 
 	if (!castGlobal?.framework) {
 		console.warn('[cast] CAF SDK not loaded — running in non-cast preview mode');
+		// Dev-only escape hatch — when ?mock=server_url:user_id:access_token
+		// is in the URL we hydrate authStore directly so the receiver UI is
+		// reachable in plain Chrome for parity QC against the APK Leanback
+		// baseline. Production casts always have CAF available; this branch
+		// is ignored there.
+		const params = new URLSearchParams(window.location.search);
+		const mock = params.get('mock');
+		if (mock) {
+			const [server_url, user_id, access_token] = mock.split(',');
+			const intent: { type: 'idle' } = { type: 'idle' };
+			authStore.consumeLaunchAuth({
+				access_token,
+				refresh_token: access_token,
+				user_id,
+				server_id: 'mock',
+				server_url,
+				device_id: 'mock',
+				intent,
+				cast_session_id: 'mock',
+				launch_timestamp: Date.now(),
+				client_locale: 'en-US',
+			});
+			navStore.dispatchInitialIntent(intent, router);
+		}
 		return;
 	}
 
