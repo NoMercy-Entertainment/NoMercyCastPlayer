@@ -56,4 +56,7 @@ scheduleIdle(() => {
 	void import('./server-components/NMHomeCard.vue');
 	void import('./server-components/NMHero.vue');
 	void import('./server-components/NMCard.vue');
+	void import('./server-components/NMMusicCard.vue');
+	void import('./server-components/NMMusicHomeCard.vue');
+	void import('./server-components/NMHeroCard.vue');
 });
