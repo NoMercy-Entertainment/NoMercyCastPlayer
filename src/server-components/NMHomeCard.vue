@@ -159,9 +159,12 @@ useFocusEntry({
 	position: relative;
 	display: block;
 	width: 100%;
-	height: 60vh;
-	min-height: 320px;
-	max-height: 432px;
+	/* Match HomeHero so the two never stack at different heights when the
+		server emits NMHomeCard as a top-level component alongside the
+		focus-driven hero. */
+	height: 47vh;
+	min-height: 280px;
+	max-height: 380px;
 	overflow: hidden;
 	border: 0;
 	background: oklch(0.12 0.01 250);
