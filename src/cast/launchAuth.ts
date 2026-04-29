@@ -49,9 +49,38 @@ export function attachLaunchListener(
 	context: { addEventListener: (type: string, listener: (event: unknown) => void) => void; getApplicationData: () => unknown },
 	onIntent: (data: LaunchCustomData) => void,
 ): void {
-	context.addEventListener('READY', (event: unknown) => {
-		const appData = context.getApplicationData();
-		const customData = (appData as { customData?: unknown } | null)?.customData;
+	context.addEventListener('READY', (_event: unknown) => {
+		const appData = context.getApplicationData() as
+			| { customData?: unknown; launchOptions?: { customData?: unknown } }
+			| null;
+		// CAF SDK populates LAUNCH customData at either appData.customData or
+		// appData.launchOptions.customData depending on how the sender wrapped
+		// the LAUNCH payload. Server-initiated LAUNCH (via sharpcaster) lands
+		// it on launchOptions; sender-SDK initiated LAUNCH lands it on the
+		// top-level field. Read both.
+		const customData = appData?.customData ?? appData?.launchOptions?.customData;
+		// Surfacing the raw appData shape via console.warn so it lands in
+		// logcat at WARNING level (CAF default chromium log level filters
+		// debug/info on production receivers). Lets us confirm the customData
+		// path on the live device without remote DevTools.
+		try {
+			console.warn(
+				'[cast][READY]',
+				JSON.stringify({
+					hasCustomData: Boolean(customData),
+					appDataKeys: appData ? Object.keys(appData) : null,
+					launchOptionsKeys: appData?.launchOptions
+						? Object.keys(appData.launchOptions)
+						: null,
+					customDataPreview: customData
+						? Object.keys(customData as Record<string, unknown>)
+						: null,
+				}),
+			);
+		}
+		catch {
+			console.warn('[cast][READY] appData stringify failed');
+		}
 		if (customData) {
 			const ok = consumeLaunchAuth(customData);
 			if (ok) {
@@ -60,7 +89,6 @@ export function attachLaunchListener(
 					onIntent(stored);
 			}
 		}
-		console.debug('[cast] receiver READY', { event, appData });
 	});
 
 	context.addEventListener('SENDER_CONNECTED', (event: unknown) => {
