@@ -28,7 +28,7 @@ const railsGroup = useFocusGroup({
 	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
 
-useNavFocusBridge(railsGroup);
+useNavFocusBridge({ handle: railsGroup, containerEl });
 
 const { data, isLoading, error, refetch, isFetching } = useHomeQuery();
 
