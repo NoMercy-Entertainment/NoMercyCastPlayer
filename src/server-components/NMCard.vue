@@ -97,14 +97,6 @@ useFocusEntry({
 				:style="{ width: `${progressPct}%` }"
 			/>
 		</div>
-		<div v-if="props.data.title || props.data.subtitle" class="meta">
-			<p v-if="props.data.title" class="title">
-				{{ props.data.title }}
-			</p>
-			<p v-if="props.data.subtitle" class="subtitle">
-				{{ props.data.subtitle }}
-			</p>
-		</div>
 	</article>
 </template>
 
