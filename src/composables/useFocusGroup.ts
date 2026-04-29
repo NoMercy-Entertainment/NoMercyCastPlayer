@@ -181,7 +181,50 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 	provide(FocusGroupInjectionKey, handle);
 
 	let parentUnregister: (() => void) | undefined;
+	let isActive = false;
 	const proxyKey = `group:${opts.restorationKey ?? Math.random().toString(36).slice(2, 10)}`;
+
+	function buildProxyEntry(): FocusEntry {
+		return {
+			key: proxyKey,
+			order: 0,
+			enabled: true,
+			el: () => opts.containerEl?.value ?? null,
+			isFocused: () => handle.containsFocused(),
+			focus: () => {
+				if (opts.restorationKey) {
+					const restored = focusStore.consumeRestoration(opts.restorationKey);
+					if (restored && handle.focusByKey(restored))
+						return;
+				}
+				handle.focusFirst();
+			},
+			blur: () => {},
+			action: () => {},
+		};
+	}
+
+	function activate(): void {
+		if (isActive)
+			return;
+		isActive = true;
+		focusStore.pushGroup(handle);
+		// Register self as a focusable proxy in the parent group so the
+		// parent's pickNeighbor can navigate between sibling groups
+		// (e.g. rails ↔ rails on home, action col ↔ poster col on info).
+		if (parent)
+			parentUnregister = parent.register(buildProxyEntry());
+	}
+
+	function deactivate(): void {
+		if (!isActive)
+			return;
+		isActive = false;
+		saveRestoration();
+		parentUnregister?.();
+		parentUnregister = undefined;
+		focusStore.popGroup(handle);
+	}
 
 	function focusableActiveElement(): boolean {
 		const el = document.activeElement as HTMLElement | null;
@@ -230,80 +273,30 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 	}
 
 	onMounted(() => {
-		focusStore.pushGroup(handle);
-
-		// Register self as a focusable proxy in the parent group so the
-		// parent's pickNeighbor can navigate between sibling groups
-		// (e.g. rails ↔ rails on home, action col ↔ poster col on info).
-		if (parent) {
-			const proxyEntry: FocusEntry = {
-				key: proxyKey,
-				order: 0,
-				enabled: true,
-				el: () => opts.containerEl?.value ?? null,
-				isFocused: () => handle.containsFocused(),
-				focus: () => {
-					if (opts.restorationKey) {
-						const restored = focusStore.consumeRestoration(opts.restorationKey);
-						if (restored && handle.focusByKey(restored))
-							return;
-					}
-					handle.focusFirst();
-				},
-				blur: () => {},
-				action: () => {},
-			};
-			parentUnregister = parent.register(proxyEntry);
-		}
-
+		activate();
 		attemptAutoFocus();
 	});
 
 	// KeepAlive cycle: re-enter restored page → reattach to focusStore stack
 	// and re-attempt auto-focus so the saved entry regains focus. Without
 	// this, going back from /info to / leaves focus on document.body and
-	// the user's D-pad presses do nothing until they click something.
+	// D-pad presses do nothing until the user clicks something.
+	//
+	// The activate/deactivate guard prevents double-pushing: onActivated
+	// fires after onMounted on first mount, and we don't want two stack
+	// entries / two proxy registrations for the same group.
 	if (getCurrentInstance()) {
 		onActivated(() => {
-			// pushGroup is idempotent because we always pop on deactivate.
-			focusStore.pushGroup(handle);
-			if (parent) {
-				// Re-register the proxy in the parent's entries.
-				const proxyEntry: FocusEntry = {
-					key: proxyKey,
-					order: 0,
-					enabled: true,
-					el: () => opts.containerEl?.value ?? null,
-					isFocused: () => handle.containsFocused(),
-					focus: () => {
-						if (opts.restorationKey) {
-							const restored = focusStore.consumeRestoration(opts.restorationKey);
-							if (restored && handle.focusByKey(restored))
-								return;
-						}
-						handle.focusFirst();
-					},
-					blur: () => {},
-					action: () => {},
-				};
-				parentUnregister?.();
-				parentUnregister = parent.register(proxyEntry);
-			}
+			activate();
 			attemptAutoFocus();
 		});
-
 		onDeactivated(() => {
-			saveRestoration();
-			parentUnregister?.();
-			parentUnregister = undefined;
-			focusStore.popGroup(handle);
+			deactivate();
 		});
 	}
 
 	onBeforeUnmount(() => {
-		saveRestoration();
-		parentUnregister?.();
-		focusStore.popGroup(handle);
+		deactivate();
 	});
 
 	return handle;
