@@ -56,17 +56,15 @@ useFocusEntry({
 	outline: none;
 	background: rgba(0, 0, 0, 0.6);
 	border: 2px solid transparent;
-	transition: background var(--motion-fast), border-color var(--motion-fast);
+	transition:
+		background var(--motion-fast),
+		border-color var(--motion-fast);
 }
 .nav-link.icon-only {
 	padding: 6px 8px;
 }
 .nav-link.active {
-	background: linear-gradient(
-		90deg,
-		var(--color-primary, oklch(0.7 0.2 285)),
-		oklch(0.7 0.2 285 / 0.8)
-	);
+	background: linear-gradient(90deg, var(--color-primary, oklch(0.7 0.2 285)), oklch(0.7 0.2 285 / 0.8));
 	box-shadow: 0 4px 16px oklch(0.7 0.2 285 / 0.4);
 }
 .nav-link:focus-visible {

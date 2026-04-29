@@ -1,30 +1,140 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useLibraryQuery } from '@/queries/useLibraryQuery';
-import ServerDrivenView from '../ServerDrivenView.vue';
+import Resolver from '@/server-components/Resolver.vue';
+import Skeleton from '@/components/feedback/Skeleton.vue';
+import EmptyState from '@/components/feedback/EmptyState.vue';
+import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
+import HomeHero from '../home/HomeHero.vue';
+import type { Component } from '@/server-components/types';
+import { focusedCardStore } from '@/stores/focusedCardStore';
+import type { FocusedCardData } from '@/stores/focusedCardStore';
+
+/*
+ * Library drilldown view — used for /libraries/:id, /genres/:id,
+ * /collection, /specials. Same hero + rails composition as
+ * TvLibraryScreen.kt.
+ */
+
+const LEADING_SLASH = /^\//;
 
 const route = useRoute();
 
 const path = computed(() => {
-	const matched = route.params.pathMatch;
-	if (Array.isArray(matched))
-		return matched.join('/');
-	return matched ?? '';
+	// Library-style routes share the same useLibraryQuery API surface — pass
+	// the URL path through, stripping the leading slash, so it slots into
+	// /api/v1/{path}?version=lolomo.
+	return route.fullPath.replace(LEADING_SLASH, '').split('?')[0];
 });
 
-const { data, isLoading, isFetching, error, refetch } = useLibraryQuery(path);
+const containerEl = ref<HTMLElement | null>(null);
+useFocusGroup({
+	type: 'vertical',
+	restorationKey: `library-rails`,
+	containerEl,
+});
+
+const { data, isLoading, error, refetch, isFetching } = useLibraryQuery(path);
+
+const isInitialLoad = computed(() => isLoading.value && !data.value);
+const components = computed<Component[]>(() => data.value ?? []);
+
+interface CarouselWrapper {
+	items?: Array<{ component: string; props?: { title?: string; data?: FocusedCardData } }>;
+}
+
+const seedCard = computed<FocusedCardData | null>(() => {
+	for (const c of components.value) {
+		if (!c.props || typeof c.props !== 'object')
+			continue;
+		const wrapper = c.props as CarouselWrapper;
+		const items = wrapper.items;
+		if (!Array.isArray(items) || items.length === 0)
+			continue;
+		const first = items.find(i => i.props?.data && (i.props.data.backdrop || i.props.data.poster));
+		if (first?.props?.data)
+			return first.props.data;
+	}
+	return null;
+});
+
+watch(
+	[seedCard, path],
+	([card]) => {
+		if (card)
+			focusedCardStore.seed(card);
+	},
+	{ immediate: true },
+);
+
+const heroCard = computed(() => focusedCardStore.debouncedCard.value);
 </script>
 
 <template>
-	<ServerDrivenView
-		:restoration-key="`library-${path}`"
-		:data="data"
-		:is-loading="isLoading"
-		:is-fetching="isFetching"
-		:error="error"
-		:refetch="() => refetch()"
-		error-context="Couldn't load this library"
-		empty-message="This library is empty."
-	/>
+	<div ref="containerEl" class="library">
+		<template v-if="error">
+			<ErrorPanel
+				:error="error as Error"
+				:retry="() => refetch()"
+				context="Couldn't load this library"
+			/>
+		</template>
+		<template v-else-if="isInitialLoad">
+			<Skeleton type="rail" :count="6" />
+			<Skeleton type="rail" :count="6" />
+			<Skeleton type="rail" :count="6" />
+		</template>
+		<template v-else-if="components.length === 0">
+			<EmptyState
+				message="This library is empty."
+				:action="{ label: 'Refresh', onAction: () => refetch() }"
+			/>
+		</template>
+		<template v-else>
+			<HomeHero v-if="heroCard" :card="heroCard" />
+			<div class="rails">
+				<Resolver
+					v-for="component in components"
+					:key="component.id"
+					:component="component"
+				/>
+			</div>
+			<p v-if="isFetching" class="refresh-hint">
+				Refreshing…
+			</p>
+		</template>
+	</div>
 </template>
+
+<style scoped>
+.library {
+	height: 100%;
+	overflow-y: auto;
+	scroll-behavior: smooth;
+	scrollbar-width: none;
+}
+.library::-webkit-scrollbar {
+	display: none;
+}
+.rails {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	padding: 16px 0 64px;
+	margin-top: -56px;
+	position: relative;
+	z-index: 1;
+}
+.refresh-hint {
+	position: fixed;
+	inset: auto auto 16px 50%;
+	transform: translateX(-50%);
+	background: oklch(1 0 0 / 0.08);
+	padding: 6px 16px;
+	border-radius: 999px;
+	font-size: 13px;
+	color: var(--color-text-secondary);
+}
+</style>

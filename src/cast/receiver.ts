@@ -52,8 +52,17 @@ export function bootCastReceiver(router: Router): void {
 			document.body.dataset.mockHasUser = String(Boolean(mock.user_id));
 			authStore.consumeLaunchAuth(mock);
 			document.body.dataset.mockHydrated = String(authStore.ready.value);
-			navStore.dispatchInitialIntent(mock.intent, router);
-			document.body.dataset.mockDispatched = 'yes';
+			// Honour any deep-link URL the user is already on (e.g. /movie/672)
+			// instead of forcing the launch intent — only dispatch when we're
+			// on a splash route.
+			const onSplash
+				= window.location.pathname === '/'
+					|| window.location.pathname === '/splash'
+					|| window.location.pathname === '/sender-required';
+			if (onSplash) {
+				navStore.dispatchInitialIntent(mock.intent, router);
+				document.body.dataset.mockDispatched = 'yes';
+			}
 			return;
 		}
 	}

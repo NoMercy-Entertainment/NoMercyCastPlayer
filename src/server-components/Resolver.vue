@@ -58,7 +58,7 @@ type RegistryKey = keyof typeof registry;
 // Container shapes (carousels, grids, lists) keep the wrapper flat under
 // props directly. Normalise by passing props.data when it's an object —
 // otherwise the flat props itself.
-// eslint-disable-next-line ts/no-explicit-any
+
 function normaliseData(props: unknown): any {
 	if (
 		props

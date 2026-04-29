@@ -11,18 +11,10 @@ import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
  * the left 60% of the card.
  */
 
-interface CardData {
-	title?: string;
-	overview?: string;
-	backdrop?: string;
-	poster?: string;
-	link?: string;
-	year?: number;
-	type?: string;
-}
+import type { FocusedCardData } from '@/stores/focusedCardStore';
 
 const props = defineProps<{
-	card: CardData;
+	card: FocusedCardData;
 }>();
 
 const router = useRouter();
@@ -200,7 +192,9 @@ useFocusEntry({
 	border: 0;
 	cursor: pointer;
 	outline: none;
-	transition: transform var(--motion-fast), background var(--motion-fast);
+	transition:
+		transform var(--motion-fast),
+		background var(--motion-fast);
 }
 .btn-primary {
 	background: #fff;

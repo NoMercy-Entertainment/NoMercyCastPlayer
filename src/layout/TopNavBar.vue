@@ -33,7 +33,7 @@ const route = useRoute();
 
 // Show the now-playing pill on the leading slot only when music is actually
 // playing (placeholder — wire to a music store flag in a follow-up).
-// eslint-disable-next-line ts/no-unused-vars
+
 const isMusicPlaying = computed(() => false && socketStore.connectionState.value === 'connected');
 
 useFocusGroup({

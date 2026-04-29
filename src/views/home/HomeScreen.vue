@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useHomeQuery } from '@/queries/useHomeQuery';
 import Resolver from '@/server-components/Resolver.vue';
@@ -8,6 +8,8 @@ import EmptyState from '@/components/feedback/EmptyState.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
 import HomeHero from './HomeHero.vue';
 import type { Component } from '@/server-components/types';
+import { focusedCardStore } from '@/stores/focusedCardStore';
+import type { FocusedCardData } from '@/stores/focusedCardStore';
 
 /*
  * Mirrors APK TvHomeScreen.kt — hero region pinned to the top of the
@@ -29,21 +31,13 @@ const { data, isLoading, error, refetch, isFetching } = useHomeQuery();
 const isInitialLoad = computed(() => isLoading.value && !data.value);
 const components = computed<Component[]>(() => data.value ?? []);
 
-interface CardData {
-	title?: string;
-	overview?: string;
-	backdrop?: string;
-	poster?: string;
-	link?: string;
-	type?: string;
-	year?: number;
-}
+type CardData = FocusedCardData;
 
 interface CarouselWrapper {
 	items?: Array<{ component: string; props?: { title?: string; data?: CardData } }>;
 }
 
-const heroCard = computed<CardData | null>(() => {
+const seedCard = computed<CardData | null>(() => {
 	for (const c of components.value) {
 		if (!c.props || typeof c.props !== 'object')
 			continue;
@@ -57,6 +51,20 @@ const heroCard = computed<CardData | null>(() => {
 	}
 	return null;
 });
+
+// Seed the focused-card store with the first available card the moment the
+// home query lands — keeps the hero filled while the user is still on the
+// nav row. Subsequent focus events from NMCard update the store directly.
+watch(
+	seedCard,
+	(card) => {
+		if (card && !focusedCardStore.activeCard.value)
+			focusedCardStore.seed(card as FocusedCardData);
+	},
+	{ immediate: true },
+);
+
+const heroCard = computed(() => focusedCardStore.debouncedCard.value);
 </script>
 
 <template>

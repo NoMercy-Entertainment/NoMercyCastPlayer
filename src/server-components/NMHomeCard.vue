@@ -231,7 +231,9 @@ function handleDetails(): void {
 	border: 0;
 	cursor: pointer;
 	outline: none;
-	transition: transform var(--motion-fast), background var(--motion-fast);
+	transition:
+		transform var(--motion-fast),
+		background var(--motion-fast);
 }
 .btn-primary {
 	background: #fff;

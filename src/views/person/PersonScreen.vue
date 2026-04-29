@@ -1,23 +1,30 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { usePersonQuery } from '@/queries/usePersonQuery';
-import ServerDrivenView from '../ServerDrivenView.vue';
 
+/*
+ * Person view — APK PersonScreen.kt is currently a placeholder rendering
+ * "PersonScreen: id=$id" over the setup backdrop. We mirror that until
+ * the APK lands real content, at which point we port it here.
+ */
 const route = useRoute();
 const id = computed(() => String(route.params.id ?? ''));
-
-const { data, isLoading, isFetching, error, refetch } = usePersonQuery(id);
 </script>
 
 <template>
-	<ServerDrivenView
-		:restoration-key="`person-${id}`"
-		:data="data"
-		:is-loading="isLoading"
-		:is-fetching="isFetching"
-		:error="error"
-		:refetch="() => refetch()"
-		error-context="Couldn't load person"
-	/>
+	<div class="person">
+		<p>PersonScreen: id={{ id }}</p>
+	</div>
 </template>
+
+<style scoped>
+.person {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: grid;
+	place-items: center;
+	color: #fff;
+	font-size: 18px;
+}
+</style>

@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import FallbackPoster from '@/components/cards/FallbackPoster.vue';
 import { buildImageUrl, POSTER_SIZE } from '@/lib/images/urls';
+import { focusedCardStore } from '@/stores/focusedCardStore';
 import type { NMCardWrapper, Update } from './types';
 
+/*
+ * Card cell. Mirrors APK NMCard.kt — poster on top, title + optional
+ * subtitle below, focus animation scale-up + palette-tinted border, and
+ * Continue Watching progress bar overlay when data.progress is present.
+ *
+ * On focus we publish the card's data to focusedCardStore so the home
+ * hero can swap its backdrop / title / overview to match — same flow
+ * as TvHomeScreen.kt's activeCardState.
+ */
 const props = defineProps<{
 	id: string;
 	data: NMCardWrapper;
@@ -14,13 +24,26 @@ const props = defineProps<{
 
 const router = useRouter();
 const el = ref<HTMLElement | null>(null);
-// Server payload uses poster / backdrop / image depending on the source
-// (TMDB metadata vs library art); map all to the same render slot.
-const imageSource
-	= props.data.image
-		?? (props.data as unknown as { poster?: string; backdrop?: string }).poster
-		?? (props.data as unknown as { poster?: string; backdrop?: string }).backdrop;
-const imageUrl = buildImageUrl(imageSource, POSTER_SIZE);
+
+const wrapperData = computed(() => props.data as unknown as Record<string, unknown>);
+
+const imageSource = computed(() => {
+	const d = wrapperData.value;
+	return (
+		(props.data.image as string | undefined)
+		?? (d.poster as string | undefined)
+		?? (d.backdrop as string | undefined)
+	);
+});
+
+const imageUrl = computed(() => buildImageUrl(imageSource.value, POSTER_SIZE));
+
+const progressPct = computed(() => {
+	const p = (props.data as unknown as { progress?: { time?: number; total?: number } }).progress;
+	if (!p?.time || !p?.total)
+		return 0;
+	return Math.min(100, (p.time / p.total) * 100);
+});
 
 useFocusEntry({
 	key: props.id,
@@ -29,11 +52,35 @@ useFocusEntry({
 		if (props.data.link)
 			router.push(props.data.link);
 	},
+	onFocus: () => {
+		// Publish to the home hero — mirrors APK activeCardState updates
+		// from carousel item focus events.
+		focusedCardStore.setActive({
+			id: props.id,
+			title: props.data.title,
+			overview: (wrapperData.value.overview as string | undefined),
+			backdrop: (wrapperData.value.backdrop as string | undefined),
+			poster: (wrapperData.value.poster as string | undefined),
+			logo: (wrapperData.value.logo as string | undefined),
+			link: props.data.link,
+			year: (wrapperData.value.year as number | undefined),
+			type: (wrapperData.value.type as string | undefined),
+			color_palette: (wrapperData.value.color_palette as never) ?? (wrapperData.value.colorPalette as never),
+			have_items: (wrapperData.value.have_items as number | undefined),
+			number_of_items: (wrapperData.value.number_of_items as number | undefined),
+		});
+	},
 });
 </script>
 
 <template>
-	<article ref="el" class="card" data-focusable tabindex="0" role="button">
+	<article
+		ref="el"
+		class="card"
+		data-focusable
+		tabindex="0"
+		role="button"
+	>
 		<div class="poster">
 			<img
 				v-if="imageUrl"
@@ -43,6 +90,11 @@ useFocusEntry({
 				decoding="async"
 			>
 			<FallbackPoster v-else :title="props.data.title" />
+			<div
+				v-if="progressPct > 0"
+				class="progress"
+				:style="{ width: `${progressPct}%` }"
+			/>
 		</div>
 		<div class="meta">
 			<p class="title">
@@ -68,6 +120,15 @@ useFocusEntry({
 	cursor: pointer;
 	contain: layout paint;
 	outline: none;
+	transition: transform var(--motion-fast);
+}
+.card:focus-visible {
+	transform: scale(1.06);
+}
+.card:focus-visible .poster {
+	box-shadow:
+		0 0 0 2px var(--color-primary, oklch(0.7 0.2 285)),
+		0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .poster {
 	width: 100%;
@@ -75,18 +136,27 @@ useFocusEntry({
 	border-radius: var(--radius-card);
 	overflow: hidden;
 	background: oklch(0.18 0.01 250);
+	position: relative;
+	transition: box-shadow var(--motion-fast);
 }
 .poster img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 }
+.progress {
+	position: absolute;
+	inset: auto 0 0 0;
+	height: 3px;
+	background: var(--color-primary, oklch(0.7 0.2 285));
+	box-shadow: 0 0 8px var(--color-primary, oklch(0.7 0.2 285));
+}
 .meta {
 	padding: 0 4px;
 }
 .title {
 	margin: 0;
-	font-size: 16px;
+	font-size: 14px;
 	font-weight: 600;
 	line-height: 1.2;
 	overflow: hidden;
@@ -97,7 +167,7 @@ useFocusEntry({
 }
 .subtitle {
 	margin: 4px 0 0;
-	font-size: 14px;
+	font-size: 12px;
 	color: var(--color-text-secondary);
 	white-space: nowrap;
 	overflow: hidden;

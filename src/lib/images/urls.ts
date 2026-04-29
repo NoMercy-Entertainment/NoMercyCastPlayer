@@ -11,6 +11,7 @@ import { authStore } from '@/stores/authStore';
 
 const ABSOLUTE_URL = /^https?:\/\//i;
 const TRAILING_SLASH = /\/$/;
+const TMDB_IMAGE_EXT = /\.(?:jpg|jpeg|png|webp)$/i;
 
 // TMDB CDN. Server returns bare TMDB poster/backdrop paths (`/abc.jpg`)
 // rather than absolute URLs. The receiver fetches them direct from
@@ -45,7 +46,7 @@ export function buildImageUrl(
 		return path;
 
 	// TMDB-shaped paths — go straight to TMDB; the server doesn't proxy them.
-	if (/\.(jpg|jpeg|png|webp)$/i.test(path)) {
+	if (TMDB_IMAGE_EXT.test(path)) {
 		return `${TMDB_BASE}/${pickTmdbSize(options.width)}${path.startsWith('/') ? path : `/${path}`}`;
 	}
 

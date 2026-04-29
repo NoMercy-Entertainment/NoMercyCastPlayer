@@ -99,11 +99,15 @@ function done(): void {
 </template>
 
 <style scoped>
+/*
+ * APK SearchScreen.kt uses a 25 / 75 column split with the keyboard on the
+ * left and results filling the right. Padding 36dp horizontal, 64dp top.
+ */
 .search {
 	display: grid;
-	grid-template-columns: minmax(560px, 40%) 1fr;
-	gap: 24px;
-	padding: 24px var(--tv-safe-padding);
+	grid-template-columns: minmax(360px, 25%) 1fr;
+	gap: 16px;
+	padding: 64px 36px 24px;
 	height: 100%;
 }
 .left {
