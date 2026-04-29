@@ -1,0 +1,2 @@
+import{F as e,k as t}from"./_plugin-vue_export-helper-8ASmFJWo.js";var n=e(null),r=e(null),i=650,a=null;t(n,e=>{a!==null&&(window.clearTimeout(a),a=null),a=window.setTimeout(()=>{r.value=e,a=null},i)},{flush:`post`});var o={activeCard:n,debouncedCard:r,setActive(e){n.value=e},seed(e){n.value=e,r.value=e}};export{o as t};
+//# sourceMappingURL=focusedCardStore-CpwxSWkQ.js.map
