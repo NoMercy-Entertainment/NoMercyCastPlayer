@@ -93,7 +93,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<div ref="containerEl" class="home">
+	<div ref="containerEl" class="home nm-hero-rails-screen">
 		<template v-if="error">
 			<ErrorPanel
 				:error="error as Error"
@@ -114,7 +114,7 @@ onBeforeUnmount(() => {
 		</template>
 		<template v-else>
 			<HomeHero v-if="heroCard" :card="heroCard" />
-			<div class="rails">
+			<div class="nm-hero-rails">
 				<Resolver
 					v-for="component in components"
 					:key="component.id"
@@ -129,36 +129,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.home {
-	/* Outer container is fixed-height; the rails inside have their own
-		scroll axis so the hero stays anchored at the top while rails
-		flow underneath. APK TvHomeScreen splits hero + LazyColumn the
-		same way. */
-	height: 100%;
-	overflow: hidden;
-	scrollbar-width: none;
-}
-.home::-webkit-scrollbar {
-	display: none;
-}
-.rails {
-	display: flex;
-	flex-direction: column;
-	gap: 24px;
-	padding: 8px 0 64px;
-	margin-top: -72px; /* APK overlap=72.dp keeps the rails peeking under the hero scrim */
-	position: relative;
-	z-index: 1;
-	overflow: auto;
-	height: 50vh;
-}
-.rails::-webkit-scrollbar {
-	display: none;
-}
-.rails > :deep(.rail-section) {
-	scroll-margin-top: 120px;
-	scroll-margin-bottom: 80px;
-}
 .refresh-hint {
 	position: fixed;
 	inset: auto auto 16px 50%;

@@ -96,7 +96,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<div ref="containerEl" class="library">
+	<div ref="containerEl" class="library nm-hero-rails-screen">
 		<template v-if="error">
 			<ErrorPanel
 				:error="error as Error"
@@ -117,7 +117,7 @@ onBeforeUnmount(() => {
 		</template>
 		<template v-else>
 			<HomeHero v-if="heroCard" :card="heroCard" />
-			<div class="rails">
+			<div class="nm-hero-rails">
 				<Resolver
 					v-for="component in components"
 					:key="component.id"
@@ -132,32 +132,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.library {
-	height: 100%;
-	overflow: hidden;
-	scrollbar-width: none;
-}
-.library::-webkit-scrollbar {
-	display: none;
-}
-.rails {
-	display: flex;
-	flex-direction: column;
-	gap: 24px;
-	padding: 8px 0 64px;
-	margin-top: -72px;
-	position: relative;
-	z-index: 1;
-	overflow: auto;
-	height: 50vh;
-}
-.rails::-webkit-scrollbar {
-	display: none;
-}
-.rails > :deep(.rail-section) {
-	scroll-margin-top: 120px;
-	scroll-margin-bottom: 80px;
-}
 .refresh-hint {
 	position: fixed;
 	inset: auto auto 16px 50%;

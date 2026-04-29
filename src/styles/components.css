@@ -128,3 +128,45 @@
 .nm-no-scrollbar::-webkit-scrollbar {
 	display: none;
 }
+
+/* ─── Hero + rails screen layout ────────────────────────────────────── */
+
+/*
+ * Outer screen container for hero+rails views (Home / Libraries /
+ * Library / MusicStart). 100% tall with overflow hidden so the hero
+ * stays anchored at the top while the inner rails own the scroll axis,
+ * matching APK TvHomeScreen's hero + LazyColumn split.
+ */
+.nm-hero-rails-screen {
+	height: 100%;
+	overflow: hidden;
+	scrollbar-width: none;
+}
+.nm-hero-rails-screen::-webkit-scrollbar {
+	display: none;
+}
+
+/*
+ * Inner rails container — flex column of carousels with APK 72dp
+ * overlap into the hero scrim and an independent scroll axis.
+ */
+.nm-hero-rails {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	padding: 8px 0 64px;
+	/* APK overlap=72.dp keeps the rails peeking under the hero scrim */
+	margin-top: -72px;
+	position: relative;
+	z-index: 1;
+	overflow: auto;
+	height: 50vh;
+	scrollbar-width: none;
+}
+.nm-hero-rails::-webkit-scrollbar {
+	display: none;
+}
+.nm-hero-rails > .rail-section {
+	scroll-margin-top: 120px;
+	scroll-margin-bottom: 80px;
+}
