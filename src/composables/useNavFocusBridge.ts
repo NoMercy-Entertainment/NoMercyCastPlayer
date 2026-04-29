@@ -21,6 +21,7 @@ const TOPNAV_RESTORATION_KEYS = [
 	'nav-libraries',
 	'nav-music',
 	'nav-search',
+	'nav-profile',
 ];
 
 export function useNavFocusBridge(handle: FocusGroupHandle): void {
