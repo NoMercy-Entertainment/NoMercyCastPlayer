@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
@@ -74,6 +74,25 @@ watch(
 );
 
 const heroCard = computed(() => focusedCardStore.debouncedCard.value);
+
+let retryTimer: number | null = null;
+watch(error, (next) => {
+	if (next) {
+		if (retryTimer === null) {
+			retryTimer = window.setInterval(() => {
+				void refetch();
+			}, 15_000);
+		}
+	}
+	else if (retryTimer !== null) {
+		window.clearInterval(retryTimer);
+		retryTimer = null;
+	}
+});
+onBeforeUnmount(() => {
+	if (retryTimer !== null)
+		window.clearInterval(retryTimer);
+});
 </script>
 
 <template>
