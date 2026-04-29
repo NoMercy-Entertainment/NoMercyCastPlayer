@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
+import { useQueryClient } from '@tanstack/vue-query';
 import { useInfoQuery } from '@/queries/useInfoQuery';
+import type { InfoData } from '@/queries/useInfoQuery';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
+import { apiFetch } from '@/lib/http/client';
+import { QueryKeys } from '@/queries/keys';
 
 /*
  * Movie / TV detail page. Mirrors APK InfoScreen.kt:
@@ -19,6 +23,8 @@ const props = defineProps<{
 	type: string;
 	id: string;
 }>();
+const API_PREFIX = /^\/api\/v1\//;
+const LEADING_SLASH = /^\//;
 
 const router = useRouter();
 const { type, id } = toRefs(props);
@@ -91,13 +97,51 @@ useFocusEntry({
 	},
 });
 
+const queryClient = useQueryClient();
+const isPostingWatchlist = ref(false);
+
 useFocusEntry({
 	key: 'info-watchlist',
 	el: watchlistEl,
 	onAction: () => {
-		// Optimistic toggle handler lands in a follow-up; for now no-op.
+		void toggleWatchlist();
 	},
 });
+
+async function toggleWatchlist(): Promise<void> {
+	if (isPostingWatchlist.value || !info.value?.link)
+		return;
+	isPostingWatchlist.value = true;
+	const link = info.value.link;
+	const newValue = !info.value.watchlist;
+	const queryKey = [...QueryKeys.info(type.value, id.value)];
+
+	queryClient.setQueryData<InfoData>(queryKey, (prev) => {
+		if (!prev)
+			return prev;
+		return { ...prev, watchlist: newValue };
+	});
+
+	try {
+		const cleanLink = link.replace(API_PREFIX, '').replace(LEADING_SLASH, '');
+		await apiFetch<{ status?: string }>({
+			path: `/api/v1/${cleanLink}/watch-list`,
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ add: newValue }),
+		});
+	}
+	catch {
+		queryClient.setQueryData<InfoData>(queryKey, (prev) => {
+			if (!prev)
+				return prev;
+			return { ...prev, watchlist: !newValue };
+		});
+	}
+	finally {
+		isPostingWatchlist.value = false;
+	}
+}
 </script>
 
 <template>
