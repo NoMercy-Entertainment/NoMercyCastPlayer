@@ -6,9 +6,9 @@ import { playbackStore } from '@/stores/playbackStore';
 import { buildImageUrl } from '@/lib/images/urls';
 
 /*
- * Topnav now-playing tile. Mirrors APK TvMiniPlayer.kt — square cover
- * + title + artist on the left of the topnav when music is playing.
- * Click navigates to /now-playing.
+ * APK MiniPlayerTv: 40dp pill with palette-gradient background, 40dp
+ * circular cover, animated equalizer spinner when playing or play icon
+ * when paused, scrolling track name + artist label, click → full player.
  */
 
 const router = useRouter();
@@ -41,6 +41,22 @@ useFocusEntry({
 	>
 		<div class="art">
 			<img v-if="coverUrl" :src="coverUrl" :alt="title">
+			<div v-if="isPlaying" class="eq" aria-hidden="true">
+				<span />
+				<span />
+				<span />
+			</div>
+			<svg
+				v-else
+				class="play-icon"
+				width="14"
+				height="14"
+				viewBox="0 0 24 24"
+				fill="currentColor"
+				aria-hidden="true"
+			>
+				<path d="M8 5v14l11-7z" />
+			</svg>
 		</div>
 		<div class="meta">
 			<p class="title">
@@ -50,29 +66,6 @@ useFocusEntry({
 				{{ artist }}
 			</p>
 		</div>
-		<div class="indicator" :class="[{ playing: isPlaying }]">
-			<svg
-				v-if="isPlaying"
-				width="16"
-				height="16"
-				viewBox="0 0 24 24"
-				fill="currentColor"
-				aria-hidden="true"
-			>
-				<rect x="6" y="4" width="4" height="16" />
-				<rect x="14" y="4" width="4" height="16" />
-			</svg>
-			<svg
-				v-else
-				width="16"
-				height="16"
-				viewBox="0 0 24 24"
-				fill="currentColor"
-				aria-hidden="true"
-			>
-				<path d="M8 5v14l11-7z" />
-			</svg>
-		</div>
 	</button>
 </template>
 
@@ -81,14 +74,15 @@ useFocusEntry({
 	display: inline-flex;
 	align-items: center;
 	gap: 10px;
-	padding: 4px 12px 4px 4px;
-	background: rgba(0, 0, 0, 0.6);
+	padding: 0 16px 0 0;
+	height: 40px;
+	background: linear-gradient(180deg, var(--color-primary, oklch(0.7 0.2 285 / 0.4)) 0%, oklch(0 0 0 / 0.4) 100%);
 	border: 2px solid transparent;
-	border-radius: 24px;
+	border-radius: 999px;
 	color: #fff;
 	cursor: pointer;
 	font-family: inherit;
-	max-width: 280px;
+	max-width: 320px;
 	min-width: 0;
 	outline: none;
 	transition:
@@ -96,21 +90,66 @@ useFocusEntry({
 		transform var(--motion-fast);
 }
 .mini-player:focus-visible {
-	border-color: var(--color-primary, oklch(0.7 0.2 285));
+	border-color: oklch(1 0 0 / 0.85);
 	transform: translateY(-1px);
 }
 .art {
-	width: 36px;
-	height: 36px;
+	position: relative;
+	width: 40px;
+	height: 40px;
 	border-radius: 50%;
 	overflow: hidden;
 	background: oklch(0.18 0.01 250);
 	flex: 0 0 auto;
+	display: grid;
+	place-items: center;
+	color: #fff;
 }
 .art img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+}
+.eq {
+	position: absolute;
+	inset: 0;
+	background: oklch(0 0 0 / 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+}
+.eq span {
+	width: 3px;
+	background: #fff;
+	border-radius: 1px;
+	animation: eq-bounce 850ms ease-in-out infinite;
+}
+.eq span:nth-child(1) {
+	height: 6px;
+	animation-delay: 0ms;
+}
+.eq span:nth-child(2) {
+	height: 14px;
+	animation-delay: 180ms;
+}
+.eq span:nth-child(3) {
+	height: 10px;
+	animation-delay: 360ms;
+}
+@keyframes eq-bounce {
+	0%,
+	100% {
+		transform: scaleY(0.4);
+	}
+	50% {
+		transform: scaleY(1);
+	}
+}
+.play-icon {
+	background: oklch(0 0 0 / 0.5);
+	border-radius: 50%;
+	padding: 2px;
 }
 .meta {
 	min-width: 0;
@@ -123,27 +162,16 @@ useFocusEntry({
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	max-width: 180px;
+	max-width: 220px;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 .artist {
 	margin: 1px 0 0;
 	font-size: 11px;
-	color: oklch(0.85 0.005 250);
+	color: oklch(1 0 0 / 0.85);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	max-width: 180px;
-}
-.indicator {
-	display: grid;
-	place-items: center;
-	width: 28px;
-	height: 28px;
-	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.1);
-	flex: 0 0 auto;
-}
-.indicator.playing {
-	color: var(--color-primary, oklch(0.7 0.2 285));
+	max-width: 220px;
 }
 </style>
