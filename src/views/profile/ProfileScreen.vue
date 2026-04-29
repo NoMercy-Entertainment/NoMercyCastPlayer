@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useFocusEntry } from '@/composables/useFocusEntry';
@@ -46,6 +46,35 @@ const settingsEl = ref<HTMLElement | null>(null);
 const aboutEl = ref<HTMLElement | null>(null);
 
 const showSignOutConfirm = ref(false);
+const dialogCancelEl = ref<HTMLButtonElement | null>(null);
+const dialogConfirmEl = ref<HTMLButtonElement | null>(null);
+
+function handleDialogKey(e: KeyboardEvent): void {
+	if (e.key === 'Escape' || e.key === 'Back' || e.key === 'GoBack') {
+		e.preventDefault();
+		showSignOutConfirm.value = false;
+		return;
+	}
+	if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+		e.preventDefault();
+		const focused = document.activeElement;
+		if (focused === dialogCancelEl.value)
+			dialogConfirmEl.value?.focus();
+		else
+			dialogCancelEl.value?.focus();
+	}
+}
+
+watch(showSignOutConfirm, async (open) => {
+	if (open) {
+		await nextTick();
+		dialogCancelEl.value?.focus();
+		window.addEventListener('keydown', handleDialogKey, true);
+	}
+	else {
+		window.removeEventListener('keydown', handleDialogKey, true);
+	}
+});
 
 useFocusEntry({
 	key: 'profile-header',
@@ -159,19 +188,35 @@ function confirmSignOut(): void {
 			</button>
 		</div>
 
-		<div v-if="showSignOutConfirm" class="dialog-backdrop" role="dialog" aria-modal="true">
+		<div
+			v-if="showSignOutConfirm"
+			class="dialog-backdrop"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="signout-dialog-title"
+		>
 			<div class="dialog">
-				<h2 class="dialog-title">
+				<h2 id="signout-dialog-title" class="dialog-title">
 					Sign out
 				</h2>
 				<p class="dialog-message">
 					Sign out of {{ userName }}?
 				</p>
 				<div class="dialog-actions">
-					<button class="btn btn-secondary" @click="showSignOutConfirm = false">
+					<button
+						ref="dialogCancelEl"
+						type="button"
+						class="btn btn-secondary"
+						@click="showSignOutConfirm = false"
+					>
 						Cancel
 					</button>
-					<button class="btn btn-primary" @click="confirmSignOut">
+					<button
+						ref="dialogConfirmEl"
+						type="button"
+						class="btn btn-primary"
+						@click="confirmSignOut"
+					>
 						Sign out
 					</button>
 				</div>
@@ -326,8 +371,16 @@ function confirmSignOut(): void {
 	border-radius: 999px;
 	font-size: 13px;
 	font-weight: 600;
-	border: 0;
+	border: 2px solid transparent;
 	cursor: pointer;
+	outline: none;
+	transition:
+		transform var(--motion-fast),
+		border-color var(--motion-fast);
+}
+.btn:focus-visible {
+	transform: scale(1.04);
+	border-color: rgba(255, 255, 255, 0.95);
 }
 .btn-primary {
 	background: var(--color-primary, oklch(0.7 0.2 285));

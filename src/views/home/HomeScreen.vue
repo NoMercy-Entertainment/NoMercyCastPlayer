@@ -109,6 +109,8 @@ const heroCard = computed(() => focusedCardStore.debouncedCard.value);
 	overflow-y: auto;
 	scroll-behavior: smooth;
 	scrollbar-width: none;
+	scroll-padding-top: 96px;
+	scroll-padding-bottom: 96px;
 }
 .home::-webkit-scrollbar {
 	display: none;
@@ -121,6 +123,10 @@ const heroCard = computed(() => focusedCardStore.debouncedCard.value);
 	margin-top: -56px; /* hero scrim overlap, mirrors APK overlap=72.dp */
 	position: relative;
 	z-index: 1;
+}
+.rails > :deep(.rail-section) {
+	scroll-margin-top: 120px;
+	scroll-margin-bottom: 80px;
 }
 .refresh-hint {
 	position: fixed;
