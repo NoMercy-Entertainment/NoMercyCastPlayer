@@ -43,14 +43,22 @@ export function bootCastReceiver(router: Router): void {
 	// real LAUNCH so this branch is dormant unless someone opted in.
 	try {
 		const raw = window.sessionStorage.getItem('nm_cast_mock');
+		document.body.dataset.mockHasRaw = String(Boolean(raw));
 		if (raw) {
 			const mock = JSON.parse(raw) as LaunchCustomData;
+			document.body.dataset.mockParsed = 'yes';
+			document.body.dataset.mockHasAccess = String(Boolean(mock.access_token));
+			document.body.dataset.mockHasRefresh = String(Boolean(mock.refresh_token));
+			document.body.dataset.mockHasUser = String(Boolean(mock.user_id));
 			authStore.consumeLaunchAuth(mock);
+			document.body.dataset.mockHydrated = String(authStore.ready.value);
 			navStore.dispatchInitialIntent(mock.intent, router);
+			document.body.dataset.mockDispatched = 'yes';
 			return;
 		}
 	}
 	catch (err) {
+		document.body.dataset.mockError = (err as Error).message;
 		console.error('[cast] mock auth hydration failed', err);
 	}
 
