@@ -62,14 +62,16 @@ useFocusEntry({
 	font-weight: 600;
 	color: #fff;
 	text-decoration: none;
-	outline: none;
 	background: oklch(0 0 0 / 0.6);
-	border: 2px solid transparent;
 	transition:
 		background var(--motion-fast),
-		border-color var(--motion-fast),
-		transform var(--motion-fast),
 		box-shadow var(--motion-fast);
+	/* APK uses a 2dp outer border with a 6dp gap from the pill — render
+		that as a transparent outline that fills with palette colour on
+		focus, keeping the pill itself the same size. */
+	outline: 2px solid transparent;
+	outline-offset: 6px;
+	border-radius: 20px;
 }
 .nav-link.icon-only {
 	width: 40px;
@@ -81,9 +83,7 @@ useFocusEntry({
 	box-shadow: 0 6px 16px oklch(0.7 0.2 285 / 0.35);
 }
 .nav-link:focus-visible {
-	border-color: var(--color-primary, oklch(0.7 0.2 285));
-	transform: translateY(-1px);
-	outline: none;
+	outline-color: var(--color-primary, oklch(0.7 0.2 285));
 }
 .icon {
 	display: inline-grid;
