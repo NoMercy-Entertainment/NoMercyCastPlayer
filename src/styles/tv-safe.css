@@ -356,6 +356,36 @@
 	outline-offset: 0;
 }
 
+/* Skip-chapter prompt — anchored bottom-right, shown when the playhead
+   is inside a skippable chapter and auto-skip is disabled. */
+.skip-chapter-prompt {
+	position: absolute;
+	right: 64px;
+	bottom: 64px;
+	z-index: 6;
+	background: rgba(0, 0, 0, 0.75);
+	color: #fff;
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+	animation: skip-prompt-in 220ms ease;
+}
+.skip-chapter-prompt:focus-visible {
+	background: var(--color-primary, oklch(0.7 0.2 285));
+	color: oklch(0.18 0.02 35);
+	border-color: oklch(1 0 0 / 0.85);
+	transform: translateY(-1px);
+}
+@keyframes skip-prompt-in {
+	from {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
 /* Playback OSD (APK TvUiPlugin lower band parity) */
 .playback-osd {
 	pointer-events: none;

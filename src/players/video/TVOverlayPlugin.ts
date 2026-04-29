@@ -6,6 +6,8 @@ import type { TrackItem } from './pluginPanels/LanguageScreen';
 import { mountSeekContainer } from './pluginPanels/SeekContainer';
 import { mountPlaybackOSD } from './pluginPanels/PlaybackOSD';
 import type { PlaybackOSDHandle } from './pluginPanels/PlaybackOSD';
+import { mountSkipChapterPrompt } from './pluginPanels/SkipChapterPrompt';
+import type { SkipChapterPromptHandle } from './pluginPanels/SkipChapterPrompt';
 
 /**
  * TV overlay orchestrator per spec §12.3. Owns the pre-screen / episode
@@ -63,6 +65,7 @@ export class TVOverlayPlugin {
 	private currentPanel: 'pre' | 'episode' | 'language' | 'seek' | null = null;
 	private unmount: (() => void) | null = null;
 	private osd: PlaybackOSDHandle | null = null;
+	private skipPrompt: SkipChapterPromptHandle | null = null;
 	private boundHandlers: Array<{ event: string; handler: (data?: unknown) => void }> = [];
 
 	constructor(
@@ -86,16 +89,44 @@ export class TVOverlayPlugin {
 		this.bind('showControls', () => this.osd?.setVisible(true));
 		this.bind('hideControls', () => this.osd?.setVisible(false));
 		this.bind('controls', showing => this.osd?.setVisible(Boolean(showing)));
+		this.bind('chapter-skip-available', (chapter) => {
+			this.showSkipPrompt(chapter as { type?: string; endTime?: number; startTime?: number } | null);
+		});
+		this.bind('chapter-skip-clear', () => this.clearSkipPrompt());
 	}
 
 	detach(): void {
 		this.closeAllPanels();
 		this.osd?.dispose();
 		this.osd = null;
+		this.skipPrompt?.dispose();
+		this.skipPrompt = null;
 		for (const { event, handler } of this.boundHandlers) {
 			this.player.off(event, handler);
 		}
 		this.boundHandlers = [];
+	}
+
+	private showSkipPrompt(chapter: { type?: string; endTime?: number; startTime?: number } | null): void {
+		const host = this.overlayHost();
+		if (!host || !chapter)
+			return;
+		this.clearSkipPrompt();
+		const label = chapter.type === 'credits' ? 'Skip credits' : 'Skip intro';
+		this.skipPrompt = mountSkipChapterPrompt({
+			parent: host,
+			label,
+			onSkip: () => {
+				this.clearSkipPrompt();
+				if (typeof chapter.endTime === 'number')
+					this.player.seek(chapter.endTime);
+			},
+		});
+	}
+
+	private clearSkipPrompt(): void {
+		this.skipPrompt?.dispose();
+		this.skipPrompt = null;
 	}
 
 	private ensureOSD(): void {
