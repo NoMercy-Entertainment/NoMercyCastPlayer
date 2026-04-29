@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useFocusEntry } from '@/composables/useFocusEntry';
+import { computed } from 'vue';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
 
 /*
  * Hero pinned to the top of the home view. Mirrors APK
- * VideoMusicHeroSection.kt — backdrop image full-bleed, gradient scrim
- * anchored bottom-left, title (or logo image when present) + overview +
- * Watch / Details buttons in the left 60% of the card. Backdrop layer
- * uses keyed <Transition> to crossfade between focused cards.
+ * components/VideoMusicHeroSection.kt's HeroRow — title (or logo when
+ * present) + overview, no interactive buttons. The actual entry points
+ * for Watch / Details live on the focused NMHomeCard or InfoScreen,
+ * not on the hero itself. Hero is informational only.
+ *
+ * Backdrop layer is rendered separately by the parent screen so it can
+ * persist through hero crossfades; here we only render the title +
+ * overview text block aligned bottom-left.
  */
 
 import type { FocusedCardData } from '@/stores/focusedCardStore';
@@ -18,44 +20,13 @@ const props = defineProps<{
 	card: FocusedCardData;
 }>();
 
-const router = useRouter();
-const watchEl = ref<HTMLElement | null>(null);
-const detailsEl = ref<HTMLElement | null>(null);
-
 const backdropUrl = computed(() =>
 	buildImageUrl(props.card.backdrop ?? props.card.poster ?? null, BACKDROP_SIZE),
 );
 
 const logoUrl = computed(() => buildImageUrl(props.card.logo ?? null, { width: 600 }));
 
-const watchPath = computed(() => {
-	const link = props.card.link;
-	if (!link)
-		return null;
-	return link.endsWith('/watch') ? link : `${link}/watch`;
-});
-
-const detailsPath = computed(() => props.card.link ?? null);
-
 const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
-
-useFocusEntry({
-	key: 'home-hero-watch',
-	el: watchEl,
-	onAction: () => {
-		if (watchPath.value)
-			router.push(watchPath.value);
-	},
-});
-
-useFocusEntry({
-	key: 'home-hero-details',
-	el: detailsEl,
-	onAction: () => {
-		if (detailsPath.value)
-			router.push(detailsPath.value);
-	},
-});
 </script>
 
 <template>
@@ -87,50 +58,6 @@ useFocusEntry({
 				<p v-if="card.overview" class="overview">
 					{{ card.overview }}
 				</p>
-				<div class="actions">
-					<button
-						v-if="watchPath"
-						ref="watchEl"
-						class="btn btn-primary"
-						data-focusable
-						tabindex="0"
-						@click.prevent="watchPath && router.push(watchPath)"
-					>
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-						>
-							<path d="M8 5v14l11-7z" />
-						</svg>
-						Watch
-					</button>
-					<button
-						v-if="detailsPath"
-						ref="detailsEl"
-						class="btn btn-secondary"
-						data-focusable
-						tabindex="0"
-						@click.prevent="detailsPath && router.push(detailsPath)"
-					>
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<circle cx="12" cy="12" r="10" />
-							<line x1="12" y1="16" x2="12" y2="12" />
-							<line x1="12" y1="8" x2="12.01" y2="8" />
-						</svg>
-						Details
-					</button>
-				</div>
 			</div>
 		</Transition>
 	</section>
@@ -193,50 +120,10 @@ useFocusEntry({
 	line-height: 1.45;
 	color: oklch(0.95 0.005 250);
 	display: -webkit-box;
-	-webkit-line-clamp: 5;
+	-webkit-line-clamp: 7;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	max-width: 600px;
-}
-.actions {
-	display: flex;
-	gap: 12px;
-	margin-top: 8px;
-}
-.btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 10px 22px;
-	border-radius: 999px;
-	font-size: 14px;
-	font-weight: 600;
-	border: 0;
-	cursor: pointer;
-	outline: none;
-	transition:
-		transform var(--motion-fast),
-		background var(--motion-fast);
-}
-.btn-primary {
-	background: #fff;
-	color: #181818;
-}
-.btn-primary:hover,
-.btn-primary:focus-visible {
-	background: oklch(0.95 0 0);
-	transform: translateY(-1px);
-}
-.btn-secondary {
-	background: rgba(0, 0, 0, 0.7);
-	color: #fff;
-	border: 1px solid rgba(255, 255, 255, 0.25);
-}
-.btn-secondary:hover,
-.btn-secondary:focus-visible {
-	background: rgba(0, 0, 0, 0.85);
-	border-color: rgba(255, 255, 255, 0.5);
-	transform: translateY(-1px);
 }
 
 .hero-fade-enter-active,
