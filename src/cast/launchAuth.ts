@@ -59,27 +59,24 @@ export function attachLaunchListener(
 		// it on launchOptions; sender-SDK initiated LAUNCH lands it on the
 		// top-level field. Read both.
 		const customData = appData?.customData ?? appData?.launchOptions?.customData;
-		// Surfacing the raw appData shape via console.warn so it lands in
-		// logcat at WARNING level (CAF default chromium log level filters
-		// debug/info on production receivers). Lets us confirm the customData
-		// path on the live device without remote DevTools.
+		// Pin the launch shape to <body data-launch-diag="..."> so we can read
+		// it back via screencap / DOM inspection without remote DevTools.
+		// Cast_shell's WebView filters console.* below ERROR on production
+		// receivers, so console.warn diagnostics never reach logcat.
 		try {
-			console.warn(
-				'[cast][READY]',
-				JSON.stringify({
-					hasCustomData: Boolean(customData),
-					appDataKeys: appData ? Object.keys(appData) : null,
-					launchOptionsKeys: appData?.launchOptions
-						? Object.keys(appData.launchOptions)
-						: null,
-					customDataPreview: customData
-						? Object.keys(customData as Record<string, unknown>)
-						: null,
-				}),
-			);
+			document.body.dataset.launchDiag = JSON.stringify({
+				hasCustomData: Boolean(customData),
+				appDataKeys: appData ? Object.keys(appData) : null,
+				launchOptionsKeys: appData?.launchOptions
+					? Object.keys(appData.launchOptions)
+					: null,
+				customDataKeys: customData
+					? Object.keys(customData as Record<string, unknown>)
+					: null,
+			});
 		}
 		catch {
-			console.warn('[cast][READY] appData stringify failed');
+			document.body.dataset.launchDiag = 'stringify-failed';
 		}
 		if (customData) {
 			const ok = consumeLaunchAuth(customData);
