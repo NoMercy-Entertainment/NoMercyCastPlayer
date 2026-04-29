@@ -2,11 +2,15 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusEntry } from '@/composables/useFocusEntry';
+import { useMeQuery } from '@/queries/useMeQuery';
 import { authStore } from '@/stores/authStore';
 
 const router = useRouter();
+const { data: me } = useMeQuery();
 
 const displayName = computed(() => {
+	if (me.value?.name)
+		return me.value.name;
 	const claims = authStore.userClaims.value;
 	return (
 		(claims?.display_name as string)
@@ -15,8 +19,6 @@ const displayName = computed(() => {
 		?? 'You'
 	);
 });
-
-const userEmail = computed(() => authStore.userClaims.value?.email as string | undefined);
 
 const WHITESPACE = /\s+/;
 
@@ -31,15 +33,19 @@ const initials = computed(() => {
 });
 
 const avatarUrl = computed(() => {
+	// Prefer the SaaS /v1/me avatarUrl (server-managed asset on R2);
+	// fall through to JWT picture/avatar_url claims and finally a
+	// gravatar derived from the email hash.
+	if (me.value?.avatarUrl)
+		return me.value.avatarUrl;
 	const claims = authStore.userClaims.value;
-	console.log(claims);
 	const claimAvatar
 		= (claims?.picture as string | undefined)
 			?? (claims?.avatar_url as string | undefined)
 			?? (claims?.avatarUrl as string | undefined);
 	if (claimAvatar && typeof claimAvatar === 'string' && claimAvatar.length > 0)
 		return claimAvatar;
-	const email = userEmail.value;
+	const email = (me.value?.email ?? authStore.userClaims.value?.email) as string | undefined;
 	if (!email)
 		return null;
 	let h = 0;

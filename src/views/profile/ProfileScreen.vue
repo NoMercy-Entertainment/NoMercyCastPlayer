@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
+import { useMeQuery } from '@/queries/useMeQuery';
 import { authStore } from '@/stores/authStore';
 
 /*
@@ -25,15 +26,22 @@ const profileGroup = useFocusGroup({
 
 useNavFocusBridge(profileGroup);
 
+const { data: me } = useMeQuery();
+
 const claims = computed(() => authStore.userClaims.value ?? null);
 const userName = computed(
 	() =>
-		(claims.value?.display_name as string)
+		me.value?.name
+		?? (claims.value?.display_name as string)
 		?? (claims.value?.preferred_username as string)
 		?? 'User',
 );
-const userEmail = computed(() => (claims.value?.email as string | undefined) ?? '');
+const userEmail = computed(
+	() => me.value?.email ?? (claims.value?.email as string | undefined) ?? '',
+);
 const avatarUrl = computed(() => {
+	if (me.value?.avatarUrl)
+		return me.value.avatarUrl;
 	const email = userEmail.value;
 	if (!email)
 		return null;
