@@ -8,7 +8,7 @@ import ProgressControls from '@/players/music/ProgressControls.vue';
 import QueuePeek from '@/players/music/QueuePeek.vue';
 import Lyrics from '@/players/music/Lyrics.vue';
 import { playbackStore } from '@/stores/playbackStore';
-import { buildImageUrl } from '@/lib/images/urls';
+import { buildImageUrl, pickPaletteColor } from '@/lib/images/urls';
 
 /*
  * APK FullPlayerScreenTV: artist backdrop fills the screen, scrim ramps
@@ -40,19 +40,19 @@ const lyricsEl = ref<HTMLElement | null>(null);
 const track = playbackStore.music.track;
 const lyricsOpen = playbackStore.music.lyricsOpen;
 
-const PALETTE_HEX = /^[0-9a-f]{6,8}$/i;
-function pickPaletteColor(p?: { dominant?: string; primary?: string; lightVibrant?: string; darkVibrant?: string } | null): string | null {
-	if (!p)
-		return null;
-	const c = p.primary ?? p.darkVibrant ?? p.dominant ?? p.lightVibrant ?? null;
-	if (!c)
-		return null;
-	if (c.startsWith('#'))
-		return c;
-	if (PALETTE_HEX.test(c))
-		return `#${c}`;
-	return c;
-}
+// const PALETTE_HEX = /^[0-9a-f]{6,8}$/i;
+// function pickPaletteColor(p?: { dominant?: string; primary?: string; lightVibrant?: string; darkVibrant?: string } | null): string | null {
+// 	if (!p)
+// 		return null;
+// 	const c = p.primary ?? p.darkVibrant ?? p.dominant ?? p.lightVibrant ?? null;
+// 	if (!c)
+// 		return null;
+// 	if (c.startsWith('#'))
+// 		return c;
+// 	if (PALETTE_HEX.test(c))
+// 		return `#${c}`;
+// 	return c;
+// }
 
 const backdropUrl = computed(() => {
 	const t = track.value;

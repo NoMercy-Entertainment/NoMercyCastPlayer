@@ -21,7 +21,9 @@ defineExpose({ trackEl });
 	gap: var(--rail-card-gap);
 	overflow-x: auto;
 	overflow-y: visible;
-	padding: 16px var(--tv-safe-padding);
+	/* APK contentPadding(start = 40dp). End padding scales with peek so
+		the last card never glues to the right edge. */
+	padding: 16px var(--tv-safe-padding) 16px 40px;
 	scroll-behavior: smooth;
 	scrollbar-width: none;
 }
