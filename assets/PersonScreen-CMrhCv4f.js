@@ -1,0 +1,2 @@
+import{E as e,_ as t,c as n,d as r,ot as i,s as a,t as o}from"./_plugin-vue_export-helper-CewluoKT.js";import{m as s}from"./index-pDwo45ry.js";var c={class:`person`},l=o(t({__name:`PersonScreen`,setup(t){let o=s(),l=a(()=>String(o.params.id??``));return(t,a)=>(e(),r(`div`,c,[n(`p`,null,`PersonScreen: id=`+i(l.value),1)]))}}),[[`__scopeId`,`data-v-f75c572a`]]);export{l as default};
+//# sourceMappingURL=PersonScreen-CMrhCv4f.js.map

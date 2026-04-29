@@ -1,0 +1,2 @@
+import{E as e,O as t,_ as n,d as r,i,it as a,t as o}from"./_plugin-vue_export-helper-CewluoKT.js";var s=o(n({__name:`Skeleton`,props:{type:{},count:{}},setup(n){return(o,s)=>(e(),r(`div`,{class:a([`skeleton`,[`skeleton-${n.type??`card`}`]])},[(e(!0),r(i,null,t(n.count??6,t=>(e(),r(`div`,{key:t,class:`skeleton-item`}))),128))],2))}}),[[`__scopeId`,`data-v-86ea39ce`]]);export{s as t};
+//# sourceMappingURL=Skeleton-BxjRmcS8.js.map
