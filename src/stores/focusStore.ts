@@ -12,6 +12,8 @@ export interface FocusGroupHandle {
 	focusByKey: (key: string) => boolean;
 	/** Used by focusStore.requestFocus to walk the stack from bottom up. */
 	hasEntry: (key: string) => boolean;
+	/** True when one of this group's entries is the document's activeElement. */
+	containsFocused: () => boolean;
 	/** Internal: triggers `escape` callback so modals can close on Back. */
 	dispatchEscape: () => boolean;
 }
@@ -30,7 +32,20 @@ const restoration = ref<Map<string, string>>(new Map());
 
 function activeGroup(): FocusGroupHandle | null {
 	const stack = groupStack.value;
-	return stack.length === 0 ? null : stack[stack.length - 1] ?? null;
+	if (stack.length === 0)
+		return null;
+	// Prefer the group that owns the currently-focused element. Multiple
+	// nested groups push onto the stack (page → rails → carousels), so the
+	// LAST mounted group isn't always the right key handler. Walk top-down
+	// looking for the group whose containsFocused() reports true.
+	for (let i = stack.length - 1; i >= 0; i--) {
+		const group = stack[i];
+		if (group.containsFocused())
+			return group;
+	}
+	// Fall back to the topmost group when focus is on document.body or
+	// hasn't been initialised yet (first paint).
+	return stack[stack.length - 1] ?? null;
 }
 
 function pushGroup(group: FocusGroupHandle): void {

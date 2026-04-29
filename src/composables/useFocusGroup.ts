@@ -147,6 +147,9 @@ export function useFocusGroup(opts: FocusGroupOptions): FocusGroupHandle & Focus
 		hasEntry(key) {
 			return entries.value.some(e => e.key === key);
 		},
+		containsFocused() {
+			return entries.value.some(e => e.isFocused());
+		},
 		handleKey(dir) {
 			const current = entries.value.find(e => e.isFocused());
 			if (!current)
