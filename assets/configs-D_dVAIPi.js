@@ -1,2 +1,0 @@
-var e={realtime:{staleTime:3e4,gcTime:6e4},standard:{staleTime:5*6e4,gcTime:10*6e4},static:{staleTime:30*6e4,gcTime:60*6e4,refetchOnMount:!1,refetchOnReconnect:!1},infinite:{staleTime:1/0,gcTime:1/0,refetchOnMount:!1,refetchOnReconnect:!1}};export{e as t};
-//# sourceMappingURL=configs-D_dVAIPi.js.map

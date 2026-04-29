@@ -1,0 +1,2 @@
+import{E as e,O as t,_ as n,at as r,d as i,i as a,t as o}from"./_plugin-vue_export-helper-DWLlC4ko.js";var s=o(n({__name:`Skeleton`,props:{type:{},count:{}},setup(n){return(o,s)=>(e(),i(`div`,{class:r([`skeleton`,[`skeleton-${n.type??`card`}`]])},[(e(!0),i(a,null,t(n.count??6,t=>(e(),i(`div`,{key:t,class:`skeleton-item`}))),128))],2))}}),[[`__scopeId`,`data-v-86ea39ce`]]);export{s as t};
+//# sourceMappingURL=Skeleton-TrEBj8zd.js.map
