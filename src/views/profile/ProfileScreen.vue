@@ -218,7 +218,7 @@ function confirmSignOut(): void {
 					<button
 						ref="dialogCancelEl"
 						type="button"
-						class="btn btn-secondary"
+						class="nm-pill-sm nm-pill-sm-secondary"
 						@click="showSignOutConfirm = false"
 					>
 						Cancel
@@ -226,7 +226,7 @@ function confirmSignOut(): void {
 					<button
 						ref="dialogConfirmEl"
 						type="button"
-						class="btn btn-primary"
+						class="nm-pill-sm nm-pill-sm-primary"
 						@click="confirmSignOut"
 					>
 						Sign out
@@ -336,29 +336,5 @@ function confirmSignOut(): void {
 	background: rgba(255, 255, 255, 0.1);
 	padding: 6px 10px;
 	border-radius: 8px;
-}
-.btn {
-	padding: 10px 16px;
-	border-radius: 999px;
-	font-size: 13px;
-	font-weight: 600;
-	border: 2px solid transparent;
-	cursor: pointer;
-	outline: none;
-	transition:
-		transform var(--motion-fast),
-		border-color var(--motion-fast);
-}
-.btn:focus-visible {
-	transform: scale(1.04);
-	border-color: rgba(255, 255, 255, 0.95);
-}
-.btn-primary {
-	background: var(--color-primary, oklch(0.7 0.2 285));
-	color: #fff;
-}
-.btn-secondary {
-	background: rgba(255, 255, 255, 0.1);
-	color: #fff;
 }
 </style>

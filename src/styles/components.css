@@ -120,6 +120,38 @@
 	transform: translateY(-1px);
 }
 
+/* Compact pill — dialog buttons / inline confirm chips. Tighter padding
+   than the main pill, white border ring on focus instead of palette. */
+.nm-pill-sm {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 16px;
+	border-radius: 999px;
+	font-size: 13px;
+	font-weight: 600;
+	border: 2px solid transparent;
+	font-family: inherit;
+	cursor: pointer;
+	outline: none;
+	transition:
+		transform var(--motion-fast),
+		border-color var(--motion-fast),
+		background var(--motion-fast);
+}
+.nm-pill-sm:focus-visible {
+	transform: scale(1.04);
+	border-color: oklch(1 0 0 / 0.95);
+}
+.nm-pill-sm-primary {
+	background: var(--color-primary, oklch(0.7 0.2 285));
+	color: #fff;
+}
+.nm-pill-sm-secondary {
+	background: rgba(255, 255, 255, 0.1);
+	color: #fff;
+}
+
 /* ─── Hide scrollbars on touch / TV ─────────────────────────────────── */
 
 .nm-no-scrollbar {

@@ -161,8 +161,8 @@ useFocusGroup({
 	justify-content: flex-start;
 }
 .brand-logo {
-	width: 44px;
-	height: 44px;
+	width: 52px;
+	height: 52px;
 	object-fit: contain;
 	filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
