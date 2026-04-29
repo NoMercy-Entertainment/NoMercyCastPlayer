@@ -1,18 +1,6 @@
 import { applyThemeColor } from '@/lib/theme';
 import { ref, watch } from 'vue';
 
-/**
- * Tracks the currently-focused card across the home view so the hero
- * region can swap its backdrop / title / overview based on whatever the
- * user is hovering. Mirrors APK TvHomeScreen.kt's
- *   val activeCardState = remember { MutableStateFlow(...) }
- *   val debouncedFlow = remember { activeCardState.debounce(...) }
- *
- * Debounce defaults: 650ms (horizontal nav) / 2000ms (vertical nav).
- * The APK switches based on lastNavigationDirection; we use 650ms
- * everywhere for now and tighten later if it feels wrong.
- */
-
 export interface FocusedCardData {
 	id?: string;
 	title?: string;
@@ -39,11 +27,6 @@ const VERTICAL_DEBOUNCE_MS = 2000;
 let pending: number | null = null;
 let lastNavDir: 'horizontal' | 'vertical' = 'horizontal';
 
-/*
- * Apply the focused card's palette via the shared applyThemeColor
- * helper so the hero scrim, focus borders, rail accents, mini-player,
- * and OSD progress bar all pick it up via --color-primary.
- */
 function applyPalette(card: FocusedCardData | null): void {
 	const palette = card?.color_palette;
 	applyThemeColor(palette?.poster ?? palette?.backdrop ?? null);
@@ -69,7 +52,6 @@ export const focusedCardStore = {
 		_activeCard.value = card;
 	},
 	seed(card: FocusedCardData | null): void {
-		// Synchronous seed — used on first render so the hero never paints empty.
 		_activeCard.value = card;
 		_debouncedCard.value = card;
 		applyPalette(card);

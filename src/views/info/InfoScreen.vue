@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue';
+import { computed, onBeforeUnmount, ref, toRefs, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useInfoQuery } from '@/queries/useInfoQuery';
@@ -8,6 +8,7 @@ import { useFocusEntry } from '@/composables/useFocusEntry';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
+import { applyThemeColor, clearThemeColor } from '@/lib/theme';
 import SplitTitleText from '@/components/text/SplitTitleText.vue';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
@@ -34,6 +35,18 @@ const { type, id } = toRefs(props);
 const { data, isLoading, error, refetch } = useInfoQuery(type, id);
 
 const info = computed(() => data.value ?? null);
+
+// APK InfoScreen calls SetThemeColor(focusColor, noRemove = true) where
+// focusColor = pickPaletteColor(infoData.colorPalette.poster). Mirror
+// that here so the Watch / Trailer / Watchlist focus rings + scrim
+// gradients pick up the movie's poster palette.
+watch(info, (next) => {
+	const palette = next?.color_palette;
+	applyThemeColor(palette?.poster ?? palette?.backdrop ?? null);
+}, { immediate: true });
+onBeforeUnmount(() => {
+	clearThemeColor();
+});
 
 const backdropUrl = computed(() =>
 	buildImageUrl(info.value?.backdrop ?? null, BACKDROP_SIZE),

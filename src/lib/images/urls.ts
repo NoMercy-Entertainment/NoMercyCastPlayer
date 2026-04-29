@@ -1,23 +1,9 @@
 import { authStore } from '@/stores/authStore';
 
-/**
- * Build a server-sized image URL per spec §5 perf rule #2 — cast hardware
- * cannot decode 4K JPEGs. Always pass width / height so the server can
- * resize on the fly.
- *
- * Path conventions match android image-url assembly:
- *   /api/v1/images/{path}?w=...&h=...
- */
-
 const ABSOLUTE_URL = /^https?:\/\//i;
 const TRAILING_SLASH = /\/$/;
 const TMDB_IMAGE_EXT = /\.(?:jpg|jpeg|png|webp)$/i;
 
-// TMDB CDN. Server returns bare TMDB poster/backdrop paths (`/abc.jpg`)
-// rather than absolute URLs. The receiver fetches them direct from
-// image.tmdb.org — the server doesn't currently expose a proxy at
-// /api/v1/images for these paths and TMDB serves them with permissive
-// caching headers anyway.
 const TMDB_BASE = 'https://image.tmdb.org/t/p';
 
 function pickTmdbSize(width: number | undefined): string {
