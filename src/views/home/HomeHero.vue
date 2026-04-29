@@ -118,30 +118,34 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	object-position: left center;
 	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
 }
+/* APK HeroRow uses SemiBold 28sp main, Medium 19sp sub */
 :deep(.hero-main) {
-	font-size: 36px;
-	font-weight: 700;
-	line-height: 1.05;
-	letter-spacing: -0.01em;
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: -0.005em;
 	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 :deep(.hero-sub) {
-	font-size: 22px;
+	font-size: 19px;
 	font-weight: 500;
-	line-height: 1.15;
+	line-height: 1.2;
 	color: oklch(0.92 0.005 250);
 	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 .overview {
 	margin: 0;
-	font-size: 15px;
-	line-height: 1.45;
-	color: oklch(0.95 0.005 250);
+	/* APK HeroRow overview: bodyMedium SemiBold 14sp / 20sp lineHeight */
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 20px;
+	color: oklch(1 0 0);
 	display: -webkit-box;
 	-webkit-line-clamp: 5;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	max-width: 600px;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .hero-fade-enter-active,
