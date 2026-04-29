@@ -85,8 +85,26 @@ onMounted(async () => {
 			e.loadPlaylist?.(props.playlist, props.initialItem);
 		}
 		if (typeof props.resumeAt === 'number' && props.resumeAt > 0) {
-			const e = engine as { seek?: (s: number) => void };
-			e.seek?.(props.resumeAt);
+			// Wait until the player reports it's ready and the duration is
+			// resolved before seeking — seeking before the manifest loads
+			// is silently ignored by the npm player. Mirrors APK
+			// WatchScreen.kt's `videoPlayerStore.timeState.first { duration > 0 }`.
+			const player = engine as {
+				on?: (event: string, handler: () => void) => void;
+				once?: (event: string, handler: () => void) => void;
+				seek?: (s: number) => void;
+				getDuration?: () => number;
+			};
+			const seekToResume = (): void => {
+				const dur = player.getDuration?.() ?? 0;
+				if (dur > 0) {
+					player.seek?.(props.resumeAt!);
+					return;
+				}
+				// duration not ready yet — wait one more 'time' tick
+				player.once?.('time', seekToResume);
+			};
+			player.once?.('ready', seekToResume);
 		}
 	}
 	catch (err) {
