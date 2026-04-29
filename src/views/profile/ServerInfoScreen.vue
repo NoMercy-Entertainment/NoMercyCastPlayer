@@ -1,18 +1,52 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { authStore } from '@/stores/authStore';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useServerInfoQuery } from '@/queries/useServerInfoQuery';
+import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
+import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
 
 /*
- * Read-only server info — mirrors APK ServerInfoScreen.kt. Cast receiver
- * doesn't currently expose the connected server's metadata (name,
- * description, version) in the auth payload — we render the IDs we have
- * and a hint to switch via the sender.
+ * Server info — APK dashboard/serverInfo/tv/ServerInfoScreen.kt parity.
+ * Shows the connected server's name, version, uptime, OS, arch, CPU,
+ * GPU. Read-only. Destructive actions (pause / shutdown) live on the
+ * mobile dashboard only.
  */
 
-const serverId = computed(() => authStore.serverId.value ?? 'Unknown');
-const serverUrl = computed(() => authStore.serverUrl.value ?? 'Unknown');
-const deviceId = computed(() => authStore.deviceId.value ?? 'Unknown');
-const sessionId = computed(() => authStore.castSessionId.value ?? 'Unknown');
+const { data, isLoading, error, refetch } = useServerInfoQuery();
+const info = computed(() => data.value ?? null);
+
+const now = ref(Date.now());
+let tickTimer: number | null = null;
+onMounted(() => {
+	tickTimer = window.setInterval(() => {
+		now.value = Date.now();
+	}, 1000);
+});
+onUnmounted(() => {
+	if (tickTimer !== null)
+		window.clearInterval(tickTimer);
+});
+
+function formatUptime(bootIso: string | undefined, currentMs: number): string {
+	if (!bootIso)
+		return '—';
+	const boot = Date.parse(bootIso);
+	if (!Number.isFinite(boot))
+		return '—';
+	const seconds = Math.max(0, Math.floor((currentMs - boot) / 1000));
+	const d = Math.floor(seconds / 86400);
+	const h = Math.floor((seconds % 86400) / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = seconds % 60;
+	if (d > 0)
+		return `${d}d ${h}h ${m}m`;
+	if (h > 0)
+		return `${h}h ${m}m`;
+	if (m > 0)
+		return `${m}m ${s}s`;
+	return `${s}s`;
+}
+
+const uptime = computed(() => formatUptime(info.value?.bootTime, now.value));
 </script>
 
 <template>
@@ -21,23 +55,41 @@ const sessionId = computed(() => authStore.castSessionId.value ?? 'Unknown');
 			<h1>Server info</h1>
 		</header>
 
-		<div class="card">
+		<LoadingIndicator v-if="isLoading && !info" />
+		<ErrorPanel
+			v-else-if="error"
+			:error="error as Error"
+			:retry="() => refetch()"
+			context="Couldn't load server info"
+		/>
+		<div v-else-if="info" class="card">
+			<h2 class="server-name">
+				{{ info.server }}
+			</h2>
 			<dl class="kv">
-				<dt>Server ID</dt>
-				<dd>
-					{{ serverId }}
+				<dt>Status</dt>
+				<dd class="status-online">
+					Online
 				</dd>
-				<dt>Server URL</dt>
-				<dd class="mono">
-					{{ serverUrl }}
+				<dt>Version</dt>
+				<dd>{{ info.version }}</dd>
+				<dt>Uptime</dt>
+				<dd>{{ uptime }}</dd>
+				<dt>OS</dt>
+				<dd>{{ info.osVersion || info.os }}</dd>
+				<dt>Architecture</dt>
+				<dd>{{ info.arch }}</dd>
+				<dt v-if="info.cpu.length">
+					CPU
+				</dt>
+				<dd v-if="info.cpu.length">
+					{{ info.cpu.join(', ') }}
 				</dd>
-				<dt>Device ID</dt>
-				<dd class="mono">
-					{{ deviceId }}
-				</dd>
-				<dt>Cast session</dt>
-				<dd class="mono">
-					{{ sessionId }}
+				<dt v-if="info.gpu.length">
+					GPU
+				</dt>
+				<dd v-if="info.gpu.length">
+					{{ info.gpu.join(', ') }}
 				</dd>
 			</dl>
 		</div>
@@ -70,34 +122,40 @@ const sessionId = computed(() => authStore.castSessionId.value ?? 'Unknown');
 .card {
 	max-width: 920px;
 	margin: 0 auto 24px;
-	padding: 24px;
+	padding: 28px 32px;
 	background: oklch(0.18 0.01 250 / 0.85);
 	border: 1px solid rgba(255, 255, 255, 0.18);
 	border-radius: 16px;
 	color: #fff;
 }
+.server-name {
+	margin: 0 0 16px;
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--color-primary, oklch(0.7 0.2 285));
+}
 .kv {
 	margin: 0;
 	display: grid;
-	grid-template-columns: max-content 1fr;
-	gap: 12px 24px;
+	grid-template-columns: 140px 1fr;
+	row-gap: 8px;
+	column-gap: 12px;
 }
 .kv dt {
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: oklch(0.7 0.005 250);
+	font-size: 13px;
+	font-weight: 500;
+	color: oklch(0.75 0.005 250);
 }
 .kv dd {
 	margin: 0;
 	font-size: 14px;
+	font-weight: 500;
 	color: oklch(0.95 0.005 250);
-	word-break: break-all;
+	word-break: break-word;
 }
-.mono {
-	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-	font-size: 12px;
+.status-online {
+	color: oklch(0.75 0.18 145);
+	font-weight: 600;
 }
 .hint {
 	max-width: 920px;
