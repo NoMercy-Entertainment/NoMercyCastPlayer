@@ -78,19 +78,20 @@ useFocusEntry({
 .rail-section {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 8px;
 	contain: layout paint;
 }
 .rail-header {
 	display: flex;
 	align-items: baseline;
-	padding: 0 36px;
+	padding: 0 var(--tv-safe-padding) 0 40px;
 }
 .rail-header h2 {
 	margin: 0;
-	font-size: 18px;
-	font-weight: 700;
+	font-size: 16px;
+	font-weight: 600;
 	letter-spacing: -0.005em;
+	color: oklch(1 0 0);
 }
 .show-all {
 	flex: 0 0 auto;

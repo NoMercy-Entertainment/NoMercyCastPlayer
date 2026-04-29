@@ -1,3 +1,4 @@
+import { pickPaletteColor } from '@/lib/images/urls';
 import { ref, watch } from 'vue';
 
 /**
@@ -39,36 +40,13 @@ let pending: number | null = null;
 let lastNavDir: 'horizontal' | 'vertical' = 'horizontal';
 
 /*
- * Pick a usable accent color out of a palette object. APK's
- * pickPaletteColor.kt prefers vibrants, falls back to dominant. Returns
- * a CSS-ready hex string or null when no usable color is available.
- */
-const HEX_COLOR = /^[0-9a-f]{6,8}$/i;
-
-function pickPaletteColor(p?: { dominant?: string; light?: string; dark?: string; primary?: string } | null): string | null {
-	if (!p)
-		return null;
-	const c = p.primary ?? p.dark ?? p.dominant ?? p.light ?? null;
-	if (!c)
-		return null;
-	if (c.startsWith('#'))
-		return c;
-	if (HEX_COLOR.test(c))
-		return `#${c}`;
-	return c;
-}
-
-/*
  * Apply the focused card's palette as a CSS variable so the hero scrim,
  * focus borders, and rail accents pick it up automatically.
  */
 function applyPalette(card: FocusedCardData | null): void {
 	const root = document.documentElement;
 	const palette = card?.color_palette;
-	const color
-		= pickPaletteColor(palette?.poster)
-			?? pickPaletteColor(palette?.backdrop)
-			?? pickPaletteColor(palette?.logo);
+	const color = pickPaletteColor(palette?.poster ?? palette?.backdrop ?? null);
 	if (color)
 		root.style.setProperty('--color-primary', color);
 	else
