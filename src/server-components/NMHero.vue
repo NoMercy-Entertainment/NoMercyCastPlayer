@@ -27,10 +27,16 @@ useFocusEntry({
 </script>
 
 <template>
-	<section ref="el" class="hero" data-focusable tabindex="0" role="button">
-		<div class="art">
-			<img v-if="imageUrl" :src="imageUrl" :alt="props.data.title ?? ''" decoding="async">
-			<div class="scrim" />
+	<section ref="el" class="hero nm-focus-scale-sm" data-focusable tabindex="0" role="button">
+		<div class="art nm-focus-ring">
+			<img
+				v-if="imageUrl"
+				class="nm-cover-top"
+				:src="imageUrl"
+				:alt="props.data.title ?? ''"
+				decoding="async"
+			>
+			<div class="nm-hero-scrim" />
 		</div>
 		<div class="meta">
 			<img v-if="logoUrl" :src="logoUrl" :alt="props.data.title ?? ''" class="logo">
@@ -62,19 +68,6 @@ useFocusEntry({
 .art {
 	position: absolute;
 	inset: 0;
-}
-.art img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: top;
-}
-.scrim {
-	position: absolute;
-	inset: 0;
-	background:
-		linear-gradient(180deg, transparent 30%, oklch(0 0 0 / 0.6) 100%),
-		linear-gradient(90deg, oklch(0 0 0 / 0.6) 0%, transparent 50%);
 }
 .meta {
 	position: absolute;

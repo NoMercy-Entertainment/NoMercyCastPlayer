@@ -40,7 +40,7 @@ useFocusEntry({
 		@click.prevent="router.push('/now-playing')"
 	>
 		<div class="art">
-			<img v-if="coverUrl" :src="coverUrl" :alt="title">
+			<img v-if="coverUrl" class="nm-cover-top" :src="coverUrl" :alt="title">
 			<div v-if="isPlaying" class="eq" aria-hidden="true">
 				<span />
 				<span />
@@ -104,12 +104,6 @@ useFocusEntry({
 	display: grid;
 	place-items: center;
 	color: #fff;
-}
-.art img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: top;
 }
 .eq {
 	position: absolute;

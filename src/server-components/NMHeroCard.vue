@@ -27,10 +27,11 @@ useFocusEntry({
 </script>
 
 <template>
-	<article ref="el" class="hero-card" data-focusable tabindex="0" role="button">
-		<div class="art">
+	<article ref="el" class="hero-card nm-focus-scale-sm" data-focusable tabindex="0" role="button">
+		<div class="art nm-focus-ring">
 			<img
 				v-if="imageUrl"
+				class="nm-cover-top"
 				:src="imageUrl"
 				:alt="props.data.title ?? ''"
 				loading="lazy"
@@ -62,28 +63,12 @@ useFocusEntry({
 	cursor: pointer;
 	contain: layout paint;
 	outline: none;
-	transition: transform var(--motion-fast);
-}
-.hero-card:focus-visible {
-	transform: scale(1.04);
-}
-.hero-card:focus-visible .art {
-	box-shadow:
-		0 0 0 2px var(--color-primary, oklch(0.7 0.2 285)),
-		0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .art {
 	width: 100%;
 	aspect-ratio: 16/9;
 	border-radius: var(--radius-card);
 	overflow: hidden;
-	transition: box-shadow var(--motion-fast);
-}
-.art img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: top;
 }
 .title {
 	margin: 0;

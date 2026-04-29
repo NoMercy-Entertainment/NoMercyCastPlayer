@@ -89,13 +89,13 @@ useFocusEntry({
 <template>
 	<article
 		ref="el"
-		class="music-card card"
+		class="music-card card nm-focus-scale"
 		:class="[{ 'is-letter': isLetterCard }]"
 		data-focusable
 		tabindex="0"
 		role="button"
 	>
-		<div class="cover">
+		<div class="cover nm-focus-ring">
 			<template v-if="isLetterCard">
 				<div class="letter">
 					{{ props.data.name }}
@@ -104,6 +104,7 @@ useFocusEntry({
 			<template v-else>
 				<img
 					v-if="cover"
+					class="nm-cover-top"
 					:src="cover"
 					:alt="props.data.name ?? ''"
 					loading="lazy"
@@ -136,15 +137,6 @@ useFocusEntry({
 	cursor: pointer;
 	contain: layout paint;
 	outline: none;
-	transition: transform var(--motion-fast);
-}
-.music-card:focus-visible {
-	transform: scale(1.06);
-}
-.music-card:focus-visible .cover {
-	box-shadow:
-		0 0 0 2px var(--color-primary, oklch(0.7 0.2 285)),
-		0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .cover {
 	width: 100%;
@@ -153,14 +145,8 @@ useFocusEntry({
 	overflow: hidden;
 	background: oklch(0.18 0.01 250);
 	position: relative;
-	transition: box-shadow var(--motion-fast);
 	display: grid;
 	place-items: center;
-}
-.cover img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
 }
 .is-letter .cover {
 	background: linear-gradient(135deg, oklch(0.22 0.06 285), oklch(0.18 0.04 250));

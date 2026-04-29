@@ -76,14 +76,15 @@ useFocusEntry({
 <template>
 	<article
 		ref="el"
-		class="card"
+		class="card nm-focus-scale"
 		data-focusable
 		tabindex="0"
 		role="button"
 	>
-		<div class="poster">
+		<div class="poster nm-focus-ring">
 			<img
 				v-if="imageUrl"
+				class="nm-cover-top"
 				:src="imageUrl"
 				:alt="props.data.title ?? ''"
 				loading="lazy"
@@ -120,15 +121,6 @@ useFocusEntry({
 	cursor: pointer;
 	contain: layout paint;
 	outline: none;
-	transition: transform var(--motion-fast);
-}
-.card:focus-visible {
-	transform: scale(1.06);
-}
-.card:focus-visible .poster {
-	box-shadow:
-		0 0 0 2px var(--color-primary, oklch(0.7 0.2 285)),
-		0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .poster {
 	width: 100%;
@@ -137,12 +129,6 @@ useFocusEntry({
 	overflow: hidden;
 	background: oklch(0.18 0.01 250);
 	position: relative;
-	transition: box-shadow var(--motion-fast);
-}
-.poster img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
 }
 .progress {
 	position: absolute;

@@ -27,9 +27,9 @@ useFocusEntry({
 </script>
 
 <template>
-	<article ref="el" class="top-result" data-focusable tabindex="0" role="button">
+	<article ref="el" class="top-result nm-focus-border" data-focusable tabindex="0" role="button">
 		<div class="art">
-			<img v-if="image" :src="image" :alt="props.data.title">
+			<img v-if="image" class="nm-cover-top" :src="image" :alt="props.data.title">
 			<FallbackPoster v-else :title="props.data.title" />
 		</div>
 		<div class="meta">
@@ -52,7 +52,6 @@ useFocusEntry({
 	grid-template-columns: 200px 1fr;
 	gap: 24px;
 	padding: 24px;
-	border: 3px solid transparent;
 	background: oklch(0.18 0.01 250);
 	border-radius: var(--radius-card);
 	cursor: pointer;
@@ -60,12 +59,10 @@ useFocusEntry({
 	text-align: start;
 	transition:
 		transform var(--motion-fast),
-		border-color var(--motion-fast),
 		box-shadow var(--motion-fast);
 }
 .top-result:focus-visible {
 	transform: translateY(-2px);
-	border-color: var(--color-primary, oklch(0.7 0.2 285));
 	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .art {
@@ -73,12 +70,6 @@ useFocusEntry({
 	height: 200px;
 	border-radius: var(--radius-card);
 	overflow: hidden;
-}
-.art img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: top;
 }
 .kind {
 	margin: 0;

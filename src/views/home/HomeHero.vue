@@ -36,12 +36,13 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 			<div :key="transitionKey" class="art">
 				<img
 					v-if="backdropUrl"
+					class="nm-cover-top"
 					:src="backdropUrl"
 					:alt="card.title ?? ''"
 					loading="eager"
 					decoding="async"
 				>
-				<div class="scrim" />
+				<div class="nm-hero-scrim" />
 			</div>
 		</Transition>
 
@@ -78,26 +79,6 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 .art {
 	position: absolute;
 	inset: 0;
-}
-.art img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: top;
-}
-.scrim {
-	position: absolute;
-	inset: 0;
-	/* APK OverlayGradient — radial centered above the top-right corner so
-		the right side stays clean (faces visible) and the left/bottom fade
-		to black where the title + overview sit. */
-	background: radial-gradient(
-		ellipse 130% 130% at 80% -10%,
-		transparent 0%,
-		transparent 35%,
-		rgba(0, 0, 0, 0.85) 75%,
-		rgba(0, 0, 0, 1) 100%
-	);
 }
 .content {
 	position: absolute;

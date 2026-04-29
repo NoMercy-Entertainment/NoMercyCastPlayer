@@ -15,7 +15,7 @@ const screenGroup = useFocusGroup({
 	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
 
-useNavFocusBridge(screenGroup);
+useNavFocusBridge({ handle: screenGroup, containerEl });
 
 const queryStr = ref('');
 const debouncedQuery = ref('');

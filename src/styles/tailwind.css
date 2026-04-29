@@ -2,6 +2,7 @@
 
 @import './tokens.css';
 @import './tv-safe.css';
+@import './components.css';
 
 @theme {
 	--color-bg-base: oklch(0.12 0.01 250);

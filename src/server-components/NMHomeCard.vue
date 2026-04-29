@@ -78,13 +78,14 @@ useFocusEntry({
 		<div class="art">
 			<img
 				v-if="imageUrl"
+				class="nm-cover-top"
 				:src="imageUrl"
 				:alt="props.data.title ?? ''"
 				loading="eager"
 				decoding="async"
 			>
 			<FallbackPoster v-else :title="props.data.title" />
-			<div class="scrim" />
+			<div class="nm-hero-scrim" />
 		</div>
 
 		<div class="content">
@@ -109,7 +110,7 @@ useFocusEntry({
 					v-if="watchPath"
 					ref="watchEl"
 					type="button"
-					class="btn btn-primary"
+					class="nm-pill nm-pill-primary"
 					data-focusable
 					tabindex="0"
 					@click.prevent="watchPath && router.push(watchPath)"
@@ -128,7 +129,7 @@ useFocusEntry({
 					v-if="detailsPath"
 					ref="detailsEl"
 					type="button"
-					class="btn btn-secondary"
+					class="nm-pill nm-pill-secondary"
 					data-focusable
 					tabindex="0"
 					@click.prevent="detailsPath && router.push(detailsPath)"
@@ -173,23 +174,6 @@ useFocusEntry({
 .art {
 	position: absolute;
 	inset: 0;
-}
-.art img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: top;
-}
-.scrim {
-	position: absolute;
-	inset: 0;
-	background: radial-gradient(
-		ellipse 130% 130% at 80% -10%,
-		transparent 0%,
-		transparent 35%,
-		rgba(0, 0, 0, 0.85) 75%,
-		rgba(0, 0, 0, 1) 100%
-	);
 }
 .content {
 	position: absolute;
@@ -247,42 +231,5 @@ useFocusEntry({
 	display: flex;
 	gap: 12px;
 	margin-top: 8px;
-}
-.btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 10px 22px;
-	border-radius: 999px;
-	font-size: 14px;
-	font-weight: 600;
-	border: 2px solid transparent;
-	cursor: pointer;
-	outline: none;
-	transition:
-		transform var(--motion-fast),
-		background var(--motion-fast),
-		border-color var(--motion-fast);
-}
-.btn-primary {
-	background: #fff;
-	color: #181818;
-}
-.btn-primary:hover,
-.btn-primary:focus-visible {
-	background: oklch(0.95 0 0);
-	transform: translateY(-1px);
-	border-color: var(--color-primary, oklch(0.7 0.2 285));
-}
-.btn-secondary {
-	background: rgba(0, 0, 0, 0.7);
-	color: #fff;
-	border: 1px solid rgba(255, 255, 255, 0.25);
-}
-.btn-secondary:hover,
-.btn-secondary:focus-visible {
-	background: rgba(0, 0, 0, 0.85);
-	border-color: var(--color-primary, oklch(0.7 0.2 285));
-	transform: translateY(-1px);
 }
 </style>

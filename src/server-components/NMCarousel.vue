@@ -60,7 +60,7 @@ useFocusEntry({
 			<a
 				v-if="props.data.more_link"
 				ref="showAllEl"
-				class="show-all"
+				class="show-all nm-focus-scale"
 				:href="props.data.more_link"
 				data-focusable
 				tabindex="0"
@@ -111,12 +111,11 @@ useFocusEntry({
 	padding: 16px;
 	cursor: pointer;
 	transition:
-		transform var(--motion-fast),
 		border-color var(--motion-fast),
-		background var(--motion-fast);
+		background var(--motion-fast),
+		box-shadow var(--motion-fast);
 }
 .show-all:focus-visible {
-	transform: scale(1.06);
 	border-color: var(--color-primary, oklch(0.7 0.2 285));
 	background: rgba(0, 0, 0, 0.75);
 	box-shadow:

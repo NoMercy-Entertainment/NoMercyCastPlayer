@@ -29,13 +29,9 @@ defineExpose({ currentImage });
 	z-index: 0;
 	pointer-events: none;
 }
-/* var(--color-primary, oklch(0.7 0.2 285)) */
 .brand-gradient {
 	position: absolute;
 	inset: 0;
-	background:
-		radial-gradient(circle at 30% 20%, var(--color-primary, oklch(0.7 0.2 285)), transparent 60%),
-		radial-gradient(circle at 70% 80%, var(--color-primary, oklch(0.7 0.2 285)), transparent 55%), black;
 }
 .art {
 	position: absolute;

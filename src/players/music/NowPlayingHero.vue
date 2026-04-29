@@ -20,7 +20,7 @@ const cover = computed(() =>
 <template>
 	<div class="hero">
 		<div class="art">
-			<img v-if="cover" :src="cover" :alt="track?.name ?? ''" decoding="async">
+			<img v-if="cover" class="nm-cover-top" :src="cover" :alt="track?.name ?? ''" decoding="async">
 			<FallbackPoster v-else :title="track?.name" />
 		</div>
 		<div class="meta">
@@ -51,12 +51,6 @@ const cover = computed(() =>
 	overflow: hidden;
 	box-shadow: 0 16px 48px oklch(0 0 0 / 0.5);
 	flex: 0 0 auto;
-}
-.art img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: top;
 }
 .meta {
 	min-width: 0;

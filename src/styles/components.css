@@ -1,0 +1,130 @@
+/*
+ * Shared component utility classes. Extracted from per-component scoped
+ * CSS where the same patterns were duplicated across NMCard / NMMusicCard
+ * / NMHomeCard / etc. Components compose these alongside their scoped
+ * styles instead of redeclaring focus animations, image cropping rules,
+ * and pill button bases in every file.
+ *
+ * Loaded after tailwind.css so utility classes win cascading order.
+ */
+
+/* ─── Focus animations ──────────────────────────────────────────────── */
+
+.nm-focus-scale {
+	transition: transform var(--motion-fast);
+	will-change: transform;
+}
+.nm-focus-scale:focus-visible {
+	transform: scale(1.06);
+	z-index: 2;
+}
+.nm-focus-scale-sm {
+	transition: transform var(--motion-fast);
+	will-change: transform;
+}
+.nm-focus-scale-sm:focus-visible {
+	transform: scale(1.04);
+	z-index: 2;
+}
+
+/* Palette-tinted focus ring rendered as a box-shadow on the inner image
+   container so the surrounding text doesn't get ringed. Pair with
+   .nm-focus-scale on the parent. */
+.nm-focus-ring {
+	transition: box-shadow var(--motion-fast);
+}
+.nm-focus-scale:focus-visible .nm-focus-ring,
+.nm-focus-scale-sm:focus-visible .nm-focus-ring {
+	box-shadow:
+		0 0 0 2px var(--color-primary, oklch(0.7 0.2 285)),
+		0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* Border-style focus indicator (used on cards that don't have a separate
+   inner image container — full-card border instead of inner shadow). */
+.nm-focus-border {
+	border: 3px solid transparent;
+	transition: border-color var(--motion-fast);
+}
+.nm-focus-border:focus-visible {
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
+}
+
+/* ─── Image cropping ────────────────────────────────────────────────── */
+
+.nm-cover-top {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: top;
+}
+.nm-cover-center {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+}
+
+/* ─── Hero scrim (APK BackdropImageWithOverlay radial) ──────────────── */
+
+.nm-hero-scrim {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		ellipse 130% 130% at 80% -10%,
+		transparent 0%,
+		transparent 35%,
+		rgba(0, 0, 0, 0.85) 75%,
+		rgba(0, 0, 0, 1) 100%
+	);
+}
+
+/* ─── Pill button (Watch / Details / Play) ──────────────────────────── */
+
+.nm-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 22px;
+	border-radius: 999px;
+	font-size: 14px;
+	font-weight: 600;
+	border: 2px solid transparent;
+	font-family: inherit;
+	cursor: pointer;
+	outline: none;
+	transition:
+		transform var(--motion-fast),
+		background var(--motion-fast),
+		border-color var(--motion-fast);
+}
+.nm-pill-primary {
+	background: #fff;
+	color: #181818;
+}
+.nm-pill-primary:focus-visible,
+.nm-pill-primary:hover {
+	background: oklch(0.95 0 0);
+	transform: translateY(-1px);
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
+}
+.nm-pill-secondary {
+	background: rgba(0, 0, 0, 0.7);
+	color: #fff;
+	border-color: rgba(255, 255, 255, 0.25);
+}
+.nm-pill-secondary:focus-visible,
+.nm-pill-secondary:hover {
+	background: rgba(0, 0, 0, 0.85);
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
+	transform: translateY(-1px);
+}
+
+/* ─── Hide scrollbars on touch / TV ─────────────────────────────────── */
+
+.nm-no-scrollbar {
+	scrollbar-width: none;
+}
+.nm-no-scrollbar::-webkit-scrollbar {
+	display: none;
+}

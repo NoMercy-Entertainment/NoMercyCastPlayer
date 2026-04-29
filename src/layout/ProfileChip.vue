@@ -4,14 +4,6 @@ import { useRouter } from 'vue-router';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import { authStore } from '@/stores/authStore';
 
-/*
- * Profile avatar in the trailing slot of the topnav. Mirrors APK
- * TvNavigationBar.kt's ProfileImage:
- *   - Circular 36px avatar (gravatar fallback / initials)
- *   - Focusable via D-pad, palette-tinted ring on focus
- *   - Center-click navigates to /profile
- */
-
 const router = useRouter();
 
 const displayName = computed(() => {
@@ -39,12 +31,8 @@ const initials = computed(() => {
 });
 
 const avatarUrl = computed(() => {
-	// APK ProfileImage falls through these in order: explicit override →
-	// userProfile.avatarUrl (server fetch) → userInfo.avatarUrl (claim) →
-	// gravatar from email. We don't have the server fetch in the cast
-	// receiver yet, so check JWT claims for the picture / avatar_url
-	// fields first.
 	const claims = authStore.userClaims.value;
+	console.log(claims);
 	const claimAvatar
 		= (claims?.picture as string | undefined)
 			?? (claims?.avatar_url as string | undefined)
