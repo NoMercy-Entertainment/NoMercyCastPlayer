@@ -1,34 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import { authStore } from '@/stores/authStore';
 import { socketStore } from '@/stores/socketStore';
 import logoWide from '@/assets/logo-wide.svg';
 import mobile from '@/assets/mobile.svg';
 import splash from '@/assets/splash.png';
 
-// TEMP debug — surfaces body[data-launch-diag] from attachLaunchListener so
-// we can verify customData arrival on TVs without remote DevTools. Remove
-// once the Phase 0 → AUTHED flow is reliable.
-const launchDiag = ref<string>('(waiting)');
-const showDiag = ref<boolean>(true);
-onMounted(() => {
-	const tick = (): void => {
-		launchDiag.value = document.body.dataset.launchDiag ?? '(no diag yet)';
-	};
-	tick();
-	const id = window.setInterval(tick, 500);
-	window.setTimeout(() => {
-		window.clearInterval(id);
-		showDiag.value = false;
-	}, 30_000);
-});
-
 /**
  * Splash screen styled to match the original cast-player aesthetic so
  * the receiver shares visual language with sender apps. Wired to
- * authStore + socketStore reactive state — no debug console (TV
- * burn-in risk; dev playground at /__focus is the diagnostic surface
- * during development).
+ * authStore + socketStore reactive state.
  */
 
 const status = computed(() => {
@@ -94,8 +75,6 @@ const isPulsing = computed(() => !isConnected.value);
 		<img class="phone" :src="mobile" alt="" aria-hidden="true">
 
 		<img class="brand" :src="logoWide" alt="NoMercy">
-
-		<pre v-if="showDiag" class="diag">{{ launchDiag }}</pre>
 	</main>
 </template>
 
@@ -180,21 +159,6 @@ const isPulsing = computed(() => !isConnected.value);
 	height: 48px;
 	width: max-content;
 	z-index: 1;
-}
-
-.diag {
-	position: absolute;
-	right: 12px;
-	bottom: 12px;
-	max-width: 50%;
-	padding: 8px 12px;
-	font: 14px/1.3 monospace;
-	color: #ffe2a8;
-	background: rgba(0, 0, 0, 0.6);
-	border: 1px solid #555;
-	border-radius: 6px;
-	white-space: pre-wrap;
-	z-index: 2;
 }
 
 @keyframes pulse {
