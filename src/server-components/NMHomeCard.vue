@@ -14,7 +14,13 @@ const props = defineProps<{
 
 const router = useRouter();
 const el = ref<HTMLElement | null>(null);
-const imageUrl = buildImageUrl(props.data.image, BACKDROP_SIZE);
+// Server-driven payload uses backdrop / poster / image depending on the
+// row context; map them all to the same render slot.
+const imageSource
+	= props.data.image
+		?? (props.data as unknown as { backdrop?: string; poster?: string }).backdrop
+		?? (props.data as unknown as { backdrop?: string; poster?: string }).poster;
+const imageUrl = buildImageUrl(imageSource, BACKDROP_SIZE);
 
 useFocusEntry({
 	key: props.id,

@@ -52,12 +52,34 @@ const registry = {
 type RegistryKey = keyof typeof registry;
 </script>
 
+<script lang="ts">
+// Card-shaped server payloads wrap their wrapper under props.data:
+//   { id, title, data: { id, title, poster, backdrop, link, ... }, watch }
+// Container shapes (carousels, grids, lists) keep the wrapper flat under
+// props directly. Normalise by passing props.data when it's an object —
+// otherwise the flat props itself.
+// eslint-disable-next-line ts/no-explicit-any
+function normaliseData(props: unknown): any {
+	if (
+		props
+		&& typeof props === 'object'
+		&& 'data' in props
+		&& (props as { data: unknown }).data
+		&& typeof (props as { data: unknown }).data === 'object'
+		&& !Array.isArray((props as { data: unknown }).data)
+	) {
+		return (props as { data: unknown }).data;
+	}
+	return props;
+}
+</script>
+
 <template>
 	<component
 		:is="registry[component.component as RegistryKey]"
 		v-if="(component.component as RegistryKey) in registry"
 		:id="component.id"
-		:data="component.props"
+		:data="normaliseData(component.props)"
 		:update="component.update"
 	/>
 	<UnknownComponent v-else :id="component.id" :type="component.component" />

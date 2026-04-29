@@ -14,7 +14,13 @@ const props = defineProps<{
 
 const router = useRouter();
 const el = ref<HTMLElement | null>(null);
-const imageUrl = buildImageUrl(props.data.image, POSTER_SIZE);
+// Server payload uses poster / backdrop / image depending on the source
+// (TMDB metadata vs library art); map all to the same render slot.
+const imageSource
+	= props.data.image
+		?? (props.data as unknown as { poster?: string; backdrop?: string }).poster
+		?? (props.data as unknown as { poster?: string; backdrop?: string }).backdrop;
+const imageUrl = buildImageUrl(imageSource, POSTER_SIZE);
 
 useFocusEntry({
 	key: props.id,
