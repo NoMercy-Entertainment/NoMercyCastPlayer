@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import FallbackPoster from '@/components/cards/FallbackPoster.vue';
 import { buildImageUrl, SQUARE_SIZE } from '@/lib/images/urls';
+import { focusedCardStore } from '@/stores/focusedCardStore';
 import type { NMMusicCardWrapper, Update } from './types';
+
+/*
+ * Music card. Mirrors APK NMMusicCard.kt:
+ *   - Square cover, scale 1→1.03 on focus, palette-tinted border
+ *   - Subtitle row with type label + track count or year
+ *   - Letter cards (alphabet jump) render the letter centred at title size
+ *   - Focus publishes to focusedCardStore so the parent hero updates
+ */
 
 const props = defineProps<{
 	id: string;
@@ -14,7 +23,47 @@ const props = defineProps<{
 
 const router = useRouter();
 const el = ref<HTMLElement | null>(null);
-const cover = buildImageUrl(props.data.cover, SQUARE_SIZE);
+
+const wrapperData = computed(() => props.data as unknown as Record<string, unknown>);
+const cardType = computed(() => (wrapperData.value.type as string | undefined) ?? '');
+const isLetterCard = computed(() => cardType.value === 'letter');
+
+const cover = computed(() =>
+	buildImageUrl(props.data.cover ?? null, SQUARE_SIZE),
+);
+
+const typeLabel = computed(() => {
+	switch (cardType.value) {
+		case 'playlist':
+		case 'favorite':
+			return 'Playlist';
+		case 'album':
+			return 'Album';
+		case 'artist':
+			return 'Artist';
+		case 'release_groups':
+		case 'release_group':
+			return 'Release';
+		case 'genres':
+		case 'genre':
+			return 'Genre';
+		default:
+			return '';
+	}
+});
+
+const subtitle = computed(() => {
+	if (isLetterCard.value)
+		return '';
+	const tracks = wrapperData.value.tracks as number | undefined;
+	const year = wrapperData.value.year as number | string | undefined;
+	const tail = typeof tracks === 'number'
+		? `${tracks} ${tracks === 1 ? 'track' : 'tracks'}`
+		: (year ? String(year) : '');
+	if (typeLabel.value && tail)
+		return `${typeLabel.value} • ${tail}`;
+	return typeLabel.value || tail;
+});
 
 useFocusEntry({
 	key: props.id,
@@ -23,27 +72,52 @@ useFocusEntry({
 		if (props.data.link)
 			router.push(props.data.link);
 	},
+	onFocus: () => {
+		focusedCardStore.setActive({
+			id: props.id,
+			title: props.data.name,
+			poster: props.data.cover,
+			link: props.data.link,
+			type: cardType.value,
+			color_palette: (wrapperData.value.color_palette as never)
+				?? (wrapperData.value.colorPalette as never),
+		});
+	},
 });
 </script>
 
 <template>
-	<article ref="el" class="music-card" data-focusable tabindex="0" role="button">
+	<article
+		ref="el"
+		class="music-card card"
+		:class="[{ 'is-letter': isLetterCard }]"
+		data-focusable
+		tabindex="0"
+		role="button"
+	>
 		<div class="cover">
-			<img
-				v-if="cover"
-				:src="cover"
-				:alt="props.data.name ?? ''"
-				loading="lazy"
-				decoding="async"
-			>
-			<FallbackPoster v-else :title="props.data.name" />
+			<template v-if="isLetterCard">
+				<div class="letter">
+					{{ props.data.name }}
+				</div>
+			</template>
+			<template v-else>
+				<img
+					v-if="cover"
+					:src="cover"
+					:alt="props.data.name ?? ''"
+					loading="lazy"
+					decoding="async"
+				>
+				<FallbackPoster v-else :title="props.data.name" />
+			</template>
 		</div>
-		<div class="meta">
+		<div v-if="!isLetterCard" class="meta">
 			<p class="name">
 				{{ props.data.name }}
 			</p>
-			<p v-if="props.data.artist" class="artist">
-				{{ props.data.artist }}
+			<p v-if="subtitle" class="subtitle">
+				{{ subtitle }}
 			</p>
 		</div>
 	</article>
@@ -62,27 +136,60 @@ useFocusEntry({
 	cursor: pointer;
 	contain: layout paint;
 	outline: none;
+	transition: transform var(--motion-fast);
+}
+.music-card:focus-visible {
+	transform: scale(1.06);
+}
+.music-card:focus-visible .cover {
+	box-shadow:
+		0 0 0 2px var(--color-primary, oklch(0.7 0.2 285)),
+		0 12px 32px rgba(0, 0, 0, 0.6);
 }
 .cover {
 	width: 100%;
-	aspect-ratio: 1/1;
+	aspect-ratio: 1 / 1;
 	border-radius: var(--radius-card);
 	overflow: hidden;
 	background: oklch(0.18 0.01 250);
+	position: relative;
+	transition: box-shadow var(--motion-fast);
+	display: grid;
+	place-items: center;
 }
 .cover img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 }
+.is-letter .cover {
+	background: linear-gradient(135deg, oklch(0.22 0.06 285), oklch(0.18 0.04 250));
+}
+.letter {
+	font-size: 64px;
+	font-weight: 800;
+	color: #fff;
+	letter-spacing: -0.04em;
+	text-transform: uppercase;
+}
+.meta {
+	padding: 0 4px;
+}
 .name {
 	margin: 0;
-	font-size: 16px;
-	font-weight: 600;
-}
-.artist {
-	margin: 4px 0 0;
 	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.subtitle {
+	margin: 4px 0 0;
+	font-size: 12px;
 	color: var(--color-text-secondary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 </style>
