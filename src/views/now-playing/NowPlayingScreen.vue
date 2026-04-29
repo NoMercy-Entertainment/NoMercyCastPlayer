@@ -3,7 +3,6 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useFocusEntry } from '@/composables/useFocusEntry';
-import MusicPlayer from '@/players/music/MusicPlayer.vue';
 import NowPlayingHero from '@/players/music/NowPlayingHero.vue';
 import ProgressControls from '@/players/music/ProgressControls.vue';
 import QueuePeek from '@/players/music/QueuePeek.vue';
@@ -125,87 +124,85 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<MusicPlayer>
-		<div ref="containerEl" class="now-playing" :class="[{ 'controls-hidden': idleHide }]">
-			<div
-				v-if="backdropUrl"
-				class="art-backdrop"
-				:style="{ backgroundImage: `url(${backdropUrl})` }"
-			/>
-			<div class="art-scrim" />
+	<div ref="containerEl" class="now-playing" :class="[{ 'controls-hidden': idleHide }]">
+		<div
+			v-if="backdropUrl"
+			class="art-backdrop"
+			:style="{ backgroundImage: `url(${backdropUrl})` }"
+		/>
+		<div class="art-scrim" />
 
-			<div ref="utilityRowEl" class="utility-row">
-				<button
-					ref="closeEl"
-					data-focusable
-					tabindex="0"
-					class="util-btn"
-					aria-label="Close"
+		<div ref="utilityRowEl" class="utility-row">
+			<button
+				ref="closeEl"
+				data-focusable
+				tabindex="0"
+				class="util-btn"
+				aria-label="Close"
+			>
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="6" y1="6" x2="18" y2="18" />
+					<line x1="18" y1="6" x2="6" y2="18" />
+				</svg>
+			</button>
+			<button
+				ref="likeEl"
+				data-focusable
+				tabindex="0"
+				class="util-btn"
+				:class="{ active: track?.favorite }"
+				aria-label="Like"
+			>
+				<svg
+					v-if="track?.favorite"
+					width="22"
+					height="22"
+					viewBox="0 0 24 24"
+					fill="currentColor"
 				>
-					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-						<line x1="6" y1="6" x2="18" y2="18" />
-						<line x1="18" y1="6" x2="6" y2="18" />
-					</svg>
-				</button>
-				<button
-					ref="likeEl"
-					data-focusable
-					tabindex="0"
-					class="util-btn"
-					:class="{ active: track?.favorite }"
-					aria-label="Like"
+					<path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10z" />
+				</svg>
+				<svg
+					v-else
+					width="22"
+					height="22"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
 				>
-					<svg
-						v-if="track?.favorite"
-						width="22"
-						height="22"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-					>
-						<path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10z" />
-					</svg>
-					<svg
-						v-else
-						width="22"
-						height="22"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-					</svg>
-				</button>
-				<button
-					ref="lyricsEl"
-					data-focusable
-					tabindex="0"
-					class="util-btn"
-					:class="{ active: lyricsOpen }"
-					aria-label="Lyrics"
-				>
-					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<line x1="4" y1="6" x2="20" y2="6" />
-						<line x1="4" y1="12" x2="20" y2="12" />
-						<line x1="4" y1="18" x2="14" y2="18" />
-					</svg>
-				</button>
+					<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+				</svg>
+			</button>
+			<button
+				ref="lyricsEl"
+				data-focusable
+				tabindex="0"
+				class="util-btn"
+				:class="{ active: lyricsOpen }"
+				aria-label="Lyrics"
+			>
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="4" y1="6" x2="20" y2="6" />
+					<line x1="4" y1="12" x2="20" y2="12" />
+					<line x1="4" y1="18" x2="14" y2="18" />
+				</svg>
+			</button>
+		</div>
+
+		<div class="content">
+			<div class="left">
+				<NowPlayingHero v-show="!lyricsOpen" />
+				<Lyrics v-show="lyricsOpen" />
+				<ProgressControls />
 			</div>
-
-			<div class="content">
-				<div class="left">
-					<NowPlayingHero v-show="!lyricsOpen" />
-					<Lyrics v-show="lyricsOpen" />
-					<ProgressControls />
-				</div>
-				<div class="right">
-					<QueuePeek />
-				</div>
+			<div class="right">
+				<QueuePeek />
 			</div>
 		</div>
-	</MusicPlayer>
+	</div>
 </template>
 
 <style scoped>

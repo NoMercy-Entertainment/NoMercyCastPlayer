@@ -6,6 +6,7 @@ import { useDPad } from '@/composables/useDPad';
 import { screensaverStore } from '@/stores/screensaverStore';
 import SenderRequiredScreen from '@/views/splash/SenderRequiredScreen.vue';
 import ScreensaverOverlay from '@/layout/ScreensaverOverlay.vue';
+import MusicPlayer from '@/players/music/MusicPlayer.vue';
 
 /**
  * Root layout. Phase 1 only renders splash routes via <RouterView>;
@@ -44,6 +45,8 @@ onMounted(() => {
 
 <template>
 	<SenderRequiredScreen v-if="inDegraded" />
-	<RouterView v-else />
+	<MusicPlayer v-else>
+		<RouterView />
+	</MusicPlayer>
 	<ScreensaverOverlay />
 </template>
