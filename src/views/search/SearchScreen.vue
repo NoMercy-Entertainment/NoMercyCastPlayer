@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
+import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { useSearchQuery } from '@/queries/useSearchQuery';
 import Resolver from '@/server-components/Resolver.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
@@ -9,11 +10,14 @@ import SearchKeyboard from './SearchKeyboard.vue';
 
 const router = useRouter();
 const containerEl = ref<HTMLElement | null>(null);
-useFocusGroup({
+const screenGroup = useFocusGroup({
 	type: 'horizontal',
 	restorationKey: 'search-screen',
 	containerEl,
+	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
+
+useNavFocusBridge(screenGroup);
 
 const queryStr = ref('');
 const debouncedQuery = ref('');

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useFocusGroup } from '@/composables/useFocusGroup';
+import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { useLibrariesQuery } from '@/queries/useLibrariesQuery';
 import Resolver from '@/server-components/Resolver.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
@@ -17,11 +18,14 @@ import type { FocusedCardData } from '@/stores/focusedCardStore';
  */
 
 const containerEl = ref<HTMLElement | null>(null);
-useFocusGroup({
+const railsGroup = useFocusGroup({
 	type: 'vertical',
 	restorationKey: 'libraries-rails',
 	containerEl,
+	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
+
+useNavFocusBridge(railsGroup);
 
 const { data, isLoading, error, refetch, isFetching } = useLibrariesQuery();
 

@@ -40,6 +40,17 @@ useFocusGroup({
 	type: 'horizontal',
 	restorationKey: 'topnav',
 	containerEl: navEl,
+	onEscape: (dir) => {
+		if (dir !== 'down')
+			return false;
+		// Drop focus into the page content. Mirrors APK
+		// LocalNavbarFocusBridge.focusFirstInContent — the active screen
+		// records its first focusable on mount and the navbar bridge calls
+		// it when ArrowDown leaves the nav row.
+		const ev = new CustomEvent('cast-receiver:nav-down', {});
+		window.dispatchEvent(ev);
+		return true;
+	},
 });
 </script>
 

@@ -6,6 +6,7 @@ import { useInfoQuery } from '@/queries/useInfoQuery';
 import type { InfoData } from '@/queries/useInfoQuery';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import { useFocusGroup } from '@/composables/useFocusGroup';
+import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
@@ -70,11 +71,14 @@ const ratingText = computed(() =>
 );
 
 const actionsEl = ref<HTMLElement | null>(null);
-useFocusGroup({
+const actionsGroup = useFocusGroup({
 	type: 'vertical',
 	restorationKey: 'info-actions',
 	containerEl: actionsEl,
+	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
+
+useNavFocusBridge(actionsGroup);
 
 const watchEl = ref<HTMLElement | null>(null);
 const trailerEl = ref<HTMLElement | null>(null);

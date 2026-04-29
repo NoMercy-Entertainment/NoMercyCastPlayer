@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useFocusEntry } from '@/composables/useFocusEntry';
+import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { authStore } from '@/stores/authStore';
 
 /*
@@ -15,11 +16,14 @@ import { authStore } from '@/stores/authStore';
 const router = useRouter();
 
 const containerEl = ref<HTMLElement | null>(null);
-useFocusGroup({
+const profileGroup = useFocusGroup({
 	type: 'vertical',
 	restorationKey: 'profile-list',
 	containerEl,
+	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
+
+useNavFocusBridge(profileGroup);
 
 const claims = computed(() => authStore.userClaims.value ?? null);
 const userName = computed(

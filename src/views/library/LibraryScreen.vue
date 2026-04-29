@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
+import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { useLibraryQuery } from '@/queries/useLibraryQuery';
 import Resolver from '@/server-components/Resolver.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
@@ -30,11 +31,14 @@ const path = computed(() => {
 });
 
 const containerEl = ref<HTMLElement | null>(null);
-useFocusGroup({
+const railsGroup = useFocusGroup({
 	type: 'vertical',
 	restorationKey: `library-rails`,
 	containerEl,
+	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
+
+useNavFocusBridge(railsGroup);
 
 const { data, isLoading, error, refetch, isFetching } = useLibraryQuery(path);
 

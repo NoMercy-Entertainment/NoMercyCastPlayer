@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useFocusGroup } from '@/composables/useFocusGroup';
+import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { useMusicStartQuery } from '@/queries/useMusicStartQuery';
 import Resolver from '@/server-components/Resolver.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
@@ -16,11 +17,14 @@ import type { FocusedCardData } from '@/stores/focusedCardStore';
  * Mirrors APK MusicStartScreen.kt.
  */
 const containerEl = ref<HTMLElement | null>(null);
-useFocusGroup({
+const railsGroup = useFocusGroup({
 	type: 'vertical',
 	restorationKey: 'music-start-rails',
 	containerEl,
+	onEscape: dir => (dir === 'up' ? focusTopnav() : false),
 });
+
+useNavFocusBridge(railsGroup);
 
 const { data, isLoading, error, refetch, isFetching } = useMusicStartQuery();
 const isInitialLoad = computed(() => isLoading.value && !data.value);
