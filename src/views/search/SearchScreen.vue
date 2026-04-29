@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { focusTopnav, useNavFocusBridge } from '@/composables/useNavFocusBridge';
 import { useSearchQuery } from '@/queries/useSearchQuery';
@@ -8,7 +7,6 @@ import Resolver from '@/server-components/Resolver.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
 import SearchKeyboard from './SearchKeyboard.vue';
 
-const router = useRouter();
 const containerEl = ref<HTMLElement | null>(null);
 const screenGroup = useFocusGroup({
 	type: 'horizontal',
@@ -48,24 +46,11 @@ function space(): void {
 function setMode(next: 'video' | 'music'): void {
 	mode.value = next;
 }
-
-function done(): void {
-	const top = components.value[0];
-	if (top && top.component === 'NMTopResultCard') {
-		const link = (top.props as { link?: string }).link;
-		if (link)
-			router.push(link);
-	}
-}
 </script>
 
 <template>
 	<div ref="containerEl" class="search">
 		<aside class="left">
-			<header class="query-bar">
-				<span class="query-label">Search:</span>
-				<span class="query-text">{{ queryStr || '_' }}</span>
-			</header>
 			<SearchKeyboard
 				:mode="mode"
 				@type="appendLetter"
@@ -73,39 +58,40 @@ function done(): void {
 				@space="space"
 				@mode="setMode"
 			/>
-			<button
-				v-show="components.length > 0"
-				class="done-btn"
-				type="button"
-				@click="done"
-			>
-				Open top result
-			</button>
 		</aside>
 		<section class="right">
-			<template v-if="!debouncedQuery">
-				<p class="hint">
-					Start typing to search.
-				</p>
-			</template>
-			<template v-else-if="isLoading">
-				<Skeleton type="rail" :count="6" />
-			</template>
-			<template v-else-if="components.length === 0">
-				<p class="hint">
-					No results for "{{ debouncedQuery }}".
-				</p>
-			</template>
-			<template v-else>
-				<Resolver
-					v-for="c in components"
-					:key="c.id"
-					:component="c"
-				/>
-				<p v-if="isFetching" class="refresh-hint">
-					Refreshing…
-				</p>
-			</template>
+			<header class="query-bar">
+				<span class="query-label">Search:</span>
+				<span class="query-text">{{ queryStr || '_' }}</span>
+				<span v-if="mode === 'music'" class="mode-pill">Music</span>
+				<span v-else class="mode-pill">Video</span>
+			</header>
+
+			<div class="results">
+				<template v-if="!debouncedQuery">
+					<p class="hint">
+						Start typing to search.
+					</p>
+				</template>
+				<template v-else-if="isLoading">
+					<Skeleton type="rail" :count="6" />
+				</template>
+				<template v-else-if="components.length === 0">
+					<p class="hint">
+						No results for "{{ debouncedQuery }}".
+					</p>
+				</template>
+				<template v-else>
+					<Resolver
+						v-for="c in components"
+						:key="c.id"
+						:component="c"
+					/>
+					<p v-if="isFetching" class="refresh-hint">
+						Refreshing…
+					</p>
+				</template>
+			</div>
 		</section>
 	</div>
 </template>
@@ -126,34 +112,57 @@ function done(): void {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+	padding-top: 24px;
 }
 .right {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	min-height: 0;
+}
+.query-bar {
+	display: flex;
+	align-items: baseline;
+	gap: 16px;
+	padding: 14px 22px;
+	background: oklch(0.18 0.01 250 / 0.85);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 12px;
+}
+.query-label {
+	color: var(--color-text-secondary);
+	font-size: 14px;
+	letter-spacing: 0.04em;
+}
+.query-text {
+	flex: 1 1 auto;
+	font-size: 24px;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	font-variant-numeric: tabular-nums;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.mode-pill {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: var(--color-primary, oklch(0.7 0.2 285 / 0.4));
+	color: oklch(0.18 0.02 35);
+}
+.results {
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
 	gap: 24px;
 	scrollbar-width: none;
 }
-.right::-webkit-scrollbar {
+.results::-webkit-scrollbar {
 	display: none;
-}
-.query-bar {
-	display: flex;
-	align-items: baseline;
-	gap: 16px;
-	padding: 16px 24px;
-	background: oklch(0.18 0.01 250);
-	border-radius: 12px;
-}
-.query-label {
-	color: var(--color-text-secondary);
-	font-size: 14px;
-}
-.query-text {
-	font-size: 28px;
-	font-weight: 700;
-	letter-spacing: 0.5px;
-	font-variant-numeric: tabular-nums;
 }
 .hint {
 	color: var(--color-text-secondary);
@@ -162,18 +171,5 @@ function done(): void {
 .refresh-hint {
 	color: var(--color-text-secondary);
 	font-size: 13px;
-}
-.done-btn {
-	font: inherit;
-	border: 0;
-	background: oklch(0.18 0.02 250);
-	color: var(--color-text-primary);
-	padding: 12px 16px;
-	border-radius: 12px;
-	cursor: pointer;
-}
-.done-btn:focus-visible {
-	background: var(--color-primary, oklch(0.7 0.2 285));
-	color: oklch(0.18 0.02 35);
 }
 </style>
