@@ -53,15 +53,45 @@ useFocusGroup({
 
 const playEl = ref<HTMLElement | null>(null);
 
+const isCurrentList = computed(() => {
+	const current = playbackStore.music.track.value;
+	if (!current || !list.value)
+		return false;
+	return (list.value.tracks ?? []).some(t => t.id === current.id);
+});
+
+const playButtonLabel = computed(() => {
+	if (isCurrentList.value && playbackStore.music.playing.value)
+		return 'Pause';
+	if (isCurrentList.value)
+		return 'Resume';
+	return 'Play';
+});
+
+function onPlayClick(): void {
+	// APK BigPlayButton: when this list is currently playing, toggle
+	// play/pause. Otherwise start the list from the first track.
+	if (isCurrentList.value) {
+		const engine = musicSyncBridge.current();
+		if (engine) {
+			if (playbackStore.music.playing.value)
+				engine.pause();
+			else
+				engine.play();
+			router.push('/now-playing');
+			return;
+		}
+	}
+	const first = list.value?.tracks?.[0];
+	if (first?.id)
+		startPlayback(first.id);
+	router.push('/now-playing');
+}
+
 useFocusEntry({
 	key: 'music-list-play',
 	el: playEl,
-	onAction: () => {
-		const first = list.value?.tracks?.[0];
-		if (first?.id)
-			startPlayback(first.id);
-		router.push('/now-playing');
-	},
+	onAction: onPlayClick,
 });
 
 function onTrackClick(trackId: string): void {
@@ -131,11 +161,24 @@ function trackArtistText(track: MusicTrack): string {
 			<button
 				ref="playEl"
 				class="btn btn-primary"
+				type="button"
 				data-focusable
 				tabindex="0"
-				@click.prevent="router.push('/now-playing')"
+				:aria-label="playButtonLabel"
+				@click.prevent="onPlayClick"
 			>
 				<svg
+					v-if="isCurrentList && playbackStore.music.playing.value"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+				>
+					<rect x="6" y="4" width="4" height="16" />
+					<rect x="14" y="4" width="4" height="16" />
+				</svg>
+				<svg
+					v-else
 					width="18"
 					height="18"
 					viewBox="0 0 24 24"
@@ -143,7 +186,7 @@ function trackArtistText(track: MusicTrack): string {
 				>
 					<path d="M8 5v14l11-7z" />
 				</svg>
-				Play
+				{{ playButtonLabel }}
 			</button>
 		</div>
 
