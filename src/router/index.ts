@@ -160,6 +160,26 @@ const routes: RouteRecordRaw[] = [
 				name: 'now-playing',
 				component: () => import('@/views/now-playing/NowPlayingScreen.vue'),
 			},
+			{
+				path: 'profile',
+				name: 'profile',
+				component: () => import('@/views/profile/ProfileScreen.vue'),
+			},
+			{
+				path: 'profile/settings',
+				name: 'profile-settings',
+				component: () => import('@/views/profile/AppSettingsScreen.vue'),
+			},
+			{
+				path: 'profile/about',
+				name: 'profile-about',
+				component: () => import('@/views/profile/AboutScreen.vue'),
+			},
+			{
+				path: 'profile/server-info',
+				name: 'profile-server-info',
+				component: () => import('@/views/profile/ServerInfoScreen.vue'),
+			},
 			// Phase 9 lands /watch.
 		],
 	},

@@ -36,6 +36,43 @@ const _debouncedCard = ref<FocusedCardData | null>(null);
 const DEFAULT_DEBOUNCE_MS = 650;
 let pending: number | null = null;
 
+/*
+ * Pick a usable accent color out of a palette object. APK's
+ * pickPaletteColor.kt prefers vibrants, falls back to dominant. Returns
+ * a CSS-ready hex string or null when no usable color is available.
+ */
+const HEX_COLOR = /^[0-9a-f]{6,8}$/i;
+
+function pickPaletteColor(p?: { dominant?: string; light?: string; dark?: string; primary?: string } | null): string | null {
+	if (!p)
+		return null;
+	const c = p.primary ?? p.dark ?? p.dominant ?? p.light ?? null;
+	if (!c)
+		return null;
+	if (c.startsWith('#'))
+		return c;
+	if (HEX_COLOR.test(c))
+		return `#${c}`;
+	return c;
+}
+
+/*
+ * Apply the focused card's palette as a CSS variable so the hero scrim,
+ * focus borders, and rail accents pick it up automatically.
+ */
+function applyPalette(card: FocusedCardData | null): void {
+	const root = document.documentElement;
+	const palette = card?.color_palette;
+	const color
+		= pickPaletteColor(palette?.poster)
+			?? pickPaletteColor(palette?.backdrop)
+			?? pickPaletteColor(palette?.logo);
+	if (color)
+		root.style.setProperty('--color-primary', color);
+	else
+		root.style.removeProperty('--color-primary');
+}
+
 watch(_activeCard, (next) => {
 	if (pending !== null) {
 		window.clearTimeout(pending);
@@ -43,6 +80,7 @@ watch(_activeCard, (next) => {
 	}
 	pending = window.setTimeout(() => {
 		_debouncedCard.value = next;
+		applyPalette(next);
 		pending = null;
 	}, DEFAULT_DEBOUNCE_MS);
 }, { flush: 'post' });
@@ -57,5 +95,6 @@ export const focusedCardStore = {
 		// Synchronous seed — used on first render so the hero never paints empty.
 		_activeCard.value = card;
 		_debouncedCard.value = card;
+		applyPalette(card);
 	},
 };
