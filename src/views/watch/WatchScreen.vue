@@ -6,9 +6,16 @@ import VideoPlayer from '@/players/video/VideoPlayer.vue';
 import Skeleton from '@/components/feedback/Skeleton.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
 
+const props = defineProps<{
+	type?: string;
+	id?: string;
+}>();
+
 const route = useRoute();
-const type = computed(() => String(route.params.type ?? '') as 'movie' | 'tv');
-const id = computed(() => String(route.params.id ?? ''));
+const type = computed(
+	() => (props.type ?? String(route.params.type ?? '')) as 'movie' | 'tv',
+);
+const id = computed(() => props.id ?? String(route.params.id ?? ''));
 const resumeAt = computed(() => {
 	const q = route.query.resume_at;
 	if (Array.isArray(q))

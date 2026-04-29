@@ -1,26 +1,28 @@
 <script setup lang="ts">
-/**
- * Genres landing inside the music section. The server's musicCards
- * query at path 'genres' returns the genre tile grid, so this is a
- * thin wrapper that points there with a fixed restoration key.
- */
-import { ref } from 'vue';
-import { useMusicCardQuery } from '@/queries/useMusicCardQuery';
-import ServerDrivenView from '../ServerDrivenView.vue';
+import { useRoute } from 'vue-router';
 
-const path = ref('genres');
-const { data, isLoading, isFetching, error, refetch } = useMusicCardQuery(path);
+/*
+ * APK MusicGenreScreen.kt is currently a placeholder rendering
+ * "MusicGenreScreen: $type / $id" over the setup backdrop. We mirror
+ * that until the APK lands real content.
+ */
+const route = useRoute();
 </script>
 
 <template>
-	<ServerDrivenView
-		restoration-key="music-genres"
-		:data="data"
-		:is-loading="isLoading"
-		:is-fetching="isFetching"
-		:error="error"
-		:refetch="() => refetch()"
-		error-context="Couldn't load genres"
-		empty-message="No genres yet."
-	/>
+	<div class="music-genres">
+		<p>MusicGenreScreen: {{ route.fullPath }}</p>
+	</div>
 </template>
+
+<style scoped>
+.music-genres {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: grid;
+	place-items: center;
+	color: #fff;
+	font-size: 18px;
+}
+</style>
