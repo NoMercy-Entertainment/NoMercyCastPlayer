@@ -65,21 +65,20 @@ export function attachLaunchListener(
 				: null,
 			customDataType: typeof customData,
 		};
-		// cast_shell filters all console.* on production receivers. Use
-		// document.title — page title changes ARE logged by cast_shell.
+		// cast_shell filters console + title. URL changes ARE logged via
+		// "Active URL: ..." entries — encode the diag in a hash fragment
+		// so the navigation is non-disruptive but visible in logcat.
 		const diagStr = JSON.stringify(diag);
 		try {
-			document.title = `NM-DIAG ${diagStr}`;
 			document.body.dataset.launchDiag = diagStr;
+			window.history.replaceState(null, '', `#diag=${encodeURIComponent(diagStr)}`);
 		}
 		catch {
-			document.title = 'NM-DIAG stringify-failed';
+			window.history.replaceState(null, '', '#diag=stringify-failed');
 		}
-		console.error('[NM-DIAG-READY]', diagStr);
 		if (customData) {
 			const ok = consumeLaunchAuth(customData);
-			document.title = `NM-DIAG-CONSUME ok=${ok}`;
-			console.error('[NM-DIAG-CONSUME]', JSON.stringify({ ok }));
+			window.history.replaceState(null, '', `#consume-ok=${ok}`);
 			if (ok) {
 				const stored = (customData as LaunchCustomData) ?? null;
 				if (stored)
@@ -87,7 +86,7 @@ export function attachLaunchListener(
 			}
 		}
 		else {
-			document.title = 'NM-DIAG no customData';
+			window.history.replaceState(null, '', '#diag=no-customData');
 		}
 	});
 
