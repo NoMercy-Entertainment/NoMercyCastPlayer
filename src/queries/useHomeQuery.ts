@@ -10,14 +10,24 @@ export interface HomeResponse {
 }
 
 async function fetchHome(): Promise<Component[]> {
-	const response = await apiFetch<HomeResponse | Component[]>({
+	const response = await apiFetch<unknown>({
 		path: '/api/v1/home',
 		method: 'GET',
 	});
+	// Server-driven endpoints wrap their payload in { id, data } envelopes
+	// (per the dashboard envelope-strip pattern in nomercy-app-web). Unwrap
+	// one level before falling back to the legacy shapes.
+	if (response && typeof response === 'object' && 'data' in response) {
+		const data = (response as { data: unknown }).data;
+		if (Array.isArray(data))
+			return data as Component[];
+		if (data && typeof data === 'object' && 'components' in data)
+			return (data as { components: Component[] }).components;
+	}
 	if (Array.isArray(response))
-		return response;
-	if (response && 'components' in response)
-		return response.components;
+		return response as Component[];
+	if (response && typeof response === 'object' && 'components' in response)
+		return (response as HomeResponse).components;
 	return [];
 }
 
