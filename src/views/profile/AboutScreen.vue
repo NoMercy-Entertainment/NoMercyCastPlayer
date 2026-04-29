@@ -1,105 +1,124 @@
 <script setup lang="ts">
 /*
- * About screen — mirrors APK AboutScreen.kt: app branding card +
- * version info + open-source notice. Cast receiver doesn't ship a
- * runtime version string yet, so we render a placeholder.
+ * About screen — APK preferences/about/tv/AboutScreen.kt parity.
+ * Centered product card: logo + app name + version + tagline +
+ * developed-by + copyright. No technical details (build flavor,
+ * package name, installer ID) — those belong on the dashboard.
  */
+
+const APP_VERSION = '1.0.0-alpha';
+const FOUNDING_YEAR = 2024;
+const currentYear = new Date().getFullYear();
 </script>
 
 <template>
 	<div class="about-screen">
-		<header class="page-header">
-			<h1>About</h1>
-		</header>
-
-		<div class="card">
+		<div class="about-card">
 			<div class="logo">
-				NM
+				<span class="logo-mark">NM</span>
 			</div>
-			<div>
-				<p class="brand">
-					NoMercy Cast Receiver
-				</p>
-				<p class="tagline">
-					Your media, your way.
-				</p>
+
+			<div class="brand-row">
+				<h1 class="brand">
+					NoMercy
+				</h1>
 				<p class="version">
-					Version 1.0.0-alpha
+					Version {{ APP_VERSION }}
+				</p>
+			</div>
+
+			<p class="tagline">
+				Your media, on every screen. Self-hosted. No ads, no tracking,
+				no compromise.
+			</p>
+
+			<div class="footer">
+				<p class="developed">
+					Developed by NoMercy Entertainment
+				</p>
+				<p class="copyright">
+					© {{ FOUNDING_YEAR }}–{{ currentYear }} NoMercy Entertainment.
+					All product names, logos, and brands are property of their
+					respective owners.
 				</p>
 			</div>
 		</div>
-
-		<p class="legal">
-			© NoMercy Entertainment. All product names, logos, and brands are
-			property of their respective owners.
-		</p>
 	</div>
 </template>
 
 <style scoped>
 .about-screen {
 	height: 100%;
-	overflow-y: auto;
-	scrollbar-width: none;
-	padding: 32px;
-}
-.about-screen::-webkit-scrollbar {
-	display: none;
-}
-.page-header {
-	max-width: 920px;
-	margin: 0 auto 16px;
-}
-.page-header h1 {
-	margin: 0;
-	font-size: 24px;
-	font-weight: 700;
-}
-.card {
-	max-width: 920px;
-	margin: 0 auto 24px;
-	padding: 24px;
-	background: oklch(0.18 0.01 250 / 0.85);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	border-radius: 16px;
-	display: flex;
-	gap: 24px;
-	align-items: center;
-}
-.logo {
-	width: 80px;
-	height: 80px;
-	border-radius: 18px;
-	background: linear-gradient(135deg, oklch(0.85 0.18 35), oklch(0.6 0.2 285));
-	color: #fff;
-	font-size: 28px;
-	font-weight: 800;
 	display: grid;
 	place-items: center;
-	flex: 0 0 auto;
+	padding: 48px;
+}
+.about-card {
+	max-width: 720px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+	color: #fff;
+	text-align: center;
+}
+.logo {
+	width: 96px;
+	height: 96px;
+	border-radius: 24px;
+	background: linear-gradient(135deg, oklch(0.85 0.18 35), oklch(0.6 0.2 285));
+	display: grid;
+	place-items: center;
+	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+.logo-mark {
+	font-size: 36px;
+	font-weight: 800;
+	color: #fff;
+	letter-spacing: -0.04em;
+}
+.brand-row {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
 }
 .brand {
 	margin: 0;
-	font-size: 22px;
-	font-weight: 700;
-	color: #fff;
-}
-.tagline {
-	margin: 4px 0 0;
-	font-size: 14px;
-	color: oklch(0.85 0.005 250);
+	font-size: 40px;
+	font-weight: 800;
+	letter-spacing: -0.02em;
 }
 .version {
-	margin: 16px 0 0;
-	font-size: 12px;
-	color: oklch(0.65 0.005 250);
-	font-variant-numeric: tabular-nums;
+	margin: 0;
+	font-size: 14px;
+	font-weight: 500;
+	color: oklch(0.85 0.005 250);
 }
-.legal {
-	max-width: 920px;
-	margin: 0 auto;
-	font-size: 12px;
-	color: oklch(0.6 0.005 250);
+.tagline {
+	margin: 0;
+	font-size: 16px;
 	line-height: 1.5;
+	color: oklch(0.92 0.005 250);
+	max-width: 540px;
+}
+.footer {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: 12px;
+}
+.developed {
+	margin: 0;
+	font-size: 13px;
+	color: oklch(0.85 0.005 250);
+}
+.copyright {
+	margin: 0;
+	font-size: 11px;
+	line-height: 1.5;
+	color: oklch(0.7 0.005 250);
+	max-width: 600px;
 }
 </style>
