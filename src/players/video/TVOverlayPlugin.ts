@@ -33,10 +33,23 @@ interface PlayerLike {
 	getSubtitleTrack?: () => string | number | null;
 	getAudioTracks?: () => TrackItem[];
 	getSubtitleTracks?: () => TrackItem[];
+	getQualityLevels?: () => TrackItem[];
+	getCurrentQuality?: () => string | number | null;
+	getActualQualityLabel?: () => string | null;
 	setAudioTrack?: (id: string | number) => void;
 	setSubtitleTrack?: (id: string | number) => void;
+	setQuality?: (id: string | number) => void;
 	playlist?: () => EpisodeItem[];
-	playlistItem?: () => { id: number | string; title: string };
+	playlistItem?: () => {
+		id: number | string;
+		title: string;
+		subtitle?: string;
+		overview?: string;
+		backdrop?: string | null;
+		resumeFromMs?: number;
+	};
+	getAutoSkipChapters?: () => boolean;
+	setAutoSkipChapters?: (next: boolean) => void;
 }
 
 export interface TVOverlayPluginOptions {
@@ -91,6 +104,10 @@ export class TVOverlayPlugin {
 		this.unmount = mountPreScreen({
 			parent: host,
 			title: item?.title ?? 'Now playing',
+			subtitle: item?.subtitle,
+			overview: item?.overview,
+			backdropUrl: item?.backdrop ?? null,
+			resumeFromMs: item?.resumeFromMs ?? 0,
 			showEpisodes: (this.player.playlist?.()?.length ?? 0) > 1,
 			showLanguages: Boolean(this.player.getAudioTracks?.() || this.player.getSubtitleTracks?.()),
 			onPlay: () => {
@@ -118,10 +135,12 @@ export class TVOverlayPlugin {
 		this.currentPanel = 'episode';
 		const episodes = this.player.playlist?.() ?? [];
 		const current = this.player.playlistItem?.();
+		const currentTimeSec = this.player.getCurrentTime?.() ?? 0;
 		this.unmount = mountEpisodeScreen({
 			parent: host,
 			episodes,
 			currentId: current?.id,
+			currentTimeMs: Math.round(currentTimeSec * 1000),
 			onPick: (item) => {
 				this.closeAllPanels();
 				this.player.emit?.('load-item', item);
@@ -140,14 +159,24 @@ export class TVOverlayPlugin {
 			parent: host,
 			audioTracks: this.player.getAudioTracks?.() ?? [],
 			subtitleTracks: this.player.getSubtitleTracks?.() ?? [],
+			qualityLevels: this.player.getQualityLevels?.() ?? [],
 			currentAudioId: this.player.getAudioTrack?.(),
 			currentSubtitleId: this.player.getSubtitleTrack?.(),
+			currentQualityId: this.player.getCurrentQuality?.() ?? -1,
+			autoQualityLabel: this.player.getActualQualityLabel?.() ?? null,
+			autoSkipChapters: this.player.getAutoSkipChapters?.() ?? false,
 			onPickAudio: id => this.player.setAudioTrack?.(id),
 			onPickSubtitle: (id) => {
 				if (id === 'off')
 					this.player.setSubtitleTrack?.('');
 				else this.player.setSubtitleTrack?.(id);
 			},
+			onPickQuality: this.player.setQuality
+				? id => this.player.setQuality?.(id)
+				: undefined,
+			onToggleAutoSkip: this.player.setAutoSkipChapters
+				? next => this.player.setAutoSkipChapters?.(next)
+				: undefined,
 			onExit: () => this.showPreScreen(),
 		});
 	}

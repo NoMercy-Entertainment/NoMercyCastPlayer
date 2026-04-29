@@ -17,7 +17,7 @@ useFocusGroup({
 
 const queryStr = ref('');
 const debouncedQuery = ref('');
-const type = ref('all');
+const mode = ref<'video' | 'music'>('video');
 
 let debounceTimer: number | null = null;
 watch(queryStr, (val) => {
@@ -28,7 +28,8 @@ watch(queryStr, (val) => {
 	}, 250);
 });
 
-const { data, isLoading, isFetching } = useSearchQuery(type, debouncedQuery);
+const queryType = computed(() => mode.value === 'music' ? 'music' : 'all');
+const { data, isLoading, isFetching } = useSearchQuery(queryType, debouncedQuery);
 const components = computed(() => data.value ?? []);
 
 function appendLetter(l: string): void {
@@ -37,15 +38,14 @@ function appendLetter(l: string): void {
 function backspace(): void {
 	queryStr.value = queryStr.value.slice(0, -1);
 }
-function clearAll(): void {
-	queryStr.value = '';
-	debouncedQuery.value = '';
-}
 function space(): void {
 	queryStr.value += ' ';
 }
+function setMode(next: 'video' | 'music'): void {
+	mode.value = next;
+}
+
 function done(): void {
-	// If there's a top result, navigate to it.
 	const top = components.value[0];
 	if (top && top.component === 'NMTopResultCard') {
 		const link = (top.props as { link?: string }).link;
@@ -63,12 +63,20 @@ function done(): void {
 				<span class="query-text">{{ queryStr || '_' }}</span>
 			</header>
 			<SearchKeyboard
+				:mode="mode"
 				@type="appendLetter"
 				@backspace="backspace"
-				@clear="clearAll"
 				@space="space"
-				@done="done"
+				@mode="setMode"
 			/>
+			<button
+				v-show="components.length > 0"
+				class="done-btn"
+				type="button"
+				@click="done"
+			>
+				Open top result
+			</button>
 		</aside>
 		<section class="right">
 			<template v-if="!debouncedQuery">
@@ -100,8 +108,8 @@ function done(): void {
 
 <style scoped>
 /*
- * APK SearchScreen.kt uses a 25 / 75 column split with the keyboard on the
- * left and results filling the right. Padding 36dp horizontal, 64dp top.
+ * APK tv/SearchScreen.kt: 25 / 75 column split. Left column houses the
+ * search bar + on-screen keyboard. Right column scrolls results.
  */
 .search {
 	display: grid;
@@ -150,5 +158,18 @@ function done(): void {
 .refresh-hint {
 	color: var(--color-text-secondary);
 	font-size: 13px;
+}
+.done-btn {
+	font: inherit;
+	border: 0;
+	background: oklch(0.18 0.02 250);
+	color: var(--color-text-primary);
+	padding: 12px 16px;
+	border-radius: 12px;
+	cursor: pointer;
+}
+.done-btn:focus-visible {
+	background: var(--color-primary, oklch(0.7 0.2 285));
+	color: oklch(0.18 0.02 35);
 }
 </style>

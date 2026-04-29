@@ -1,3 +1,13 @@
+/**
+ * LanguageScreen panel — quality / audio / subtitles / playback toggles.
+ * Mirrors APK LanguageDialog: a row of weighted columns, each a vertical
+ * track list. Quality column is hidden when only one quality level is
+ * available, matching the APK behaviour.
+ *
+ * Pure DOM module — mounted directly into the player overlay element by
+ * the npm video-player package, no Vue runtime needed inside the panel.
+ */
+
 import { dispatchOptionAction } from './shared';
 
 export interface TrackItem {
@@ -9,10 +19,16 @@ export interface LanguageScreenOptions {
 	parent: HTMLElement;
 	audioTracks: TrackItem[];
 	subtitleTracks: TrackItem[];
+	qualityLevels?: TrackItem[];
 	currentAudioId?: string | number | null;
 	currentSubtitleId?: string | number | null;
+	currentQualityId?: string | number | null;
+	autoQualityLabel?: string | null;
+	autoSkipChapters?: boolean;
 	onPickAudio: (id: string | number) => void;
 	onPickSubtitle: (id: string | number) => void;
+	onPickQuality?: (id: string | number) => void;
+	onToggleAutoSkip?: (next: boolean) => void;
 	onExit: () => void;
 }
 
@@ -20,37 +36,100 @@ export function mountLanguageScreen(opts: LanguageScreenOptions): () => void {
 	const root = document.createElement('div');
 	root.className = 'panel language-screen';
 	root.setAttribute('role', 'dialog');
+	root.setAttribute('aria-label', 'Audio and subtitles');
 
-	const heading = document.createElement('h2');
-	heading.textContent = 'Audio and subtitles';
+	const layout = document.createElement('div');
+	layout.className = 'language-layout';
 
-	const audio = section('Audio', opts.audioTracks, opts.currentAudioId, id =>
-		opts.onPickAudio(id));
-	const subs = section(
+	const showQuality = (opts.qualityLevels?.length ?? 0) > 1 && Boolean(opts.onPickQuality);
+	if (showQuality) {
+		const qualityCol = makeColumn(
+			'Quality',
+			[
+				{
+					id: -1 as string | number,
+					label: opts.autoQualityLabel ? `Auto (${opts.autoQualityLabel})` : 'Auto',
+				},
+				...(opts.qualityLevels ?? []),
+			],
+			opts.currentQualityId ?? -1,
+			id => opts.onPickQuality?.(id),
+		);
+		layout.append(qualityCol);
+	}
+
+	const audioCol = makeColumn(
+		'Audio',
+		opts.audioTracks,
+		opts.currentAudioId ?? null,
+		id => opts.onPickAudio(id),
+	);
+	const subsCol = makeColumn(
 		'Subtitles',
 		[{ id: 'off', label: 'Off' }, ...opts.subtitleTracks],
-		opts.currentSubtitleId,
+		opts.currentSubtitleId ?? 'off',
 		id => opts.onPickSubtitle(id),
 	);
+	layout.append(audioCol, subsCol);
 
-	const list = document.createElement('div');
-	list.className = 'language-list';
-	list.append(audio, subs);
+	if (opts.onToggleAutoSkip) {
+		const playbackCol = document.createElement('section');
+		playbackCol.className = 'lang-section';
+		const heading = document.createElement('h3');
+		heading.textContent = 'Playback';
+		playbackCol.append(heading);
 
-	root.append(heading, list);
+		const toggle = document.createElement('button');
+		toggle.type = 'button';
+		toggle.className = `panel-button track-row${opts.autoSkipChapters ? ' current' : ''}`;
+		toggle.dataset.focusable = 'true';
+		toggle.tabIndex = 0;
+		toggle.textContent = 'Auto-skip intros and outros';
+		toggle.addEventListener('click', () => {
+			const next = !toggle.classList.contains('current');
+			toggle.classList.toggle('current', next);
+			opts.onToggleAutoSkip?.(next);
+		});
+		playbackCol.append(toggle);
+		layout.append(playbackCol);
+	}
+
+	root.append(layout);
 	opts.parent.append(root);
 
-	const first = list.querySelector<HTMLElement>('[data-focusable]');
-	requestAnimationFrame(() => first?.focus());
+	requestAnimationFrame(() => {
+		const target = layout.querySelector<HTMLElement>('.track-row.current')
+			?? layout.querySelector<HTMLElement>('[data-focusable]');
+		target?.focus();
+	});
 
 	const onKey = (e: KeyboardEvent): void => {
 		if (e.key === 'Escape' || e.key === 'Back' || e.key === 'GoBack' || e.key === 'BrowserBack') {
 			e.preventDefault();
 			opts.onExit();
+			return;
+		}
+		const active = document.activeElement;
+		if (!active)
+			return;
+		const currentSection = (active as HTMLElement).closest<HTMLElement>('.lang-section');
+		if (!currentSection)
+			return;
+		if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+			const sections = [...layout.querySelectorAll<HTMLElement>('.lang-section')];
+			const idx = sections.indexOf(currentSection);
+			const nextIdx = e.key === 'ArrowRight' ? idx + 1 : idx - 1;
+			if (nextIdx >= 0 && nextIdx < sections.length) {
+				e.preventDefault();
+				const target = sections[nextIdx].querySelector<HTMLElement>('.track-row.current')
+					?? sections[nextIdx].querySelector<HTMLElement>('[data-focusable]');
+				target?.focus();
+			}
 		}
 	};
 	root.addEventListener('keydown', onKey, true);
-	dispatchOptionAction(root, list, 'vertical');
+	for (const section of layout.querySelectorAll<HTMLElement>('.lang-section'))
+		dispatchOptionAction(root, section, 'vertical');
 
 	return (): void => {
 		root.removeEventListener('keydown', onKey, true);
@@ -58,10 +137,10 @@ export function mountLanguageScreen(opts: LanguageScreenOptions): () => void {
 	};
 }
 
-function section(
+function makeColumn(
 	label: string,
 	tracks: TrackItem[],
-	currentId: string | number | null | undefined,
+	currentId: string | number | null,
 	onPick: (id: string | number) => void,
 ): HTMLElement {
 	const wrap = document.createElement('section');

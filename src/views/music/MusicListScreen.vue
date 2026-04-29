@@ -8,6 +8,7 @@ import type { MusicTrack } from '@/queries/useMusicListQuery';
 import { buildImageUrl, SQUARE_SIZE } from '@/lib/images/urls';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
+import { socketStore } from '@/stores/socketStore';
 
 /*
  * Album / playlist detail. Mirrors APK ListScreen.kt's two-column TV
@@ -54,12 +55,19 @@ useFocusEntry({
 	key: 'music-list-play',
 	el: playEl,
 	onAction: () => {
-		// Wire to musicPlayer.playTrack on the first track when the
-		// receiver-side player API lands. For now, navigate to /now-playing
-		// to match APK's leading control click target.
+		const first = list.value?.tracks?.[0];
+		if (first?.id)
+			startPlayback(first.id);
 		router.push('/now-playing');
 	},
 });
+
+function startPlayback(trackId: string): void {
+	const hub = socketStore.musicHub.value;
+	if (!hub || !id.value || !trackId)
+		return;
+	void hub.invoke('StartPlaybackCommand', type.value, id.value, trackId);
+}
 
 function formatDuration(d: number | string | undefined): string {
 	const seconds = typeof d === 'number' ? d : Number(d ?? 0);
@@ -133,6 +141,9 @@ function trackArtistText(track: MusicTrack): string {
 					class="track-row"
 					data-focusable
 					tabindex="0"
+					role="button"
+					@click="track.id && (startPlayback(track.id), router.push('/now-playing'))"
+					@keydown.enter.prevent="track.id && (startPlayback(track.id), router.push('/now-playing'))"
 				>
 					<span class="track-num">{{ index + 1 }}</span>
 					<div class="track-meta">

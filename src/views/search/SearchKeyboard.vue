@@ -3,98 +3,92 @@ import { ref } from 'vue';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import SearchKey from './SearchKey.vue';
 
+/*
+ * APK SearchKeyboard.kt — 6-column LazyVerticalGrid:
+ *   Row 1: [Space (×2), Backspace (×2), Video (×1), Music (×1)]
+ *   Rows 2-5: 26 letters a-z (4 rows × 6 cols, last row has empties)
+ *   Rows 6-7: digits 1-9 + 0 (10 / 6 cols)
+ *
+ * The Video/Music keys aren't input — they switch SearchType. We mirror
+ * that here as a `mode` emit that the parent screen listens for.
+ */
+
+interface Props {
+	mode: 'video' | 'music';
+}
+defineProps<Props>();
+
 const emit = defineEmits<{
 	type: [letter: string];
 	backspace: [];
-	clear: [];
-	done: [];
 	space: [];
+	mode: [next: 'video' | 'music'];
 }>();
 
 const containerEl = ref<HTMLElement | null>(null);
 useFocusGroup({
 	type: 'grid',
 	restorationKey: 'search-keyboard',
-	initialFocusKey: 'kb-A',
-	columns: 9,
+	initialFocusKey: 'kb-a',
+	columns: 6,
 	containerEl,
 });
 
-const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-const numbers = '0123456789'.split('');
-
-function handlePress(letter: string): void {
-	emit('type', letter.toLowerCase());
-}
+const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 </script>
 
 <template>
 	<div ref="containerEl" class="kb">
-		<div class="row">
-			<SearchKey
-				v-for="l in letters.slice(0, 9)"
-				:key="l"
-				:focus-key="`kb-${l}`"
-				:label="l"
-				@press="handlePress(l)"
-			/>
-		</div>
-		<div class="row">
-			<SearchKey
-				v-for="l in letters.slice(9, 18)"
-				:key="l"
-				:focus-key="`kb-${l}`"
-				:label="l"
-				@press="handlePress(l)"
-			/>
-		</div>
-		<div class="row">
-			<SearchKey
-				v-for="l in letters.slice(18, 26)"
-				:key="l"
-				:focus-key="`kb-${l}`"
-				:label="l"
-				@press="handlePress(l)"
-			/>
-		</div>
-		<div class="row">
-			<SearchKey
-				v-for="n in numbers"
-				:key="n"
-				:focus-key="`kb-${n}`"
-				:label="n"
-				variant="number"
-				@press="handlePress(n)"
-			/>
-		</div>
-		<div class="row hot-row">
+		<div class="kb-row utility-row">
 			<SearchKey
 				focus-key="kb-space"
-				label="Space"
+				label="⎵"
+				aria-label="Space"
 				variant="hot"
-				wide
+				class="span-2"
 				@press="emit('space')"
 			/>
 			<SearchKey
 				focus-key="kb-back"
-				label="⌫ Backspace"
+				label="⌫"
+				aria-label="Backspace"
 				variant="hot"
-				wide
+				class="span-2"
 				@press="emit('backspace')"
 			/>
 			<SearchKey
-				focus-key="kb-clear"
-				label="Clear"
-				variant="hot"
-				wide
-				@press="emit('clear')"
+				focus-key="kb-video"
+				label="🎬"
+				aria-label="Search videos"
+				:variant="mode === 'video' ? 'mode-active' : 'mode'"
+				@press="emit('mode', 'video')"
 			/>
 			<SearchKey
-				focus-key="kb-done"
-				label="Done"
-				variant="hot"
-				wide
-				@press="emit('done')"
+				focus-key="kb-music"
+				label="🎵"
+				aria-label="Search music"
+				:variant="mode === 'music' ? 'mode-active' : 'mode'"
+				@press="emit('mode', 'music')"
+			/>
+		</div>
+		<div class="kb-grid">
+			<SearchKey
+				v-for="l in letters"
+				:key="l"
+				:focus-key="`kb-${l}`"
+				:label="l.toUpperCase()"
+				@press="emit('type', l)"
+			/>
+		</div>
+		<div class="kb-grid">
+			<SearchKey
+				v-for="n in digits"
+				:key="n"
+				:focus-key="`kb-${n}`"
+				:label="n"
+				variant="number"
+				@press="emit('type', n)"
 			/>
 		</div>
 	</div>
@@ -104,17 +98,21 @@ function handlePress(letter: string): void {
 .kb {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
-	padding: 16px;
-	background: oklch(0.14 0.01 250);
-	border-radius: 16px;
-}
-.row {
-	display: grid;
-	grid-template-columns: repeat(9, 1fr);
 	gap: 8px;
+	padding: 8px;
 }
-.hot-row {
-	grid-template-columns: repeat(4, 1fr);
+.kb-row {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 4px;
+}
+.kb-grid {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 4px;
+}
+.utility-row :deep(.span-2) {
+	grid-column: span 2;
+	aspect-ratio: 2 / 1;
 }
 </style>

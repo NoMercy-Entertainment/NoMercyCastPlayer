@@ -1,12 +1,16 @@
 /**
  * PreScreen panel — pre-play screen with Play / Restart / Episodes /
  * Audio+subs buttons. Mounted as a fullscreen overlay over the video
- * element when the player isn't actively playing. Mirrors android
- * Leanback PreScreen.
+ * element when the player isn't actively playing. Mirrors APK Leanback
+ * watch pre-play presentation (TvUiPlugin's idle state).
  *
- * Phase 9 ships a minimal but working DOM-driven panel — not Vue, since
- * the npm video-player package wants raw DOM elements as overlay
- * children. Keeps the bridge thin and avoids a Vue mini-app per panel.
+ * Visual notes (matched against APK):
+ *   - Backdrop image full-bleed with bottom-up gradient scrim.
+ *   - Title in display style top-left, synopsis 6-line clamped below.
+ *   - Watch / Restart / Episodes / Audio+subs buttons in a focus row.
+ *
+ * DOM-driven (not Vue) so the npm video-player package can mount it
+ * directly into the player overlay element without a nested Vue app.
  */
 
 import { dispatchOptionAction } from './shared';
@@ -14,8 +18,12 @@ import { dispatchOptionAction } from './shared';
 export interface PreScreenOptions {
 	parent: HTMLElement;
 	title: string;
+	subtitle?: string;
+	overview?: string;
+	backdropUrl?: string | null;
 	showEpisodes: boolean;
 	showLanguages: boolean;
+	resumeFromMs?: number;
 	onPlay: () => void;
 	onRestart: () => void;
 	onShowEpisodes: () => void;
@@ -29,32 +37,66 @@ export function mountPreScreen(opts: PreScreenOptions): () => void {
 	root.setAttribute('role', 'dialog');
 	root.setAttribute('aria-label', 'Pre-play menu');
 
+	if (opts.backdropUrl) {
+		const backdrop = document.createElement('img');
+		backdrop.className = 'pre-screen-backdrop';
+		backdrop.src = opts.backdropUrl;
+		backdrop.alt = '';
+		backdrop.decoding = 'async';
+		root.append(backdrop);
+
+		const scrim = document.createElement('div');
+		scrim.className = 'pre-screen-scrim';
+		root.append(scrim);
+	}
+
+	const content = document.createElement('div');
+	content.className = 'pre-screen-content';
+
+	const subtitle = opts.subtitle?.trim();
+	if (subtitle) {
+		const subtitleEl = document.createElement('p');
+		subtitleEl.className = 'pre-screen-subtitle';
+		subtitleEl.textContent = subtitle;
+		content.append(subtitleEl);
+	}
+
 	const title = document.createElement('h1');
 	title.textContent = opts.title;
 	title.className = 'pre-screen-title';
+	content.append(title);
+
+	const overview = opts.overview?.trim();
+	if (overview) {
+		const overviewEl = document.createElement('p');
+		overviewEl.className = 'pre-screen-overview';
+		overviewEl.textContent = overview;
+		content.append(overviewEl);
+	}
 
 	const buttonRow = document.createElement('div');
 	buttonRow.className = 'pre-screen-buttons';
 
-	const playBtn = makeButton('Play', () => opts.onPlay());
-	const restartBtn = makeButton('Restart', () => opts.onRestart());
-	buttonRow.append(playBtn, restartBtn);
-	if (opts.showEpisodes) {
-		const ep = makeButton('Episodes', () => opts.onShowEpisodes());
-		buttonRow.append(ep);
-	}
-	if (opts.showLanguages) {
-		const lang = makeButton('Audio and subtitles', () => opts.onShowLanguages());
-		buttonRow.append(lang);
-	}
+	const resumeFrom = opts.resumeFromMs ?? 0;
+	const playLabel = resumeFrom > 0 ? `Resume from ${formatTime(resumeFrom)}` : 'Play';
+	const playBtn = makeButton(playLabel, 'primary', () => opts.onPlay());
+	buttonRow.append(playBtn);
 
-	root.append(title, buttonRow);
+	if (resumeFrom > 0) {
+		const restartBtn = makeButton('Restart', 'secondary', () => opts.onRestart());
+		buttonRow.append(restartBtn);
+	}
+	if (opts.showEpisodes)
+		buttonRow.append(makeButton('Episodes', 'secondary', () => opts.onShowEpisodes()));
+	if (opts.showLanguages)
+		buttonRow.append(makeButton('Audio and subtitles', 'secondary', () => opts.onShowLanguages()));
+
+	content.append(buttonRow);
+	root.append(content);
 	opts.parent.append(root);
 
-	// Auto-focus play.
 	requestAnimationFrame(() => playBtn.focus());
 
-	// Back closes the panel.
 	const onKey = (e: KeyboardEvent): void => {
 		if (e.key === 'Escape' || e.key === 'Back' || e.key === 'GoBack' || e.key === 'BrowserBack') {
 			e.preventDefault();
@@ -63,7 +105,6 @@ export function mountPreScreen(opts: PreScreenOptions): () => void {
 	};
 	root.addEventListener('keydown', onKey, true);
 
-	// Arrow-key navigation between buttons within the row.
 	dispatchOptionAction(root, buttonRow, 'horizontal');
 
 	return (): void => {
@@ -72,13 +113,27 @@ export function mountPreScreen(opts: PreScreenOptions): () => void {
 	};
 }
 
-function makeButton(label: string, onClick: () => void): HTMLButtonElement {
+function makeButton(
+	label: string,
+	variant: 'primary' | 'secondary',
+	onClick: () => void,
+): HTMLButtonElement {
 	const b = document.createElement('button');
 	b.type = 'button';
-	b.className = 'panel-button';
+	b.className = `panel-button panel-button-${variant}`;
 	b.dataset.focusable = 'true';
 	b.tabIndex = 0;
 	b.textContent = label;
 	b.addEventListener('click', () => onClick());
 	return b;
+}
+
+function formatTime(ms: number): string {
+	const seconds = Math.max(0, Math.floor(ms / 1000));
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = seconds % 60;
+	if (h > 0)
+		return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+	return `${m}:${s.toString().padStart(2, '0')}`;
 }

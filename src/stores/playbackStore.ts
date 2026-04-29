@@ -10,14 +10,37 @@ import { ref } from 'vue';
  * state changes through these refs.
  */
 
+export interface PaletteShape {
+	dominant?: string;
+	primary?: string;
+	lightVibrant?: string;
+	darkVibrant?: string;
+	lightMuted?: string;
+	darkMuted?: string;
+}
+
+export interface ColorPaletteSnapshot {
+	cover?: PaletteShape | null;
+	backdrop?: PaletteShape | null;
+	image?: PaletteShape | null;
+	poster?: PaletteShape | null;
+	logo?: PaletteShape | null;
+	profile?: PaletteShape | null;
+}
+
 export interface CurrentTrackSnapshot {
 	id: string;
 	name: string;
 	artist?: string;
 	album?: string;
 	cover?: string;
+	backdrop?: string | null;
 	duration_ms?: number;
+	color_palette?: ColorPaletteSnapshot | null;
+	favorite?: boolean;
 }
+
+export type RepeatMode = 'off' | 'all' | 'one';
 
 export interface CurrentVideoSnapshot {
 	type: 'movie' | 'tv';
@@ -31,6 +54,9 @@ const musicQueue = ref<CurrentTrackSnapshot[]>([]);
 const musicTimeMs = ref<number>(0);
 const musicPlaying = ref<boolean>(false);
 const musicVolume = ref<number>(100);
+const musicShuffle = ref<boolean>(false);
+const musicRepeat = ref<RepeatMode>('off');
+const musicLyricsOpen = ref<boolean>(false);
 
 const videoItem = ref<CurrentVideoSnapshot | null>(null);
 const videoTimeMs = ref<number>(0);
@@ -47,6 +73,23 @@ function applyMusicTrack(track: CurrentTrackSnapshot | null, queue: CurrentTrack
 
 function applyMusicPlayState(playing: boolean): void {
 	musicPlaying.value = playing;
+}
+
+function applyMusicShuffle(enabled: boolean): void {
+	musicShuffle.value = enabled;
+}
+
+function applyMusicRepeat(mode: RepeatMode): void {
+	musicRepeat.value = mode;
+}
+
+function applyMusicLyricsOpen(open: boolean): void {
+	musicLyricsOpen.value = open;
+}
+
+function applyMusicFavorite(favorite: boolean): void {
+	if (musicTrack.value)
+		musicTrack.value = { ...musicTrack.value, favorite };
 }
 
 function applyVideoState(snapshot: CurrentVideoSnapshot | null): void {
@@ -68,9 +111,16 @@ export const playbackStore = {
 		timeMs: musicTimeMs,
 		playing: musicPlaying,
 		volume: musicVolume,
+		shuffle: musicShuffle,
+		repeat: musicRepeat,
+		lyricsOpen: musicLyricsOpen,
 		applyTrack: applyMusicTrack,
 		applyTime: applyMusicTime,
 		applyPlayState: applyMusicPlayState,
+		applyShuffle: applyMusicShuffle,
+		applyRepeat: applyMusicRepeat,
+		applyLyricsOpen: applyMusicLyricsOpen,
+		applyFavorite: applyMusicFavorite,
 	},
 	video: {
 		item: videoItem,

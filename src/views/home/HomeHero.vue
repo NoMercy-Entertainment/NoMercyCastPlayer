@@ -7,8 +7,9 @@ import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
 /*
  * Hero pinned to the top of the home view. Mirrors APK
  * VideoMusicHeroSection.kt — backdrop image full-bleed, gradient scrim
- * anchored bottom-left, title + overview + Watch / Details buttons in
- * the left 60% of the card.
+ * anchored bottom-left, title (or logo image when present) + overview +
+ * Watch / Details buttons in the left 60% of the card. Backdrop layer
+ * uses keyed <Transition> to crossfade between focused cards.
  */
 
 import type { FocusedCardData } from '@/stores/focusedCardStore';
@@ -25,6 +26,8 @@ const backdropUrl = computed(() =>
 	buildImageUrl(props.card.backdrop ?? props.card.poster ?? null, BACKDROP_SIZE),
 );
 
+const logoUrl = computed(() => buildImageUrl(props.card.logo ?? null, { width: 600 }));
+
 const watchPath = computed(() => {
 	const link = props.card.link;
 	if (!link)
@@ -33,6 +36,8 @@ const watchPath = computed(() => {
 });
 
 const detailsPath = computed(() => props.card.link ?? null);
+
+const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 
 useFocusEntry({
 	key: 'home-hero-watch',
@@ -55,69 +60,79 @@ useFocusEntry({
 
 <template>
 	<section class="hero">
-		<div class="art">
-			<img
-				v-if="backdropUrl"
-				:src="backdropUrl"
-				:alt="card.title ?? ''"
-				loading="eager"
-				decoding="async"
-			>
-			<div class="scrim" />
-		</div>
-
-		<div class="content">
-			<h1 class="title">
-				{{ card.title }}
-			</h1>
-			<p v-if="card.overview" class="overview">
-				{{ card.overview }}
-			</p>
-			<div class="actions">
-				<button
-					v-if="watchPath"
-					ref="watchEl"
-					class="btn btn-primary"
-					data-focusable
-					tabindex="0"
-					@click.prevent="watchPath && router.push(watchPath)"
+		<Transition name="hero-fade" mode="out-in">
+			<div :key="transitionKey" class="art">
+				<img
+					v-if="backdropUrl"
+					:src="backdropUrl"
+					:alt="card.title ?? ''"
+					loading="eager"
+					decoding="async"
 				>
-					<svg
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-					>
-						<path d="M8 5v14l11-7z" />
-					</svg>
-					Watch
-				</button>
-				<button
-					v-if="detailsPath"
-					ref="detailsEl"
-					class="btn btn-secondary"
-					data-focusable
-					tabindex="0"
-					@click.prevent="detailsPath && router.push(detailsPath)"
-				>
-					<svg
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<circle cx="12" cy="12" r="10" />
-						<line x1="12" y1="16" x2="12" y2="12" />
-						<line x1="12" y1="8" x2="12.01" y2="8" />
-					</svg>
-					Details
-				</button>
+				<div class="scrim" />
 			</div>
-		</div>
+		</Transition>
+
+		<Transition name="hero-fade" mode="out-in">
+			<div :key="transitionKey" class="content">
+				<img
+					v-if="logoUrl"
+					class="logo"
+					:src="logoUrl"
+					:alt="card.title ?? ''"
+				>
+				<h1 v-else class="title">
+					{{ card.title }}
+				</h1>
+				<p v-if="card.overview" class="overview">
+					{{ card.overview }}
+				</p>
+				<div class="actions">
+					<button
+						v-if="watchPath"
+						ref="watchEl"
+						class="btn btn-primary"
+						data-focusable
+						tabindex="0"
+						@click.prevent="watchPath && router.push(watchPath)"
+					>
+						<svg
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+						>
+							<path d="M8 5v14l11-7z" />
+						</svg>
+						Watch
+					</button>
+					<button
+						v-if="detailsPath"
+						ref="detailsEl"
+						class="btn btn-secondary"
+						data-focusable
+						tabindex="0"
+						@click.prevent="detailsPath && router.push(detailsPath)"
+					>
+						<svg
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<circle cx="12" cy="12" r="10" />
+							<line x1="12" y1="16" x2="12" y2="12" />
+							<line x1="12" y1="8" x2="12.01" y2="8" />
+						</svg>
+						Details
+					</button>
+				</div>
+			</div>
+		</Transition>
 	</section>
 </template>
 
@@ -156,6 +171,13 @@ useFocusEntry({
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+}
+.logo {
+	max-width: 360px;
+	max-height: 132px;
+	object-fit: contain;
+	object-position: left center;
+	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
 }
 .title {
 	margin: 0;
@@ -215,5 +237,14 @@ useFocusEntry({
 	background: rgba(0, 0, 0, 0.85);
 	border-color: rgba(255, 255, 255, 0.5);
 	transform: translateY(-1px);
+}
+
+.hero-fade-enter-active,
+.hero-fade-leave-active {
+	transition: opacity 360ms ease;
+}
+.hero-fade-enter-from,
+.hero-fade-leave-to {
+	opacity: 0;
 }
 </style>
