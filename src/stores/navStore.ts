@@ -15,12 +15,20 @@ export function dispatchInitialIntent(intent: CastIntent, router: Router): void 
 	lastIntent.value = intent;
 	switch (intent.type) {
 		case 'play_video':
-			// Watch route lands in Phase 9. For now park on splash with intent
-			// recorded so a future router can pick it up.
-			void router.push({
-				path: `/watch/${intent.media_type}/${intent.media_id}`,
-				query: intent.resume_at ? { resume_at: String(intent.resume_at) } : undefined,
-			});
+			// Match the APK route shape: /{type}/{id}/watch when type is
+			// movie or tv (the canonical routes), fall through to the
+			// legacy /watch/{type}/{id} for any other type. Either way
+			// the resume_at query param survives.
+			{
+				const supported = intent.media_type === 'movie' || intent.media_type === 'tv';
+				const path = supported
+					? `/${intent.media_type}/${intent.media_id}/watch`
+					: `/watch/${intent.media_type}/${intent.media_id}`;
+				void router.push({
+					path,
+					query: intent.resume_at ? { resume_at: String(intent.resume_at) } : undefined,
+				});
+			}
 			break;
 		case 'play_music':
 			// Music player route lands in Phase 8.
