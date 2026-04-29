@@ -1,2 +1,0 @@
-import{E as e,_ as t,c as n,d as r,t as i}from"./_plugin-vue_export-helper-DWLlC4ko.js";var a={class:`loader`,role:`progressbar`,"aria-label":`Loading`},o=i(t({__name:`LoadingIndicator`,setup(t){return(t,i)=>(e(),r(`div`,a,[...i[0]||=[n(`div`,{class:`ring`},null,-1)]]))}}),[[`__scopeId`,`data-v-d7848d36`]]);export{o as t};
-//# sourceMappingURL=LoadingIndicator-Dka6VRMV.js.map

@@ -1,0 +1,2 @@
+import{O as e,_ as t,c as n,d as r,lt as i,t as a}from"./_plugin-vue_export-helper-CTiKMW_U.js";var o={class:`fallback-poster`},s={class:`initials`},c=a(t({__name:`FallbackPoster`,props:{title:{}},setup(t){return(a,c)=>(e(),r(`div`,o,[n(`span`,s,i((t.title||`?`).slice(0,2).toUpperCase()),1)]))}}),[[`__scopeId`,`data-v-b78a8444`]]);export{c as t};
+//# sourceMappingURL=FallbackPoster-B-sAm4Hr.js.map
