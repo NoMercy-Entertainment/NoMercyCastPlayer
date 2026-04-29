@@ -9,6 +9,8 @@ import { buildImageUrl, SQUARE_SIZE } from '@/lib/images/urls';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
 import { socketStore } from '@/stores/socketStore';
+import { playbackStore } from '@/stores/playbackStore';
+import { musicSyncBridge } from '@/players/music/syncBridge';
 
 /*
  * Album / playlist detail. Mirrors APK ListScreen.kt's two-column TV
@@ -61,6 +63,23 @@ useFocusEntry({
 		router.push('/now-playing');
 	},
 });
+
+function onTrackClick(trackId: string): void {
+	// APK toggles play/pause when clicking the currently-playing track,
+	// otherwise starts a new playback session.
+	const current = playbackStore.music.track.value;
+	if (current?.id === trackId) {
+		const engine = musicSyncBridge.current();
+		if (engine) {
+			if (playbackStore.music.playing.value)
+				engine.pause();
+			else
+				engine.play();
+		}
+		return;
+	}
+	startPlayback(trackId);
+}
 
 function startPlayback(trackId: string): void {
 	const hub = socketStore.musicHub.value;
@@ -139,11 +158,12 @@ function trackArtistText(track: MusicTrack): string {
 					v-for="(track, index) in list.tracks ?? []"
 					:key="track.id ?? index"
 					class="track-row"
+					:class="[{ 'is-playing': track.id === playbackStore.music.track.value?.id }]"
 					data-focusable
 					tabindex="0"
 					role="button"
-					@click="track.id && (startPlayback(track.id), router.push('/now-playing'))"
-					@keydown.enter.prevent="track.id && (startPlayback(track.id), router.push('/now-playing'))"
+					@click="track.id && (onTrackClick(track.id), router.push('/now-playing'))"
+					@keydown.enter.prevent="track.id && (onTrackClick(track.id), router.push('/now-playing'))"
 				>
 					<span class="track-num">{{ index + 1 }}</span>
 					<div class="track-meta">
@@ -278,6 +298,12 @@ function trackArtistText(track: MusicTrack): string {
 .track-row:focus-visible {
 	background: rgba(255, 255, 255, 0.05);
 	border-color: var(--color-primary, oklch(0.7 0.2 285));
+}
+.track-row.is-playing .track-num {
+	color: var(--color-primary, oklch(0.7 0.2 285));
+}
+.track-row.is-playing .track-title {
+	color: var(--color-primary, oklch(0.7 0.2 285));
 }
 .track-num {
 	color: oklch(0.7 0.005 250);
