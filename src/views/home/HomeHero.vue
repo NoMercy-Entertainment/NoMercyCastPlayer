@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
+import SplitTitleText from '@/components/text/SplitTitleText.vue';
 
 /*
  * Hero pinned to the top of the home view. Mirrors APK
@@ -52,9 +53,12 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 					:src="logoUrl"
 					:alt="card.title ?? ''"
 				>
-				<h1 v-else class="title">
-					{{ card.title }}
-				</h1>
+				<SplitTitleText
+					v-else
+					:title="card.title"
+					main-class="hero-main"
+					subtitle-class="hero-sub"
+				/>
 				<p v-if="card.overview" class="overview">
 					{{ card.overview }}
 				</p>
@@ -106,13 +110,19 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 	object-position: left center;
 	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
 }
-.title {
-	margin: 0;
+:deep(.hero-main) {
 	font-size: 36px;
 	font-weight: 700;
 	line-height: 1.05;
 	letter-spacing: -0.01em;
 	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+:deep(.hero-sub) {
+	font-size: 22px;
+	font-weight: 500;
+	line-height: 1.15;
+	color: oklch(0.92 0.005 250);
+	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 .overview {
 	margin: 0;

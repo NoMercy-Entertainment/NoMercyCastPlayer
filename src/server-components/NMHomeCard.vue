@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import FallbackPoster from '@/components/cards/FallbackPoster.vue';
+import SplitTitleText from '@/components/text/SplitTitleText.vue';
 import { BACKDROP_SIZE, buildImageUrl } from '@/lib/images/urls';
 import type { NMHomeCardWrapper, Update } from './types';
 
@@ -84,11 +85,15 @@ function handleDetails(): void {
 			<p v-if="props.data.show" class="show">
 				{{ props.data.show }}
 			</p>
-			<h1 class="title">
-				<span v-if="props.data.season">S{{ props.data.season }} </span>
-				<span v-if="props.data.episode">E{{ props.data.episode }} </span>
-				{{ props.data.title }}
-			</h1>
+			<div v-if="props.data.season || props.data.episode" class="se">
+				<span v-if="props.data.season">S{{ props.data.season }}</span>
+				<span v-if="props.data.episode">E{{ props.data.episode }}</span>
+			</div>
+			<SplitTitleText
+				:title="props.data.title"
+				main-class="card-main"
+				subtitle-class="card-sub"
+			/>
 			<p v-if="overview" class="overview">
 				{{ overview }}
 			</p>
@@ -196,13 +201,27 @@ function handleDetails(): void {
 	text-transform: uppercase;
 	color: oklch(0.85 0.01 250);
 }
-.title {
-	margin: 0;
+.se {
+	display: flex;
+	gap: 4px;
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	color: oklch(0.85 0.01 250);
+}
+:deep(.card-main) {
 	font-size: 32px;
 	font-weight: 700;
 	line-height: 1.05;
 	letter-spacing: -0.01em;
 	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+:deep(.card-sub) {
+	font-size: 20px;
+	font-weight: 500;
+	line-height: 1.15;
+	color: oklch(0.92 0.005 250);
+	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 .overview {
 	margin: 0;
