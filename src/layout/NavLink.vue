@@ -2,6 +2,15 @@
 import { ref } from 'vue';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 
+/*
+ * Pill matches APK TvNavigationBarButton.
+ *   - Inactive: black 0.6 alpha bg, 20dp inner radius
+ *   - Active: primary→primary 0.85 horizontal gradient with shadow
+ *   - Outer focus border ring at 24dp radius (palette-tinted)
+ *   - Icon (20dp white tint) + label (13sp white) — text colour stays
+ *     white in both states, the gradient + shadow are the active marker
+ */
+
 const props = defineProps<{
 	focusKey: string;
 	label: string;
@@ -33,48 +42,57 @@ useFocusEntry({
 		tabindex="0"
 		@click.prevent="emit('action', path)"
 	>
-		<slot>{{ label }}</slot>
+		<span v-if="$slots.icon" class="icon">
+			<slot name="icon" />
+		</span>
+		<span v-if="!iconOnly && label" class="label">{{ label }}</span>
+		<slot />
 	</a>
 </template>
 
 <style scoped>
-/*
- * Pill matches APK TvNavigationBar — rounded 20.dp inner, 24.dp outer with
- * a primary-tinted focus border. Selected state uses a horizontal gradient
- * to match Compose's primary→primary-80% brush.
- */
 .nav-link {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-	padding: 10px 22px;
-	height: 44px;
-	border-radius: 999px;
-	font-size: 14px;
+	gap: 10px;
+	padding: 0 14px 0 12px;
+	height: 40px;
+	border-radius: 20px;
+	font-size: 13px;
 	font-weight: 600;
 	color: #fff;
 	text-decoration: none;
 	outline: none;
-	background: rgba(0, 0, 0, 0.6);
+	background: oklch(0 0 0 / 0.6);
 	border: 2px solid transparent;
 	transition:
 		background var(--motion-fast),
 		border-color var(--motion-fast),
-		transform var(--motion-fast);
+		transform var(--motion-fast),
+		box-shadow var(--motion-fast);
 }
 .nav-link.icon-only {
-	width: 44px;
+	width: 40px;
 	padding: 0;
 	justify-content: center;
 }
 .nav-link.active {
 	background: linear-gradient(90deg, var(--color-primary, oklch(0.7 0.2 285)), oklch(0.7 0.2 285 / 0.85));
-	box-shadow: 0 4px 16px oklch(0.7 0.2 285 / 0.4);
-	color: oklch(0.18 0.02 35);
+	box-shadow: 0 6px 16px oklch(0.7 0.2 285 / 0.35);
 }
 .nav-link:focus-visible {
-	border-color: oklch(1 0 0 / 0.85);
+	border-color: var(--color-primary, oklch(0.7 0.2 285));
 	transform: translateY(-1px);
 	outline: none;
+}
+.icon {
+	display: inline-grid;
+	place-items: center;
+	width: 20px;
+	height: 20px;
+	color: #fff;
+}
+.label {
+	letter-spacing: 0.01em;
 }
 </style>

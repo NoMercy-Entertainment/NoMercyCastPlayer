@@ -13,28 +13,14 @@ import logoSquare from '@/assets/logo.svg';
  *   [music indicator | brand]   [Home | Libraries | Music | (search-icon)]   [profile circle]
  *      weight 1                          weight 3 (centered)                       weight 1
  *
- * Search is the magnifier icon at the trailing edge of the nav row, not a
- * pill with text — APK keeps it visually subordinate to the primary three.
+ * Each pill carries a Moooom-equivalent icon to the left of the label,
+ * 20dp white-tinted, mirrors APK TvNavigationBarButton.
  */
-interface NavItem {
-	key: string;
-	label: string;
-	path: string;
-}
-
-const items: NavItem[] = [
-	{ key: 'nav-home', label: 'Home', path: '/' },
-	{ key: 'nav-libraries', label: 'Libraries', path: '/libraries' },
-	{ key: 'nav-music', label: 'Music', path: '/music' },
-];
 
 const navEl = ref<HTMLElement | null>(null);
 const router = useRouter();
 const route = useRoute();
 
-// Show the TvMiniPlayer on the leading slot only when there's an active
-// track in the music playback store. Mirrors APK TvNavigationBar.kt's
-// `if (currentSong != null) TvMiniPlayer(...) else AppLogoSquare()`.
 const hasActiveTrack = computed(() => playbackStore.music.track.value != null);
 
 useFocusGroup({
@@ -44,10 +30,6 @@ useFocusGroup({
 	onEscape: (dir) => {
 		if (dir !== 'down')
 			return false;
-		// Drop focus into the page content. Mirrors APK
-		// LocalNavbarFocusBridge.focusFirstInContent — the active screen
-		// records its first focusable on mount and the navbar bridge calls
-		// it when ArrowDown leaves the nav row.
 		const ev = new CustomEvent('cast-receiver:nav-down', {});
 		window.dispatchEvent(ev);
 		return true;
@@ -63,14 +45,73 @@ useFocusGroup({
 		</div>
 		<nav ref="navEl" class="nav-items">
 			<NavLink
-				v-for="item in items"
-				:key="item.key"
-				:focus-key="item.key"
-				:label="item.label"
-				:path="item.path"
-				:active="route.path === item.path"
+				focus-key="nav-home"
+				label="Home"
+				path="/"
+				:active="route.path === '/'"
 				@action="(p) => router.push(p)"
-			/>
+			>
+				<template #icon>
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V9.5z" />
+					</svg>
+				</template>
+			</NavLink>
+			<NavLink
+				focus-key="nav-libraries"
+				label="Libraries"
+				path="/libraries"
+				:active="route.path.startsWith('/libraries')"
+				@action="(p) => router.push(p)"
+			>
+				<template #icon>
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M3 7.5C3 6.7 3.7 6 4.5 6h4.2c.4 0 .7.1 1 .4l1.4 1.5c.3.3.6.4 1 .4h7.4c.8 0 1.5.7 1.5 1.5v9C21 19.3 20.3 20 19.5 20h-15A1.5 1.5 0 0 1 3 18.5v-11z" />
+					</svg>
+				</template>
+			</NavLink>
+			<NavLink
+				focus-key="nav-music"
+				label="Music"
+				path="/music"
+				:active="route.path.startsWith('/music')"
+				@action="(p) => router.push(p)"
+			>
+				<template #icon>
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M9 18V5l12-2v13" />
+						<circle cx="6" cy="18" r="3" />
+						<circle cx="18" cy="16" r="3" />
+					</svg>
+				</template>
+			</NavLink>
 			<NavLink
 				focus-key="nav-search"
 				label=""
@@ -80,19 +121,21 @@ useFocusGroup({
 				:active="route.path === '/search'"
 				@action="(p) => router.push(p)"
 			>
-				<svg
-					width="20"
-					height="20"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<circle cx="11" cy="11" r="7" />
-					<line x1="21" y1="21" x2="16.65" y2="16.65" />
-				</svg>
+				<template #icon>
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<circle cx="11" cy="11" r="7" />
+						<line x1="21" y1="21" x2="16.65" y2="16.65" />
+					</svg>
+				</template>
 			</NavLink>
 		</nav>
 		<div class="trailing">
@@ -125,7 +168,7 @@ useFocusGroup({
 .nav-items {
 	display: flex;
 	justify-content: center;
-	gap: 16px;
+	gap: 12px;
 }
 .trailing {
 	display: flex;
