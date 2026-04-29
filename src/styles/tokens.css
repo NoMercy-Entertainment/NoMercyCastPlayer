@@ -3,7 +3,9 @@
  * this file owns motion + sizing tokens that don't fit @theme. */
 
 :root {
-	--tv-safe-padding: 5%;
+	/* APK uses 36dp horizontal padding for rails / topnav. Scales with
+		viewport so 4K TVs still get breathing room. */
+	--tv-safe-padding: clamp(36px, 4vw, 80px);
 	/* APK NMCard renders ~150-180dp wide on TV with 16dp gap. 180px @ 720p
 		fits 7 cards across after tv-safe padding — matches the APK density. */
 	--rail-card-width: 180px;
