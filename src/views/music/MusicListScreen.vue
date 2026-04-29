@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFocusGroup } from '@/composables/useFocusGroup';
 import { useFocusEntry } from '@/composables/useFocusEntry';
 import { useMusicListQuery } from '@/queries/useMusicListQuery';
 import type { MusicTrack } from '@/queries/useMusicListQuery';
 import { buildImageUrl, SQUARE_SIZE } from '@/lib/images/urls';
+import { applyThemeColor, clearThemeColor } from '@/lib/theme';
 import LoadingIndicator from '@/components/feedback/LoadingIndicator.vue';
 import ErrorPanel from '@/components/feedback/ErrorPanel.vue';
 import { socketStore } from '@/stores/socketStore';
@@ -28,6 +29,18 @@ const { data, isLoading, error, refetch } = useMusicListQuery(type, id);
 
 const list = computed(() => data.value ?? null);
 const coverUrl = computed(() => buildImageUrl(list.value?.cover ?? null, SQUARE_SIZE));
+
+// APK ListScreen pickPaletteColor(palette.cover ?: image ?: backdrop ?: profile)
+// → SetThemeColor for the BigPlayButton + track-row accent.
+watch(list, (next) => {
+	const palette = next?.color_palette as Record<string, unknown> | undefined;
+	const candidate = (palette?.cover ?? palette?.image ?? palette?.backdrop ?? palette?.profile) as
+		Parameters<typeof applyThemeColor>[0];
+	applyThemeColor(candidate);
+}, { immediate: true });
+onBeforeUnmount(() => {
+	clearThemeColor();
+});
 
 const trackCount = computed(() => list.value?.tracks?.length ?? 0);
 const totalDurationText = computed(() => {

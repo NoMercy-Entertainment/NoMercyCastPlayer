@@ -148,6 +148,11 @@ onBeforeUnmount(() => {
 	margin-top: -72px; /* APK overlap=72.dp keeps the rails peeking under the hero scrim */
 	position: relative;
 	z-index: 1;
+	overflow: auto;
+	height: inherit;
+}
+.rails::-webkit-scrollbar {
+	display: none;
 }
 .rails > :deep(.rail-section) {
 	scroll-margin-top: 120px;

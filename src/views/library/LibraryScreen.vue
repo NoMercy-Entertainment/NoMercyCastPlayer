@@ -151,6 +151,8 @@ onBeforeUnmount(() => {
 	margin-top: -72px;
 	position: relative;
 	z-index: 1;
+	overflow: auto;
+	height: inherit;
 }
 .rails > :deep(.rail-section) {
 	scroll-margin-top: 120px;
