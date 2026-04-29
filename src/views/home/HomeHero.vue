@@ -97,12 +97,13 @@ const transitionKey = computed(() => props.card.id ?? props.card.title ?? '');
 }
 .content {
 	position: absolute;
-	inset: auto 0 0 0;
+	inset: 0;
 	width: 60%;
-	padding: 24px 36px 56px;
+	padding: 32px var(--tv-safe-padding) 56px var(--tv-safe-padding);
 	color: #fff;
 	display: flex;
 	flex-direction: column;
+	justify-content: center;
 	gap: 12px;
 }
 .logo {
