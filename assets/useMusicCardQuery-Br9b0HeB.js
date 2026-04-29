@@ -1,0 +1,2 @@
+import{a as e}from"./_plugin-vue_export-helper-8ASmFJWo.js";import{n as t,r as n,t as r}from"./client-BG19uIpM.js";import{n as i}from"./index-vpmiJ-4o.js";import{n as a}from"./EmptyState-9HgaSiBe.js";var o=/^\//;async function s(e){let t=await r({path:`/api/v1/music/${e.replace(o,``)}`,method:`GET`});return Array.isArray(t)?t:t.components??[]}function c(r){let o=e(()=>[...t.musicCards(r.value)]),c=n({queryKey:o,queryFn:()=>s(r.value),...i.standard});return a(o.value,c.data,c.isLoading,c.isFetching),c}export{c as t};
+//# sourceMappingURL=useMusicCardQuery-Br9b0HeB.js.map
