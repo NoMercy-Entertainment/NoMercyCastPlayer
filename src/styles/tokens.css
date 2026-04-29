@@ -12,7 +12,7 @@
 	--backdrop-blur: 32px;
 	--motion-fast: 150ms ease-out;
 	--motion-page: 200ms ease-out;
-	--focus-ring-color: rgb(255 255 255 / 0.95);
-	--focus-ring-width: 4px;
-	--focus-ring-offset: 4px;
+	--focus-ring-color: rgb(255 255 255 / 0.85);
+	--focus-ring-width: 3px;
+	--focus-ring-offset: 2px;
 }
