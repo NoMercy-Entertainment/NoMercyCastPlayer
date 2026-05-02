@@ -1,0 +1,2 @@
+import{O as e,_ as t,c as n,d as r,h as i,lt as a,s as o,t as s}from"./_plugin-vue_export-helper-CTiKMW_U.js";import{g as c}from"./index-ZMd1fjhB.js";import{t as l}from"./SetupBackdrop-CbWCvBmu.js";var u={class:`person`},d={class:`placeholder`},f=s(t({__name:`PersonScreen`,setup(t){let s=c(),f=o(()=>String(s.params.id??``));return(t,o)=>(e(),r(`div`,u,[i(l),n(`p`,d,` PersonScreen: id=`+a(f.value),1)]))}}),[[`__scopeId`,`data-v-dda9eb98`]]);export{f as default};
+//# sourceMappingURL=PersonScreen-o9rRLigd.js.map
