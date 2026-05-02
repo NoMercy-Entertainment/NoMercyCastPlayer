@@ -35,6 +35,9 @@ interface VideoEngineLike {
 	next?: () => void;
 	previous?: () => void;
 	loadPlaylist?: (playlist: unknown, item?: unknown) => void;
+	// 1.x: volume(value) setter
+	volume?: (v: number) => void;
+	// 0.x deprecated shim
 	setVolume?: (v: number) => void;
 	playlistItem?: () => {
 		id: number | string;
@@ -43,6 +46,10 @@ interface VideoEngineLike {
 		listId?: string | number;
 		tmdbId?: string | number;
 	};
+	// 1.x
+	audioTrackIndex?: () => number | null;
+	subtitleIndex?: () => number | null;
+	// 0.x deprecated shims still present in 1.x
 	getAudioTrack?: () => string | number | null;
 	getSubtitleTrack?: () => string | number | null;
 	getSubtitleType?: () => string | null;
@@ -77,8 +84,8 @@ function bindOutbound(p: VideoEngineLike): void {
 			PlaylistId: item.listId,
 			TmdbId: item.tmdbId,
 			Time: Math.round(seconds),
-			Audio: p.getAudioTrack?.(),
-			Subtitle: p.getSubtitleTrack?.(),
+			Audio: p.audioTrackIndex?.() ?? p.getAudioTrack?.(),
+			Subtitle: p.subtitleIndex?.() ?? p.getSubtitleTrack?.(),
 			SubtitleType: p.getSubtitleType?.(),
 		});
 	}, 5000);
@@ -116,6 +123,8 @@ function bindInbound(p: VideoEngineLike): void {
 	};
 	const onVol = (...args: unknown[]): void => {
 		const data = args[0] as { volume: number };
+		// 1.x: volume(value); 0.x: setVolume(value)
+		p.volume?.(data.volume);
 		p.setVolume?.(data.volume);
 	};
 

@@ -16,9 +16,20 @@ interface PlayerLike {
 	on: (event: string, handler: (data: unknown) => void) => void;
 	off: (event: string, handler?: (data: unknown) => void) => void;
 	emit?: (event: string, data?: unknown) => void;
-	getCurrentChapter?: () =>
+	// 1.x: chapter(currentTime) — requires current time arg
+	chapter?: (currentTime: number) =>
 		| { id: string; type?: string; endTime?: number; startTime?: number }
-		| null;
+		| null
+		| undefined;
+	// 0.x deprecated shim (still present in 1.x but requires arg too)
+	getCurrentChapter?: (currentTime: number) =>
+		| { id: string; type?: string; endTime?: number; startTime?: number }
+		| null
+		| undefined;
+	// 1.x: currentTime() getter
+	currentTime?: () => number;
+	// 0.x deprecated shim
+	getCurrentTime?: () => number;
 	seek: (seconds: number) => void;
 }
 
@@ -32,7 +43,8 @@ export function setAutoSkipEnabled(enabled: boolean): void {
 
 export function attachChapterAutoSkip(player: PlayerLike): void {
 	const onTime = (): void => {
-		const chapter = player.getCurrentChapter?.();
+		const t = player.currentTime?.() ?? player.getCurrentTime?.() ?? 0;
+		const chapter = player.chapter?.(t) ?? player.getCurrentChapter?.(t) ?? null;
 		if (!chapter || chapter.id === lastChapterId)
 			return;
 

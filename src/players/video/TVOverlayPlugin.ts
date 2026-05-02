@@ -32,18 +32,30 @@ interface PlayerLike {
 	pause: () => void;
 	seek: (seconds: number) => void;
 	restart?: () => void;
+
+	// 1.x unified getter/setter API
+	currentTime?: () => number;
+	duration?: () => number;
+	audioTrackIndex?: () => number;
+	subtitleIndex?: () => number;
+	audioTracks?: () => TrackItem[];
+	subtitles?: () => TrackItem[];
+	qualityLevels?: () => TrackItem[];
+	quality?: (index?: number) => number | void;
+	audioTrack?: (index?: number) => unknown;
+	subtitle?: (index?: number) => unknown;
+	chapters?: () => Array<{ start: number; end?: number }>;
+	chapter?: (currentTime: number) => { id: string; type?: string; startTime?: number; endTime?: number } | null | undefined;
+
+	// 0.x deprecated shims still present in 1.x
 	getCurrentTime?: () => number;
 	getDuration?: () => number;
-	getAudioTrack?: () => string | number | null;
-	getSubtitleTrack?: () => string | number | null;
 	getAudioTracks?: () => TrackItem[];
 	getSubtitleTracks?: () => TrackItem[];
 	getQualityLevels?: () => TrackItem[];
 	getCurrentQuality?: () => string | number | null;
-	getActualQualityLabel?: () => string | null;
-	setAudioTrack?: (id: string | number) => void;
-	setSubtitleTrack?: (id: string | number) => void;
-	setQuality?: (id: string | number) => void;
+	getChapters?: () => Array<{ start: number; end?: number }>;
+
 	playlist?: () => EpisodeItem[];
 	playlistItem?: () => {
 		id: number | string;
@@ -53,9 +65,6 @@ interface PlayerLike {
 		backdrop?: string | null;
 		resumeFromMs?: number;
 	};
-	getAutoSkipChapters?: () => boolean;
-	setAutoSkipChapters?: (next: boolean) => void;
-	getChapters?: () => Array<{ start: number; end?: number }>;
 }
 
 export interface TVOverlayPluginOptions {
@@ -78,7 +87,9 @@ export class TVOverlayPlugin {
 		if (!this.opts.skipPreScreen)
 			this.showPreScreen();
 
-		this.bind('back-button', () => this.handleBack());
+		// 1.x removed 'back-button'; wire keydown instead (already done below
+		// via onShortcut). Also listen to the CAF receiver's own back event.
+		this.bind('back', () => this.handleBack());
 		this.bind('show-language-screen', () => this.showLanguageScreen());
 		this.bind('show-episode-screen', () => this.showEpisodeScreen());
 		this.bind('pause', () => this.maybeShowPreScreen());
@@ -87,9 +98,11 @@ export class TVOverlayPlugin {
 			this.ensureOSD();
 		});
 		this.bind('item', () => this.refreshOSD());
+		// 1.x: 'active' replaces showControls/hideControls (deprecated forwarders
+		// still re-emit showControls/hideControls, but bind to active directly).
+		this.bind('active', showing => this.osd?.setVisible(Boolean(showing)));
 		this.bind('showControls', () => this.osd?.setVisible(true));
 		this.bind('hideControls', () => this.osd?.setVisible(false));
-		this.bind('controls', showing => this.osd?.setVisible(Boolean(showing)));
 		this.bind('chapter-skip-available', (chapter) => {
 			this.showSkipPrompt(chapter as { type?: string; endTime?: number; startTime?: number } | null);
 		});
@@ -159,6 +172,61 @@ export class TVOverlayPlugin {
 		this.skipPrompt = null;
 	}
 
+	private playerCurrentTime(): number {
+		return this.player.currentTime?.() ?? this.player.getCurrentTime?.() ?? 0;
+	}
+
+	private playerDuration(): number {
+		return this.player.duration?.() ?? this.player.getDuration?.() ?? 0;
+	}
+
+	private playerChapters(): Array<{ start: number; end?: number }> {
+		return this.player.chapters?.() ?? this.player.getChapters?.() ?? [];
+	}
+
+	private playerAudioTracks(): TrackItem[] {
+		return this.player.audioTracks?.() ?? this.player.getAudioTracks?.() ?? [];
+	}
+
+	private playerSubtitleTracks(): TrackItem[] {
+		return this.player.subtitles?.() ?? this.player.getSubtitleTracks?.() ?? [];
+	}
+
+	private playerQualityLevels(): TrackItem[] {
+		return this.player.qualityLevels?.() ?? this.player.getQualityLevels?.() ?? [];
+	}
+
+	private playerCurrentAudioId(): string | number | null {
+		return this.player.audioTrackIndex?.() ?? null;
+	}
+
+	private playerCurrentSubtitleId(): string | number | null {
+		return this.player.subtitleIndex?.() ?? null;
+	}
+
+	private playerCurrentQualityId(): string | number {
+		if (this.player.quality) {
+			const q = this.player.quality();
+			return typeof q === 'number' ? q : -1;
+		}
+		return this.player.getCurrentQuality?.() ?? -1;
+	}
+
+	private playerSetAudioTrack(id: string | number): void {
+		if (this.player.audioTrack)
+			this.player.audioTrack(Number(id));
+	}
+
+	private playerSetSubtitleTrack(id: string | number): void {
+		if (this.player.subtitle)
+			this.player.subtitle(id === 'off' ? -1 : Number(id));
+	}
+
+	private playerSetQuality(id: string | number): void {
+		if (this.player.quality)
+			this.player.quality(Number(id));
+	}
+
 	private ensureOSD(): void {
 		const host = this.overlayHost();
 		if (!host || this.osd)
@@ -168,9 +236,9 @@ export class TVOverlayPlugin {
 			parent: host,
 			title: item?.title ?? '',
 			subtitle: item?.subtitle ?? null,
-			getCurrentTime: () => this.player.getCurrentTime?.() ?? 0,
-			getDuration: () => this.player.getDuration?.() ?? 0,
-			chapters: this.player.getChapters?.() ?? [],
+			getCurrentTime: () => this.playerCurrentTime(),
+			getDuration: () => this.playerDuration(),
+			chapters: this.playerChapters(),
 		});
 	}
 
@@ -182,7 +250,7 @@ export class TVOverlayPlugin {
 			title: item?.title ?? '',
 			subtitle: item?.subtitle ?? null,
 		});
-		this.osd.setChapters(this.player.getChapters?.() ?? []);
+		this.osd.setChapters(this.playerChapters());
 	}
 
 	private bind(event: string, handler: (data?: unknown) => void): void {
@@ -209,7 +277,7 @@ export class TVOverlayPlugin {
 			backdropUrl: item?.backdrop ?? null,
 			resumeFromMs: item?.resumeFromMs ?? 0,
 			showEpisodes: (this.player.playlist?.()?.length ?? 0) > 1,
-			showLanguages: Boolean(this.player.getAudioTracks?.() || this.player.getSubtitleTracks?.()),
+			showLanguages: this.playerAudioTracks().length > 0 || this.playerSubtitleTracks().length > 0,
 			onPlay: () => {
 				this.closeAllPanels();
 				this.player.play();
@@ -235,7 +303,7 @@ export class TVOverlayPlugin {
 		this.currentPanel = 'episode';
 		const episodes = this.player.playlist?.() ?? [];
 		const current = this.player.playlistItem?.();
-		const currentTimeSec = this.player.getCurrentTime?.() ?? 0;
+		const currentTimeSec = this.playerCurrentTime();
 		this.unmount = mountEpisodeScreen({
 			parent: host,
 			episodes,
@@ -255,25 +323,20 @@ export class TVOverlayPlugin {
 			return;
 		this.closeAllPanels();
 		this.currentPanel = 'language';
+		const canSetQuality = Boolean(this.player.quality);
 		this.unmount = mountLanguageScreen({
 			parent: host,
-			audioTracks: this.player.getAudioTracks?.() ?? [],
-			subtitleTracks: this.player.getSubtitleTracks?.() ?? [],
-			qualityLevels: this.player.getQualityLevels?.() ?? [],
-			currentAudioId: this.player.getAudioTrack?.(),
-			currentSubtitleId: this.player.getSubtitleTrack?.(),
-			currentQualityId: this.player.getCurrentQuality?.() ?? -1,
-			autoQualityLabel: this.player.getActualQualityLabel?.() ?? null,
+			audioTracks: this.playerAudioTracks(),
+			subtitleTracks: this.playerSubtitleTracks(),
+			qualityLevels: this.playerQualityLevels(),
+			currentAudioId: this.playerCurrentAudioId(),
+			currentSubtitleId: this.playerCurrentSubtitleId(),
+			currentQualityId: this.playerCurrentQualityId(),
+			autoQualityLabel: null,
 			autoSkipChapters: settingsStore.autoSkipChapters.value,
-			onPickAudio: id => this.player.setAudioTrack?.(id),
-			onPickSubtitle: (id) => {
-				if (id === 'off')
-					this.player.setSubtitleTrack?.('');
-				else this.player.setSubtitleTrack?.(id);
-			},
-			onPickQuality: this.player.setQuality
-				? id => this.player.setQuality?.(id)
-				: undefined,
+			onPickAudio: id => this.playerSetAudioTrack(id),
+			onPickSubtitle: id => this.playerSetSubtitleTrack(id),
+			onPickQuality: canSetQuality ? id => this.playerSetQuality(id) : undefined,
 			onToggleAutoSkip: (next) => {
 				settingsStore.autoSkipChapters.value = next;
 			},
@@ -291,8 +354,8 @@ export class TVOverlayPlugin {
 		this.currentPanel = 'seek';
 		this.unmount = mountSeekContainer({
 			parent: host,
-			getCurrentTime: () => this.player.getCurrentTime?.() ?? 0,
-			getDuration: () => this.player.getDuration?.() ?? 0,
+			getCurrentTime: () => this.playerCurrentTime(),
+			getDuration: () => this.playerDuration(),
 			onCommit: (seconds) => {
 				this.player.seek(seconds);
 				this.closeAllPanels();
