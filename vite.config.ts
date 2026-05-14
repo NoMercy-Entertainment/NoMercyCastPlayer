@@ -35,6 +35,25 @@ export default defineConfig({
 		open: true,
 		port: 5501,
 		allowedHosts: ['vscode.nomercy.tv', 'cast.nomercy.tv', 'cast-dev.nomercy.tv'],
+		fs: {
+			// Explicit deny — anything that holds credentials or private keys
+			// must never be reachable via /@fs/. Pinned here so a future config
+			// change can't accidentally expose secrets.
+			deny: [
+				'.env',
+				'.env.*',
+				'**/.env',
+				'**/.env.*',
+				'*.{crt,pem,key,pfx,p12,cer}',
+				'**/*.{crt,pem,key,pfx,p12,cer}',
+				'**/secrets/**',
+				'**/.git/**',
+				'**/.aws/**',
+				'**/.ssh/**',
+				'**/id_rsa*',
+				'**/id_ed25519*',
+			],
+		},
 		// Dev-only proxy so localhost:5501 can hit the user's server without
 		// hitting CORS. CAST_DEV_SERVER_URL overrides the target when set.
 		proxy: {
