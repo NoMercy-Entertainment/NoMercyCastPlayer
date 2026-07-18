@@ -26,7 +26,10 @@ export function mapServerKey(serverKey: readonly string[]): readonly (readonly s
 
 	const head = serverKey[0];
 	const second = serverKey[1];
-	const id = serverKey[2];
+	// The server publishes two-element per-title keys — ["movie","<id>"] and
+	// ["tv","<id>"] — so the id sits at index 1, not 2. Reading index 2 left it
+	// undefined and silently dropped every per-title invalidation.
+	const id = serverKey[1];
 
 	if (head === 'base' && second === 'libraries')
 		return [['libraries']];
