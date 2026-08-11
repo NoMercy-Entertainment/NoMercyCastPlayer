@@ -12,7 +12,7 @@ import { nomercyApiBase } from '@/lib/nomercyApi';
 
 interface AppConfigServer {
 	id: string;
-	serverApiUrl: string;
+	serverBaseUrl: string;
 }
 
 interface AppConfigResponse {
@@ -42,5 +42,5 @@ export async function resolveServerFromAppConfig(accessToken: string): Promise<R
 	const server = body.data?.servers?.[0];
 	if (!server)
 		return null;
-	return { serverId: server.id, serverUrl: server.serverApiUrl };
+	return { serverId: server.id, serverUrl: server.serverBaseUrl };
 }
