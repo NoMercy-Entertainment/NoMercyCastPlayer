@@ -1,11 +1,8 @@
 import type { Router } from 'vue-router';
 import { ALL_CUSTOM_NAMESPACES } from './namespaces';
-import { attachLaunchListener, consumeLaunchAuth } from './launchAuth';
-import { attachMessageBus, onSenderIntent, onSenderLaunch } from './messageBus';
+import { attachMessageBus, onSenderNavigate, resolveServerFromAppConfig } from './messageBus';
 import { authStore } from '@/stores/authStore';
-import { navStore } from '@/stores/navStore';
 import { socketStore } from '@/stores/socketStore';
-import type { LaunchCustomData } from '@/types/cast';
 
 /**
  * Cast receiver bootstrap. Called once from main.ts after the Vue app
@@ -34,35 +31,34 @@ export function bootCastReceiver(router: Router): void {
 		}
 		| undefined;
 
-	// Dev-only escape hatch — set sessionStorage["nm_cast_mock"] to a
-	// LaunchCustomData JSON before navigating to the receiver and we'll
+	// Dev-only escape hatch — set sessionStorage["nm_cast_mock"] to
+	// {token, route, serverUrl?} before navigating to the receiver and we'll
 	// hydrate authStore directly so the receiver UI is reachable in plain
-	// Chrome for parity QC against the APK Leanback baseline. Honoured even
-	// when the CAF SDK is partially loaded (script reachable but IPC down,
-	// e.g. running in a regular browser tab); production casts arrive via a
-	// real LAUNCH so this branch is dormant unless someone opted in.
+	// Chrome for parity QC. serverUrl lets local dev skip the app_config
+	// network round-trip; omit it to exercise the real resolution path.
+	// Honoured even when the CAF SDK is partially loaded (script reachable
+	// but IPC down); production casts arrive via a real custom message so
+	// this branch is dormant unless someone opted in.
 	try {
 		const raw = window.sessionStorage.getItem('nm_cast_mock');
 		document.body.dataset.mockHasRaw = String(Boolean(raw));
 		if (raw) {
-			const mock = JSON.parse(raw) as LaunchCustomData;
+			const mock = JSON.parse(raw) as { token: string; route: string; serverUrl?: string };
 			document.body.dataset.mockParsed = 'yes';
-			document.body.dataset.mockHasAccess = String(Boolean(mock.access_token));
-			document.body.dataset.mockHasRefresh = String(Boolean(mock.refresh_token));
-			document.body.dataset.mockHasUser = String(Boolean(mock.user_id));
-			authStore.consumeLaunchAuth(mock);
-			document.body.dataset.mockHydrated = String(authStore.ready.value);
-			// Honour any deep-link URL the user is already on (e.g. /movie/672)
-			// instead of forcing the launch intent — only dispatch when we're
-			// on a splash route.
-			const onSplash
-				= window.location.pathname === '/'
-					|| window.location.pathname === '/splash'
-					|| window.location.pathname === '/sender-required';
-			if (onSplash) {
-				navStore.dispatchInitialIntent(mock.intent, router);
-				document.body.dataset.mockDispatched = 'yes';
-			}
+			void (async () => {
+				const server = mock.serverUrl
+					? { serverId: 'mock', serverUrl: mock.serverUrl }
+					: await resolveServerFromAppConfig(mock.token);
+				document.body.dataset.mockHasServer = String(Boolean(server));
+				if (!server)
+					return;
+				const ok = authStore.consumeRealHandshake(mock.token, server);
+				document.body.dataset.mockHydrated = String(ok);
+				if (ok) {
+					await bootSocketsAndDispatch(mock.route, router);
+					document.body.dataset.mockDispatched = 'yes';
+				}
+			})();
 			return;
 		}
 	}
@@ -100,22 +96,30 @@ export function bootCastReceiver(router: Router): void {
 
 	attachMessageBus(context);
 
-	attachLaunchListener(context, (data: LaunchCustomData) => {
-		if (consumeLaunchAuth(data)) {
-			authStore.receiverState.value = 'AUTHED';
-			void bootSocketsAndDispatch(data, router);
+	// The one real handshake: NAMESPACE_GENERAL {route, token}, already
+	// ack'd by attachMessageBus itself. A route/token arriving before this
+	// listener registers is not possible here the way it was on the KMP
+	// receiver's wasm module - Vue mounts and this file runs synchronously,
+	// no multi-second binary load to race against.
+	onSenderNavigate((payload) => {
+		if (!payload.token) {
+			console.warn('[cast] navigate message carried no token');
+			return;
 		}
-	});
-
-	onSenderLaunch((data) => {
-		if (consumeLaunchAuth(data)) {
-			authStore.receiverState.value = 'AUTHED';
-			void bootSocketsAndDispatch(data, router);
-		}
-	});
-
-	onSenderIntent((intent) => {
-		navStore.dispatchInitialIntent(intent, router);
+		void (async () => {
+			const server = await resolveServerFromAppConfig(payload.token!);
+			if (!server) {
+				console.warn('[cast] app_config resolution failed');
+				authStore.receiverState.value = 'DEGRADED';
+				return;
+			}
+			if (!authStore.consumeRealHandshake(payload.token!, server)) {
+				console.warn('[cast] token expired or malformed at handshake time');
+				authStore.receiverState.value = 'DEGRADED';
+				return;
+			}
+			await bootSocketsAndDispatch(payload.route, router);
+		})();
 	});
 
 	context.addEventListener('SHUTDOWN', () => {
@@ -127,21 +131,25 @@ export function bootCastReceiver(router: Router): void {
 }
 
 /**
- * Boot SignalR + dispatch initial intent. Sequenced so the receiver's
- * Vue components can read live socket state (and fire RPC commands) by
- * the time their first `onMounted` lifecycle runs.
+ * Boot SignalR + navigate to the sender's requested route. Sequenced so the
+ * receiver's Vue components can read live socket state (and fire RPC
+ * commands) by the time their first `onMounted` lifecycle runs.
  *
- * SignalR connection failure does NOT block intent dispatch — the UI
- * shows the splash / browse view with the connection-state badge, and
- * forever-retry recovers in the background.
+ * SignalR connection failure does NOT block navigation - the UI shows the
+ * browse view with the connection-state badge, and forever-retry recovers
+ * in the background.
+ *
+ * `route` is the sender's own full path+query string (e.g.
+ * "/movie/533535/watch?cast=true&position=0") - router.push parses it
+ * directly, no CastIntent reconstruction needed.
  */
 async function bootSocketsAndDispatch(
-	data: LaunchCustomData,
+	route: string,
 	router: Router,
 ): Promise<void> {
 	authStore.receiverState.value = 'CONNECTING';
 	void socketStore.connectAll().then(() => {
 		authStore.receiverState.value = 'READY';
 	});
-	navStore.dispatchInitialIntent(data.intent, router);
+	await router.push(route);
 }

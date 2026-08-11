@@ -1,7 +1,8 @@
 import { computed, ref } from 'vue';
-import type { LaunchCustomData, ReceiverState } from '@/types/cast';
-import { decodeJwt, getJwtExpiryMs } from '@/lib/jwt';
+import type { ReceiverState } from '@/types/cast';
+import { decodeJwt, getJwtExpiryMs, isJwtExpired } from '@/lib/jwt';
 import { refreshCastSession } from '@/lib/keycloak/refresh';
+import type { ResolvedServer } from '@/lib/resolveServer';
 
 /**
  * Volatile in-memory auth store per spec §3.2 + §8.6.
@@ -19,16 +20,17 @@ const refreshToken = ref<string | null>(null);
 const userId = ref<string | null>(null);
 const serverId = ref<string | null>(null);
 const serverUrl = ref<string | null>(null);
-const deviceId = ref<string | null>(null);
-const castSessionId = ref<string | null>(null);
-const launchTimestamp = ref<number | null>(null);
 const locale = ref<string>('en-US');
 const receiverState = ref<ReceiverState>('LOADING');
 
 let refreshTimer: number | null = null;
 
+// refreshToken is null on the real path (the phone's own live access token
+// has no accompanying refresh grant this receiver can call - see
+// CastSessionAuth.kt's doc comment on the KMP receiver for why), so
+// readiness never requires it.
 const ready = computed(
-	() => accessToken.value !== null && refreshToken.value !== null && userId.value !== null,
+	() => accessToken.value !== null,
 );
 
 const expiresAtMs = computed(() => {
@@ -75,18 +77,31 @@ async function runRefresh(): Promise<void> {
 	}
 }
 
-function consumeLaunchAuth(data: LaunchCustomData): void {
-	accessToken.value = data.access_token;
-	refreshToken.value = data.refresh_token;
-	userId.value = data.user_id;
-	serverId.value = data.server_id;
-	serverUrl.value = data.server_url;
-	deviceId.value = data.device_id;
-	castSessionId.value = data.cast_session_id;
-	launchTimestamp.value = data.launch_timestamp;
-	locale.value = data.client_locale ?? 'en-US';
+/**
+ * The real handshake path: a bare Keycloak access token (no refresh grant)
+ * from the phone sender's NavigatePayload, plus the server this account was
+ * resolved to via app_config. sub/locale come off the token's own claims —
+ * the sender never sends them separately.
+ *
+ * Returns false (and leaves the store untouched) for an expired/malformed
+ * token so the caller can fall back to device-auth instead of authing with
+ * a token that will 401 on the very first request.
+ */
+function consumeRealHandshake(token: string, server: ResolvedServer): boolean {
+	if (isJwtExpired(token))
+		return false;
+	const claims = decodeJwt(token);
+	accessToken.value = token;
+	refreshToken.value = null;
+	userId.value = (claims?.sub as string | undefined) ?? null;
+	serverId.value = server.serverId;
+	serverUrl.value = server.serverUrl;
+	locale.value = (claims?.locale as string | undefined) ?? 'en-US';
 	receiverState.value = 'AUTHED';
-	scheduleRefresh();
+	// No refresh grant on this path - scheduleRefresh() no-ops without a
+	// refreshToken, so a token nearing expiry surfaces as a 401 (DEGRADED),
+	// same as CastApiTokenProvider.refresh() on the KMP receiver.
+	return true;
 }
 
 function clear(): void {
@@ -99,9 +114,6 @@ function clear(): void {
 	userId.value = null;
 	serverId.value = null;
 	serverUrl.value = null;
-	deviceId.value = null;
-	castSessionId.value = null;
-	launchTimestamp.value = null;
 	receiverState.value = 'TEARDOWN';
 }
 
@@ -111,15 +123,12 @@ export const authStore = {
 	userId,
 	serverId,
 	serverUrl,
-	deviceId,
-	castSessionId,
-	launchTimestamp,
 	locale,
 	receiverState,
 	ready,
 	expiresAtMs,
 	userClaims,
-	consumeLaunchAuth,
+	consumeRealHandshake,
 	clear,
 	scheduleRefresh,
 	forceRefresh: runRefresh,

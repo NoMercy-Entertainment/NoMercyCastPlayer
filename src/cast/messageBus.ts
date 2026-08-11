@@ -1,16 +1,26 @@
-import { NAMESPACE_INTENT, NAMESPACE_STATUS } from './namespaces';
-import type { CastIntent, LaunchCustomData } from '@/types/cast';
+import { NAMESPACE_GENERAL, NAMESPACE_STATUS } from './namespaces';
+import { resolveServerFromAppConfig } from '@/lib/resolveServer';
 
 /**
  * Outbound + inbound custom-namespace message bus.
  *
- * Phase 1 wires the listener for intent pushes (sender → receiver post-LAUNCH
- * navigation pushes) and a stub status broadcaster. Status payload schema
- * solidifies in Phase 2 once SignalR is providing authoritative state.
+ * The real sender (PhoneCastSenderImpl.kt / DevicePickerDialog.kt) sends a
+ * plain {route, token} JSON payload on NAMESPACE_GENERAL and waits up to 8s
+ * for a {"ack":true,"route":...} echo back on the same channel before it
+ * gives up (ACK_TIMEOUT_MS) - this is the ONE real handshake, not the
+ * launch-customData / multi-namespace design this file previously spoke,
+ * which no current sender ever populates. `token` is the phone's own live
+ * Keycloak access token, used as-is (no exchange call - see
+ * CastSessionAuth.kt's own doc comment on the KMP receiver for why token
+ * exchange is unavailable to a public client).
  */
 
-type IntentHandler = (intent: CastIntent) => void;
-type LaunchHandler = (data: LaunchCustomData) => void;
+export interface NavigatePayload {
+	route: string;
+	token?: string;
+}
+
+type NavigateHandler = (payload: NavigatePayload) => void;
 
 interface ReceiverContextLike {
 	addCustomMessageListener: (
@@ -25,57 +35,50 @@ interface ReceiverContextLike {
 }
 
 let context: ReceiverContextLike | null = null;
-let intentHandlers: IntentHandler[] = [];
-let launchHandlers: LaunchHandler[] = [];
+let lastSenderId: string | undefined;
+let navigateHandlers: NavigateHandler[] = [];
+
+function isNavigatePayload(data: unknown): data is NavigatePayload {
+	return typeof data === 'object' && data !== null && typeof (data as { route?: unknown }).route === 'string';
+}
 
 export function attachMessageBus(ctx: ReceiverContextLike): void {
 	context = ctx;
 
-	ctx.addCustomMessageListener(NAMESPACE_INTENT, (event) => {
-		const data = event.data as
-			| { type?: string; intent?: CastIntent; launch?: LaunchCustomData }
-			| undefined;
-		if (data?.type === 'launch' && data.launch) {
-			for (const fn of launchHandlers) fn(data.launch);
+	ctx.addCustomMessageListener(NAMESPACE_GENERAL, (event) => {
+		lastSenderId = event.senderId;
+		if (!isNavigatePayload(event.data)) {
+			console.debug('[cast] message on NAMESPACE_GENERAL did not parse as {route, token}', event.data);
 			return;
 		}
-		if (data?.intent) {
-			for (const fn of intentHandlers) fn(data.intent);
-			return;
+		const payload = event.data;
+		try {
+			ctx.sendCustomMessage(NAMESPACE_GENERAL, event.senderId, { ack: true, route: payload.route });
 		}
-		if (
-			data?.type === 'navigate'
-			|| data?.type === 'play_video'
-			|| data?.type === 'play_music'
-		) {
-			for (const fn of intentHandlers) fn(data as unknown as CastIntent);
-			return;
+		catch (err) {
+			console.warn('[cast] ack send failed', err);
 		}
-		console.debug('[cast] intent message ignored', data);
+		for (const fn of navigateHandlers) fn(payload);
 	});
 }
 
-export function onSenderIntent(handler: IntentHandler): () => void {
-	intentHandlers.push(handler);
+export function onSenderNavigate(handler: NavigateHandler): () => void {
+	navigateHandlers.push(handler);
 	return () => {
-		intentHandlers = intentHandlers.filter(h => h !== handler);
-	};
-}
-
-export function onSenderLaunch(handler: LaunchHandler): () => void {
-	launchHandlers.push(handler);
-	return () => {
-		launchHandlers = launchHandlers.filter(h => h !== handler);
+		navigateHandlers = navigateHandlers.filter(h => h !== handler);
 	};
 }
 
 export function broadcastStatus(payload: Record<string, unknown>): void {
-	if (!context)
+	if (!context || !lastSenderId)
 		return;
 	try {
-		context.sendCustomMessage(NAMESPACE_STATUS, undefined, payload);
+		context.sendCustomMessage(NAMESPACE_STATUS, lastSenderId, payload);
 	}
 	catch (err) {
 		console.warn('[cast] status broadcast failed', err);
 	}
 }
+
+/** Re-exported for callers that resolve a server directly off a bare token (e.g. receiver.ts's boot path). */
+export { resolveServerFromAppConfig };
