@@ -170,6 +170,8 @@ export async function connectAll(): Promise<void> {
 	bindDeviceList(deviceHub.value);
 	bindMusicPlayerState(musicHub.value);
 	bindConnectedDevices(musicHub.value);
+	bindConnectedDevices(videoHub.value);
+	bindConnectedDevices(deviceHub.value);
 	bindVideoPlayerState(videoHub.value);
 	bindLifecycle(videoHub.value, 'videoHub');
 	bindLifecycle(musicHub.value, 'musicHub');
