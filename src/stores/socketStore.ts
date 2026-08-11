@@ -78,49 +78,80 @@ function bindDeviceList(hub: TypedHub): void {
  * the music/video engine bridges — those bridges attach only once their
  * npm player package finishes loading, well after the hub's initial
  * post-connect state push, which otherwise arrives to zero listeners.
+ *
+ * Wire shape is an EventPayload envelope (VideoPlayerEvents.cs), not a flat
+ * message — only 'PlayerStateChanged' entries carry a snapshot, and `state`
+ * is null on session end (server's universal stop signal). `seq` gates
+ * out-of-order broadcasts the same way app-web's handleMusicPlayerState does.
  */
+let lastAppliedMusicSeq = 0;
+let lastAppliedVideoSeq = 0;
+
 function bindMusicPlayerState(hub: TypedHub): void {
 	hub.on('MusicPlayerState', (...args: unknown[]) => {
-		const state = args[0] as MusicPlayerStateMsg | undefined;
-		if (!state)
-			return;
-		if (state.current_item) {
-			playbackStore.music.applyTrack(
-				{
-					id: String(state.current_item.id),
-					name: state.current_item.name,
-					artist: state.current_item.artist,
-					cover: state.current_item.cover,
-					duration_ms: state.current_item.duration ? Number(state.current_item.duration) * 1000 : undefined,
-					favorite: false,
-				},
-				playbackStore.music.queue.value,
-			);
+		const payload = args[0] as MusicPlayerStateMsg | undefined;
+		for (const e of payload?.events ?? []) {
+			if (e.type !== 'PlayerStateChanged')
+				continue;
+			const state = e.event.state;
+			if (!state)
+				continue;
+			if (state.seq && state.seq <= lastAppliedMusicSeq)
+				continue;
+			if (state.seq)
+				lastAppliedMusicSeq = state.seq;
+
+			if (state.item) {
+				playbackStore.music.applyTrack(
+					{
+						id: String(state.item.id),
+						name: state.item.name,
+						artist: state.item.artist_track?.map(a => a.name).filter(Boolean).join(', '),
+						cover: state.item.cover,
+						favorite: false,
+					},
+					playbackStore.music.queue.value,
+				);
+			}
+			if (typeof state.is_playing === 'boolean')
+				playbackStore.music.applyPlayState(state.is_playing);
+			if (typeof state.progress_ms === 'number')
+				playbackStore.music.applyTime(state.progress_ms);
+			if (state.shuffle_state !== undefined)
+				playbackStore.music.applyShuffle(state.shuffle_state);
+			if (state.repeat_state !== undefined)
+				playbackStore.music.applyRepeat(state.repeat_state);
 		}
-		if (typeof state.play_state === 'boolean')
-			playbackStore.music.applyPlayState(state.play_state);
-		if (typeof state.time === 'number')
-			playbackStore.music.applyTime(Math.round(state.time));
 	});
 }
 
 function bindVideoPlayerState(hub: TypedHub): void {
 	hub.on('VideoPlayerState', (...args: unknown[]) => {
-		const state = args[0] as VideoPlayerStateMsg | undefined;
-		if (!state)
-			return;
-		if (state.current_item) {
-			playbackStore.video.applyState({
-				type: 'movie',
-				id: String(state.current_item.id),
-				title: state.current_item.title,
-				duration_ms: state.current_item.duration ? Number(state.current_item.duration) * 1000 : undefined,
-			});
+		const payload = args[0] as VideoPlayerStateMsg | undefined;
+		for (const e of payload?.events ?? []) {
+			if (e.type !== 'PlayerStateChanged')
+				continue;
+			const state = e.event.state;
+			if (!state)
+				continue;
+			if (state.seq && state.seq <= lastAppliedVideoSeq)
+				continue;
+			if (state.seq)
+				lastAppliedVideoSeq = state.seq;
+
+			if (state.item) {
+				playbackStore.video.applyState({
+					type: 'movie',
+					id: String(state.item.id),
+					title: state.item.title,
+					duration_ms: state.duration_ms,
+				});
+			}
+			if (typeof state.is_playing === 'boolean')
+				playbackStore.video.applyPlayState(state.is_playing);
+			if (typeof state.progress_ms === 'number')
+				playbackStore.video.applyTime(state.progress_ms);
 		}
-		if (typeof state.play_state === 'boolean')
-			playbackStore.video.applyPlayState(state.play_state);
-		if (typeof state.time === 'number')
-			playbackStore.video.applyTime(Math.round(state.time));
 	});
 }
 

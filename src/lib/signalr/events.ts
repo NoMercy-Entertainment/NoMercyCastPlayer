@@ -5,40 +5,46 @@
  * receiver consumes.
  */
 
-export interface VideoPlayerStateMsg {
-	device_id?: string;
-	current_item?: {
-		id: number;
-		title: string;
-		duration?: string;
-		progress?: { time?: number; total?: number };
-	};
-	current_list?: string;
-	play_state?: boolean;
-	time?: number;
-	duration?: number;
-	volume_percentage?: number;
-	actions?: { disallows?: Record<string, boolean> };
+/**
+ * Real wire shape (NoMercy.Api.Services.{Video,Music}.*PlayerState,
+ * VideoPlayerEvents.cs's EventPayload<PlayerStateEventElement>) — NOT a
+ * flat message. The event name is 'VideoPlayerState'/'MusicPlayerState',
+ * but the payload is an envelope of events; only 'PlayerStateChanged'
+ * entries carry a player snapshot, and `state` is null on session end.
+ */
+export interface PlayerStateEnvelope<TState> {
+	events: Array<{
+		event: { event_id: number; state: TState | null };
+		source: string;
+		type: string;
+		user?: unknown;
+	}>;
 }
 
-export interface MusicPlayerStateMsg {
+export interface VideoPlayerStateSnapshot {
 	device_id?: string;
-	current_item?: {
-		id: string;
-		name: string;
-		artist?: string;
-		cover?: string;
-		duration?: string;
-	};
-	current_list?: string;
-	play_state?: boolean;
-	time?: number;
-	duration?: number;
-	playlist?: unknown[];
-	backlog?: unknown[];
+	is_playing?: boolean;
+	item?: { id: number; title: string } | null;
+	progress_ms?: number;
+	duration_ms?: number;
 	volume_percentage?: number;
-	actions?: { disallows?: Record<string, boolean> };
+	seq?: number;
 }
+
+export interface MusicPlayerStateSnapshot {
+	device_id?: string;
+	is_playing?: boolean;
+	item?: { id: string; name: string; artist_track?: Array<{ name?: string }>; cover?: string } | null;
+	progress_ms?: number;
+	duration_ms?: number;
+	volume_percentage?: number;
+	repeat_state?: 'off' | 'one' | 'all';
+	shuffle_state?: boolean;
+	seq?: number;
+}
+
+export type VideoPlayerStateMsg = PlayerStateEnvelope<VideoPlayerStateSnapshot>;
+export type MusicPlayerStateMsg = PlayerStateEnvelope<MusicPlayerStateSnapshot>;
 
 export interface DeviceListItemMsg {
 	id: string;
