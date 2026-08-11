@@ -1,6 +1,6 @@
 import { socketStore } from '@/stores/socketStore';
 import { playbackStore } from '@/stores/playbackStore';
-import type { CurrentTrackSnapshot } from '@/stores/playbackStore';
+import type { ConnectedDeviceSnapshot, CurrentTrackSnapshot } from '@/stores/playbackStore';
 
 type Throttled<T extends (...args: never[]) => void> = T;
 
@@ -163,6 +163,10 @@ function bindInbound(p: MusicEngineLike): void {
 	const onSeek = (...args: unknown[]): void => p.seek((args[0] as number) / 1000);
 	const onLoad = (...args: unknown[]): void => p.loadTrack?.(args[0]);
 	const onState = (...args: unknown[]): void => p.applyServerState?.(args[0]);
+	const onConnectedDevices = (...args: unknown[]): void => {
+		const devices = (args[0] ?? []) as ConnectedDeviceSnapshot[];
+		playbackStore.music.applyConnectedDevices(devices);
+	};
 
 	hub.on('Play', onPlay);
 	hub.on('Pause', onPause);
@@ -170,7 +174,8 @@ function bindInbound(p: MusicEngineLike): void {
 	hub.on('Previous', onPrev);
 	hub.on('Seek', onSeek);
 	hub.on('LoadTrack', onLoad);
-	hub.on('MusicState', onState);
+	hub.on('MusicPlayerState', onState);
+	hub.on('ConnectedDevicesState', onConnectedDevices);
 
 	unsubs.push(
 		() => hub.off('Play', onPlay),
@@ -179,7 +184,8 @@ function bindInbound(p: MusicEngineLike): void {
 		() => hub.off('Previous', onPrev),
 		() => hub.off('Seek', onSeek),
 		() => hub.off('LoadTrack', onLoad),
-		() => hub.off('MusicState', onState),
+		() => hub.off('MusicPlayerState', onState),
+		() => hub.off('ConnectedDevicesState', onConnectedDevices),
 	);
 }
 

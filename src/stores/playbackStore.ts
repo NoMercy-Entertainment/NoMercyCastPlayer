@@ -49,6 +49,14 @@ export interface CurrentVideoSnapshot {
 	duration_ms?: number;
 }
 
+export interface ConnectedDeviceSnapshot {
+	device_id: string;
+	[key: string]: unknown;
+}
+
+const connectedMusicDevices = ref<ConnectedDeviceSnapshot[]>([]);
+const accountDevices = ref<ConnectedDeviceSnapshot[]>([]);
+
 const musicTrack = ref<CurrentTrackSnapshot | null>(null);
 const musicQueue = ref<CurrentTrackSnapshot[]>([]);
 const musicTimeMs = ref<number>(0);
@@ -92,6 +100,20 @@ function applyMusicFavorite(favorite: boolean): void {
 		musicTrack.value = { ...musicTrack.value, favorite };
 }
 
+function applyConnectedMusicDevices(devices: ConnectedDeviceSnapshot[]): void {
+	connectedMusicDevices.value = devices
+		.filter((device): device is ConnectedDeviceSnapshot => device?.device_id != null)
+		.slice()
+		.sort((a, b) => a.device_id.localeCompare(b.device_id));
+}
+
+function applyAccountDevices(devices: ConnectedDeviceSnapshot[]): void {
+	accountDevices.value = devices
+		.filter((device): device is ConnectedDeviceSnapshot => device?.device_id != null)
+		.slice()
+		.sort((a, b) => a.device_id.localeCompare(b.device_id));
+}
+
 function applyVideoState(snapshot: CurrentVideoSnapshot | null): void {
 	videoItem.value = snapshot;
 }
@@ -105,6 +127,10 @@ function applyVideoPlayState(playing: boolean): void {
 }
 
 export const playbackStore = {
+	devices: {
+		account: accountDevices,
+		applyAccountDevices,
+	},
 	music: {
 		track: musicTrack,
 		queue: musicQueue,
@@ -121,6 +147,8 @@ export const playbackStore = {
 		applyRepeat: applyMusicRepeat,
 		applyLyricsOpen: applyMusicLyricsOpen,
 		applyFavorite: applyMusicFavorite,
+		connectedDevices: connectedMusicDevices,
+		applyConnectedDevices: applyConnectedMusicDevices,
 	},
 	video: {
 		item: videoItem,

@@ -4,6 +4,8 @@ import { buildHub } from '@/lib/signalr/connection';
 import type { HubName } from '@/lib/signalr/connection';
 import type { RefreshLibraryPayload } from '@/lib/signalr/events';
 import { invalidateAllLibrary, invalidateFromServer } from '@/lib/queryShim';
+import { playbackStore } from './playbackStore';
+import type { ConnectedDeviceSnapshot } from './playbackStore';
 import { authStore } from './authStore';
 
 /**
@@ -63,6 +65,13 @@ function bindRefreshLibrary(hub: TypedHub, name: HubName): void {
 	});
 }
 
+function bindDeviceList(hub: TypedHub): void {
+	hub.on('DeviceListChanged', (...args: unknown[]) => {
+		const devices = (args[0] ?? []) as ConnectedDeviceSnapshot[];
+		playbackStore.devices.applyAccountDevices(devices);
+	});
+}
+
 function bindLifecycle(hub: TypedHub, name: HubName): void {
 	const conn = hub.raw();
 	conn.onreconnecting(() => {
@@ -99,6 +108,7 @@ export async function connectAll(): Promise<void> {
 	bindRefreshLibrary(videoHub.value, 'videoHub');
 	bindRefreshLibrary(musicHub.value, 'musicHub');
 	bindRefreshLibrary(deviceHub.value, 'deviceHub');
+	bindDeviceList(deviceHub.value);
 	bindLifecycle(videoHub.value, 'videoHub');
 	bindLifecycle(musicHub.value, 'musicHub');
 	bindLifecycle(deviceHub.value, 'deviceHub');
