@@ -1,0 +1,2 @@
+import{O as e,_ as t,c as n,d as r,h as i,lt as a,q as o,t as s}from"./_plugin-vue_export-helper-C1IiIKbV.js";import{h as c}from"./index-SltpVc-P.js";import{t as l}from"./SetupBackdrop-LdXowKDx.js";var u={class:`music-genres`},d={class:`placeholder`},f=s(t({__name:`MusicGenresScreen`,setup(t){let s=c();return(t,c)=>(e(),r(`div`,u,[i(l),n(`p`,d,` MusicGenreScreen: `+a(o(s).fullPath),1)]))}}),[[`__scopeId`,`data-v-de0de70e`]]);export{f as default};
+//# sourceMappingURL=MusicGenresScreen-sV_HS5ux.js.map
