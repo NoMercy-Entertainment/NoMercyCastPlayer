@@ -2,7 +2,7 @@ import { ref, shallowRef } from 'vue';
 import { TypedHub } from '@/lib/signalr/hubs';
 import { buildHub } from '@/lib/signalr/connection';
 import type { HubName } from '@/lib/signalr/connection';
-import type { RefreshLibraryPayload } from '@/lib/signalr/events';
+import type { MusicPlayerStateMsg, RefreshLibraryPayload, VideoPlayerStateMsg } from '@/lib/signalr/events';
 import { invalidateAllLibrary, invalidateFromServer } from '@/lib/queryShim';
 import { playbackStore } from './playbackStore';
 import type { ConnectedDeviceSnapshot } from './playbackStore';
@@ -72,6 +72,65 @@ function bindDeviceList(hub: TypedHub): void {
 	});
 }
 
+/**
+ * Applies MusicPlayerState/VideoPlayerState/ConnectedDevicesState directly
+ * into playbackStore, bound at hub-creation time rather than from within
+ * the music/video engine bridges — those bridges attach only once their
+ * npm player package finishes loading, well after the hub's initial
+ * post-connect state push, which otherwise arrives to zero listeners.
+ */
+function bindMusicPlayerState(hub: TypedHub): void {
+	hub.on('MusicPlayerState', (...args: unknown[]) => {
+		const state = args[0] as MusicPlayerStateMsg | undefined;
+		if (!state)
+			return;
+		if (state.current_item) {
+			playbackStore.music.applyTrack(
+				{
+					id: String(state.current_item.id),
+					name: state.current_item.name,
+					artist: state.current_item.artist,
+					cover: state.current_item.cover,
+					duration_ms: state.current_item.duration ? Number(state.current_item.duration) * 1000 : undefined,
+					favorite: false,
+				},
+				playbackStore.music.queue.value,
+			);
+		}
+		if (typeof state.play_state === 'boolean')
+			playbackStore.music.applyPlayState(state.play_state);
+		if (typeof state.time === 'number')
+			playbackStore.music.applyTime(Math.round(state.time));
+	});
+}
+
+function bindVideoPlayerState(hub: TypedHub): void {
+	hub.on('VideoPlayerState', (...args: unknown[]) => {
+		const state = args[0] as VideoPlayerStateMsg | undefined;
+		if (!state)
+			return;
+		if (state.current_item) {
+			playbackStore.video.applyState({
+				type: 'movie',
+				id: String(state.current_item.id),
+				title: state.current_item.title,
+				duration_ms: state.current_item.duration ? Number(state.current_item.duration) * 1000 : undefined,
+			});
+		}
+		if (typeof state.play_state === 'boolean')
+			playbackStore.video.applyPlayState(state.play_state);
+		if (typeof state.time === 'number')
+			playbackStore.video.applyTime(Math.round(state.time));
+	});
+}
+
+function bindConnectedDevices(hub: TypedHub): void {
+	hub.on('ConnectedDevicesState', (...args: unknown[]) => {
+		const devices = (args[0] ?? []) as ConnectedDeviceSnapshot[];
+		playbackStore.music.applyConnectedDevices(devices);
+	});
+}
+
 function bindLifecycle(hub: TypedHub, name: HubName): void {
 	const conn = hub.raw();
 	conn.onreconnecting(() => {
@@ -109,6 +168,9 @@ export async function connectAll(): Promise<void> {
 	bindRefreshLibrary(musicHub.value, 'musicHub');
 	bindRefreshLibrary(deviceHub.value, 'deviceHub');
 	bindDeviceList(deviceHub.value);
+	bindMusicPlayerState(musicHub.value);
+	bindConnectedDevices(musicHub.value);
+	bindVideoPlayerState(videoHub.value);
 	bindLifecycle(videoHub.value, 'videoHub');
 	bindLifecycle(musicHub.value, 'musicHub');
 	bindLifecycle(deviceHub.value, 'deviceHub');
