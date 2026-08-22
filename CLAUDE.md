@@ -1,8 +1,8 @@
 # NoMercy Cast Player
 
-Chromecast CAF receiver app for casting music playback.
+Chromecast CAF receiver app for casting playback, both music and video.
 
-> **TODO**: This project needs a full rewrite. The current codebase is broken and unreliable. Do not build on top of the existing code - plan a clean implementation from scratch.
+> **Parked, not dead** (see `audit/ALIGNMENT.md` D3). This project needs a full rewrite. The current codebase is broken and unreliable, and not functional end to end. Do not build on top of the existing code - plan a clean implementation from scratch. It is pinned to the v1 player libraries (`@nomercy-entertainment/nomercy-music-player@0.2.15`, `@nomercy-entertainment/nomercy-video-player@^1.2.7`), not the shipped 2.1.x web trio, as part of the same parked state. Backlog tracked in `audit/EXECUTION-PLAN.md` "Parked".
 
 ## Tech Stack
 

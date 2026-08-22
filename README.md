@@ -1,6 +1,8 @@
 # nomercy-cast-player
 
-**nomercy-cast-player** is a Chromecast Receiver app built to work with the [nomercy-video-player](https://github.com/NoMercy-Entertainment/nomercy-video-player). It serves as a lightweight, event-driven application designed to stream media content seamlessly from your NoMercy MediaServer.
+> **Parked, not dead.** This project is meant to become the web twin of the KMP 10-foot UI, authenticated by postMessage from the cast sender. The current codebase is not functional end to end (see `CLAUDE.md`) and is pinned to v1 player libraries rather than the shipped web trio. See `audit/ALIGNMENT.md` D3 for the decision and `audit/EXECUTION-PLAN.md` "Parked" for the backlog.
+
+**nomercy-cast-player** is a Chromecast Receiver app built to work with the [nomercy-video-player](https://github.com/NoMercy-Entertainment/nomercy-video-player) and [nomercy-music-player](https://github.com/NoMercy-Entertainment/nomercy-music-player). It serves as a lightweight, event-driven application designed to stream media content seamlessly from your NoMercy MediaServer.
 
 ## Cast Application ID
 
@@ -8,10 +10,10 @@ This project is associated with the Cast Application ID: `925B4C3C`.
 
 ## Features
 
-- Uses the nomercy-video-player for video playback.
+- Uses the nomercy-video-player and nomercy-music-player for playback, both video and music.
 - Supports custom playlists in multiple formats.
 - Accepts media configuration via `CustomData`.
-- Communicates with the server via a SignalR `/castHub` socket.
+- Communicates with the server via SignalR `videoHub`, `musicHub` and `deviceHub` sockets (not `/castHub`).
 
 ## Media Requirements
 
@@ -45,7 +47,7 @@ note: type definitions and api may not be 100% correct and are subject to change
 
 ### Events Emitted
 
-The player emits the following events to the `/castHub` SignalR socket:
+The player emits the following events to the `videoHub`/`musicHub`/`deviceHub` SignalR sockets:
 
 | Event Name             | Data Type         | Description                                                        |
 | ---------------------- | ----------------- | ------------------------------------------------------------------ |
@@ -82,7 +84,7 @@ The player emits the following events to the `/castHub` SignalR socket:
 
 ### Events Listened To
 
-The player listens to the following events from the `/castHub` SignalR socket:
+The player listens to the following events from the `videoHub`/`musicHub`/`deviceHub` SignalR sockets:
 
 | Event Name         | Data Type | Description                                         |
 | ------------------ | --------- | --------------------------------------------------- |
