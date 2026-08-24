@@ -11,7 +11,7 @@ on:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, beast-unit]
 
     steps:
       - name: Checkout repository
