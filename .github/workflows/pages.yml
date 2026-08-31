@@ -34,23 +34,23 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      # The self-hosted runner restores node_modules/.bin without the executable bit, so
-      # every script that reaches a binary through those shims dies with
-      # "permission denied: vue-tsc" before typechecking a single file. Nothing in the
-      # repo can prevent that, and it stays invisible until a push touches one of this
-      # workflow's path filters — the job last ran green on 2026-08-23 and the bit was
-      # gone by the next run. Setting it costs nothing when it is already set.
-      - name: Restore executable bit on dependency binaries
-        run: chmod -R +x node_modules/.bin
-
+      # Invoked through node rather than `yarn <script>` because the beast-unit runner
+      # cannot execute anything in node_modules/.bin: every such script dies with
+      # "permission denied: vue-tsc" before doing any work. chmod +x does not help — the
+      # step succeeds and the next one still fails — so the directory is on a noexec
+      # mount and no change inside the repo can grant the bit. node reads these entry
+      # points as plain files, which needs no executable bit at all.
+      #
+      # The arguments below must stay in step with the matching package.json scripts,
+      # which are what a developer runs locally.
       - name: Typecheck
-        run: yarn typecheck
+        run: node node_modules/vue-tsc/bin/vue-tsc.js --noEmit
 
       - name: Lint
-        run: yarn lint
+        run: node node_modules/eslint/bin/eslint.js . --ext .ts,.vue --report-unused-disable-directives --max-warnings 0
 
       - name: Build
-        run: yarn build
+        run: node node_modules/vite/bin/vite.js build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

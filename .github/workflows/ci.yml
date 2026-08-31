@@ -28,17 +28,16 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      # Same runner, same defect as pages.yml: node_modules/.bin comes back without the
-      # executable bit and every script reaching a binary through those shims dies with
-      # "permission denied" before doing any work.
-      - name: Restore executable bit on dependency binaries
-        run: chmod -R +x node_modules/.bin
-
+      # Same runner and same defect as pages.yml: node_modules/.bin is on a noexec mount,
+      # so `yarn <script>` dies with "permission denied" before doing any work and chmod
+      # cannot grant the bit. node reads these entry points as plain files instead.
+      #
+      # The arguments must stay in step with the matching package.json scripts.
       - name: Typecheck
-        run: yarn typecheck
+        run: node node_modules/vue-tsc/bin/vue-tsc.js --noEmit
 
       - name: Lint
-        run: yarn lint
+        run: node node_modules/eslint/bin/eslint.js . --ext .ts,.vue --report-unused-disable-directives --max-warnings 0
 
       - name: Build
-        run: yarn build
+        run: node node_modules/vite/bin/vite.js build
