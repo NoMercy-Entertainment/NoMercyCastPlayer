@@ -28,6 +28,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      # Same runner, same defect as pages.yml: node_modules/.bin comes back without the
+      # executable bit and every script reaching a binary through those shims dies with
+      # "permission denied" before doing any work.
+      - name: Restore executable bit on dependency binaries
+        run: chmod -R +x node_modules/.bin
+
       - name: Typecheck
         run: yarn typecheck
 

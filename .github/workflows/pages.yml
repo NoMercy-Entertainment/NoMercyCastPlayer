@@ -34,6 +34,15 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      # The self-hosted runner restores node_modules/.bin without the executable bit, so
+      # every script that reaches a binary through those shims dies with
+      # "permission denied: vue-tsc" before typechecking a single file. Nothing in the
+      # repo can prevent that, and it stays invisible until a push touches one of this
+      # workflow's path filters — the job last ran green on 2026-08-23 and the bit was
+      # gone by the next run. Setting it costs nothing when it is already set.
+      - name: Restore executable bit on dependency binaries
+        run: chmod -R +x node_modules/.bin
+
       - name: Typecheck
         run: yarn typecheck
 
